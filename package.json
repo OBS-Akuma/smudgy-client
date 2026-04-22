@@ -1,0 +1,31 @@
+{
+  "name": "smudgy-client",
+  "version": "0.0.1",
+  "description": "Electron client for Kirka.io",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OBS-Akuma/smudgy-client.git"
+  },
+  "keywords": [],
+  "author": "OBS-Akuma",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^10.4.7",
+    "electron-builder": "^23.0.2"
+  },
+  "dependencies": {
+    "discord-rpc": "^4.0.1",
+    "electron-localshortcut": "^3.2.1",
+    "electron-store": "^8.2.0",
+    "electron-updater": "^6.2.1",
+    "v8-compile-cache": "^2.4.0"
+  },
+  "optionalDependencies": {
+    "dmg-license": "^1.0.11"
+  }
+}

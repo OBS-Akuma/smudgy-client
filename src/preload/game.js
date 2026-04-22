@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const fetchAll = async () => {
     const [customizations, user] = await Promise.all([
-      fetch("https://raw.githubusercontent.com/OBS-Akuma/KirkaBadges/refs/heads/main/Json/badge.json").then((r) =>
+      fetch("https://juice-api.irrvlo.xyz/api/customizations").then((r) =>
         r.json()
       ),
       fetch(`https://api.kirka.io/api/user`, {
@@ -110,7 +110,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!general_news && !promotional_news && !event_news && !alert_news)
       return;
 
-    let news = await fetch("https://raw.githubusercontent.com/OBS-Akuma/smudgy-client/refs/heads/main/Api/news.json").then((r) =>
+    let news = await fetch("https://juice-api.irrvlo.xyz/api/news").then((r) =>
       r.json()
     );
     if (!news.length) return;
@@ -460,14 +460,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (customs.discord) {
           const linkedBadge = document.createElement("img");
-          linkedBadge.src = "https://raw.githubusercontent.com/OBS-Akuma/KirkaSkins/refs/heads/main/img/linked.webp";
+          linkedBadge.src = "https://juice.irrvlo.xyz/linked.png";
           linkedBadge.style = badgeStyle;
           badgesElem.appendChild(linkedBadge);
         }
 
         if (customs.booster) {
           const boosterBadge = document.createElement("img");
-          boosterBadge.src = "https://raw.githubusercontent.com/OBS-Akuma/KirkaSkins/refs/heads/main/img/booster.webp";
+          boosterBadge.src = "https://juice.irrvlo.xyz/booster.png";
           boosterBadge.style = badgeStyle;
           badgesElem.appendChild(boosterBadge);
         }
@@ -612,7 +612,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           .innerText.replace("#", "");
 
         if (settings.customizations) {
-          const nickname = profile.querySelector(".nickname-span");
+          const nickname = profile.querySelector(".nickname");
           nickname.style.cssText +=
             "display: flex; align-items: flex-end; gap: 0.25rem; overflow: unset !important;";
 
@@ -640,7 +640,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             let badgeStyle = "height: 32px; width: auto;";
 
             if (customs.gradient) {
-              nickname.querySelector(".nickname").style.cssText += `
+              nickname.querySelector(".nickname-span").style.cssText += `
               background: linear-gradient(${customs.gradient.rot
                 }, ${customs.gradient.stops.join(", ")});
               -webkit-background-clip: text;
@@ -652,14 +652,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             if (customs.discord) {
               const linkedBadge = document.createElement("img");
-              linkedBadge.src = "https://raw.githubusercontent.com/OBS-Akuma/KirkaSkins/refs/heads/main/img/linked.webp";
+              linkedBadge.src = "https://juice.irrvlo.xyz/linked.png";
               linkedBadge.style = badgeStyle;
               badgesElem.appendChild(linkedBadge);
             }
 
             if (customs.booster) {
               const boosterBadge = document.createElement("img");
-              boosterBadge.src = "https://raw.githubusercontent.com/OBS-Akuma/KirkaSkins/refs/heads/main/img/booster.webp";
+              boosterBadge.src = "https://juice.irrvlo.xyz/booster.png";
               boosterBadge.style = badgeStyle;
               badgesElem.appendChild(boosterBadge);
             }
@@ -675,44 +675,28 @@ document.addEventListener("DOMContentLoaded", async () => {
           }
         }
 
-        if (shortId && shortId === "Y0N8B5") {
-  // Wait for the profile to load
-  const checkForProfile = setInterval(() => {
-    const profile = document.querySelector(".background.mobile-fullscreen > .profile");
-    if (profile) {
-      clearInterval(checkForProfile);
-      
-      // Check if badge already exists
-      if (profile.querySelector(".juice-dev-badge")) return;
-      
-      profile.style.position = "relative";
+        if (shortId && shortId === "H8N3U4") {
+          const profile = document.querySelector(".profile-cont > .profile");
+          profile.style.position = "relative";
 
-      const div = document.createElement("div");
-      div.className = "juice-dev-badge transfer-list-top-enter transfer-list-top-enter-active";
-      div.style = `
-        position: absolute;
-        bottom: 1rem;
-        left: 1rem;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-      `;
-      div.innerHTML = `
-        <img src="https://raw.githubusercontent.com/OBS-Akuma/KirkaSkins/refs/heads/main/img/booster.webp" style="height: 0.8rem; width: auto;" />
-        <span style="font-size: 1rem; font-weight: 600; color: #fff;">froke Client Developer</span>
-      `;
-      profile.appendChild(div);
-      
-      // Remove juice classes after animation
-      setTimeout(() => {
-        div.className = "juice-dev-badge";
-      }, 300);
-    }
-  }, 250);
-  
-  // Timeout to stop checking after 10 seconds
-  setTimeout(() => clearInterval(checkForProfile), 10000);
-}
+          const div = document.createElement("div");
+          div.style = `
+            position: absolute;
+            bottom: 1rem;
+            left: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+          `;
+          div.innerHTML = `
+          <img src="https://juice.irrvlo.xyz/bubbles.png" style="height: 0.8rem; width: auto;" />
+          <span style="font-size: 1rem; font-weight: 600; color: #fff;"> OG Juice Client Developer</span>
+          `;
+          profile.appendChild(div);
+        }
+      }
+    }, 250);
+  };
 
   const handleInGame = () => {
     let settings = ipcRenderer.sendSync("get-settings");
@@ -821,8 +805,8 @@ document.addEventListener("DOMContentLoaded", async () => {
               }
             };
 
-            if (customs.discord) addBadge("https://raw.githubusercontent.com/OBS-Akuma/KirkaSkins/refs/heads/main/img/linked.webp");
-            if (customs.booster) addBadge("https://raw.githubusercontent.com/OBS-Akuma/KirkaSkins/refs/heads/main/img/booster.webp");
+            if (customs.discord) addBadge("https://juice.irrvlo.xyz/linked.png");
+            if (customs.booster) addBadge("https://juice.irrvlo.xyz/booster.png");
 
             if (customs.badges?.length) {
               customs.badges.forEach((badge) => addBadge(badge));
@@ -1045,14 +1029,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             if (customs.discord) {
               const linkedBadge = document.createElement("img");
-              linkedBadge.src = "https://raw.githubusercontent.com/OBS-Akuma/KirkaSkins/refs/heads/main/img/linked.webp";
+              linkedBadge.src = "https://juice.irrvlo.xyz/linked.png";
               linkedBadge.style.cssText = badgeStyle;
               badgesElem.appendChild(linkedBadge);
             }
 
             if (customs.booster) {
               const boosterBadge = document.createElement("img");
-              boosterBadge.src = "https://raw.githubusercontent.com/OBS-Akuma/KirkaSkins/refs/heads/main/img/booster.webp";
+              boosterBadge.src = "https://juice.irrvlo.xyz/booster.png";
               boosterBadge.style.cssText = badgeStyle;
               badgesElem.appendChild(boosterBadge);
             }

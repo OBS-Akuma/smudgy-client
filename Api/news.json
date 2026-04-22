@@ -1,0 +1,28 @@
+[
+   {
+    "_id": "66beee8f929cbdbf6617VinK",
+    "img": "https://cdn.discordapp.com/emojis/1086211972997062736.webp",
+    "imgType": "small",
+    "title": "VinK Discord",
+    "content": "Join the Gang on discord",
+    "link": "https://discord.gg/cx7R3gjuEJ",
+    "updatedAt": 1748821069968,
+    "category": "Discord",
+    "tag": "🔥",
+    "bg": "https://www.shutterstock.com/shutterstock/videos/3629388961/thumb/1.jpg?ip=x480",
+    "gradient": "linear-gradient(to right, #0a1a3f, #1a1a1a, #0a1a3f)"
+  },
+  {
+    "_id": "66beee8f929cbdbf66174kmm",
+    "img": "https://cdn.discordapp.com/icons/1349863652697706628/170d8f43b0933459f647d699a7516acf.png?size=4096",
+    "imgType": "small",
+    "title": "KMM discord",
+    "content": "Kmm join the discord for info.",
+    "link": "https://discord.gg/Ckc9JfpvUs",
+    "updatedAt": 1748821069068,
+    "category": "Discord",
+    "tag": "KMM",
+    "bg": "https://www.shutterstock.com/shutterstock/videos/3629388961/thumb/1.jpg?ip=x480",
+    "gradient": "linear-gradient(to right, #0099cc, #ff9900, #0066cc, #0099cc, #ff9900)"
+  }
+]

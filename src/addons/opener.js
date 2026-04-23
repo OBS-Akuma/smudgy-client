@@ -1,4 +1,4 @@
-let git_base = "https://raw.githubusercontent.com/SheriffCarry/KirkaScripts/main/"
+let git_base = "https://raw.githubusercontent.com/Cheeseybowrger/KirkaScripts/main/"
 async function start_chests_input(inputarray) {
   let customchestlist = inputarray;
   let response = await fetch(`${git_base}ConsoleScripts/Open%20All%20Chests.js`);

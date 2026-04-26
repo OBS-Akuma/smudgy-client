@@ -1,22 +1,12 @@
 [
   {
-    "category": "promotional",
+    "category": "general",
     "title": "Smudgy.store",
     "content": "You Should use smudgy.store fr",
-    "img": "https://www.smudgy.store/uploads/icon.png",
-    "imgType": "icon",
+    "img": "https://i.ibb.co/kgrwMw83/meow.webp",
+    "imgType": "banner",
     "link": "https://www.smudgy.store/",
-    "updatedAt": 1700000000000,
+    "updatedAt": 172800000,
     "live": false
-  },
-  {
-    "category": "event",
-    "title": "giveaway for Snowglobe",
-    "content": "hosted by sabe, kirka account needs to be linked and verified",
-    "img": "https://api.sillimons.fun/renders/Snowglobe",
-    "imgType": "icon",
-    "link": "https://sillimons.fun/account?tab=support",
-    "updatedAt": 1700000000000,
-    "live": true
   }
 ]

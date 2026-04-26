@@ -1,121 +1,109 @@
-1. Custom Script Loading
-Automatically loads external JavaScript files from a designated scripts directory
+# Kirka Client Features
 
-Error handling for failed script loads
+## Core Features
 
-2. Client Menu & Keybinds
-Configurable menu keybind with visual reminder in lobby
+### Custom Script Loading
+- Automatically loads external JavaScript files from a designated scripts directory
+- Error handling for failed script loads
 
-Dynamic keybind reminder updates when settings change
+### Client Menu and Keybinds
+- Configurable menu keybind with visual reminder in lobby
+- Dynamic keybind reminder updates when settings change
 
-3. Lobby Enhancements
-Lobby News System: Displays customizable news cards (general, promotional, event, alert categories) with images, badges (NEW/LIVE), and clickable links
+## Lobby Enhancements
 
-Custom Discord Button: Replaces social button with a branded Discord invite button
+### Lobby News System
+- Displays customizable news cards (general, promotional, event, alert categories)
+- Includes images, badges (NEW/LIVE), and clickable links
+- Fetches news data from remote repository
 
-Keybind Reminder: Shows current menu keybind at bottom of lobby
+### Custom Discord Button
+- Replaces social button with a branded Discord invite button
 
-4. UI Customization Features
-Persistent Crosshair: Option to keep crosshair always visible
+### Keybind Reminder
+- Shows current menu keybind at bottom of lobby
 
-Permanent Tablist: Always-visible scoreboard with team labels (RED/BLUE)
+## UI Customization Features
 
-Chat Controls: Option to hide chat completely
+### Display Options
+- Persistent crosshair: Option to keep crosshair always visible
+- Permanent tablist: Always-visible scoreboard with team labels (RED/BLUE)
+- Hide chat completely
+- Hide kill text
+- Hide entire interface
 
-Interface Controls: Hide kill text, hide entire interface, adjust opacity, scale interface bounds
+### Visual Effects
+- Adjust interface opacity
+- Scale interface bounds (0.8x, 0.9x, 1x)
+- Skip loading screens
+- Custom hitmarkers: Replace default hitmarker with custom image
+- Custom kill icons: Replace kill icons with custom images
+- Rave mode: Animated hue rotation effect
+- Disable UI animations: Remove all transitions and animations
 
-Skip Loading Screens: Option to hide loading scenes
+## Player Customization System
 
-Custom Hitmarkers: Replace default hitmarker with custom image
+### Name Styling
+- Gradient names with rotation angles and color stops
+- Optional animated gradient effects
 
-Custom Kill Icons: Replace kill icons with custom images
+### Badge System
+- Discord linked badge
+- Booster badge
+- Custom badge images (supports local file paths or URLs)
 
-Rave Mode: Animated hue rotation effect
+## In-Game Features
 
-Disable UI Animations: Remove all transitions/animations
+### Statistics
+- Real-time kill/death ratio display
 
-5. Player Customization System
-Gradient Names: Apply custom gradients to player names with rotation angles and color stops
+### Interface Controls
+- Toggle spectate button visibility
+- Apply customizations to tab and ESC menu player lists
 
-Badge System: Add custom badges to player names (Discord linked, Booster, custom badges)
+## Profile Page Enhancements
+- Displays player customizations (gradient names, badges) on profile pages
+- Shows Discord linked and booster badges
 
-Animated Gradients: Optional animation for gradient effects
+## Servers Page Features
 
-Custom Badge Images: Support for local file paths or URLs
+### Map Display
+- Replaces server list backgrounds with custom map images
+- Fetches map images from remote repository
 
-6. In-Game Features
-K/D Indicator: Real-time kill/death ratio display
+### Navigation
+- Shift-click usernames to navigate to profiles
 
-Spectate Button Toggle: Option to hide spectate button
+## Friends List Features
 
-Customizations in Tab/ESC menus: Applies player customizations to in-game player lists
+### Management
+- Search and filter friends by username or ID
+- Deny all friend requests with confirmation
+- Shift-click friend status to copy game link to clipboard
 
-7. Profile Page Enhancements
-Displays player customizations (gradient names, badges) on profile pages
+### Display
+- Applies badge and gradient customizations to friend list
 
-Shows Discord linked and booster badges
+## Theme System
 
-8. Servers Page Features
-Map Images: Replaces server list backgrounds with custom map images
+### Styling Options
+- External CSS support: Load custom CSS from URLs
+- Custom CSS editor for advanced styling
+- Dynamic theme updates without page reload
 
-Shift+Click Profile Navigation: Shift-click usernames to navigate to profiles
+## Notification System
+- Custom styled notifications for client events
+- IPC-based notification handling
 
-9. Friends List Features
-Search Functionality: Search/filter friends by username or ID
+## Settings Synchronization
+- Listens for settings change events
+- Real-time UI updates based on setting changes
+- Persistent settings via IPC
 
-Friend Requests Management: "Deny All Requests" button with confirmation
+## Element Observation
+- DOM mutation monitoring utility
+- Dynamic content loading detection
 
-Shift+Click Game Links: Shift-click friend status to copy game link
-
-Friend Customizations: Applies badge/gradient customizations to friend list
-
-10. Theme System
-External CSS Support: Load custom CSS from URLs
-
-Custom CSS Editor: Advanced CSS input for custom styling
-
-Dynamic Theme Updates: Real-time theme changes without reload
-
-11. Data Fetching
-Fetches custom badge data from GitHub repository
-
-Fetches current user data from Kirka API
-
-Fetches map images for server display
-
-Fetches news data from GitHub repository
-
-12. Console Management
-Preserves original console methods
-
-Resets console on URL changes
-
-13. Element Observation
-observeForElement utility for DOM mutation monitoring
-
-Dynamic content loading detection
-
-14. Notification System
-Custom styled notifications for client events
-
-IPC-based notification handling
-
-15. Settings Synchronization
-Listens for juice-settings-changed events
-
-Real-time UI updates based on setting changes
-
-Persistent settings via IPC
-
-Visual Customization Options
-Custom chat height adjustment
-
-Interface opacity control
-
-Interface scaling (0.8x, 0.9x, 1x)
-
-CSS theming support
-
-Custom hitmarker images
-
-Custom kill icons
+## Console Management
+- Preserves original console methods
+- Resets console on URL changes

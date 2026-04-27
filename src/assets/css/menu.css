@@ -866,12 +866,10 @@
 .special-message-home {
     display: none !important;
 }
-.left-icons, .left-interface, .right-interface, .play-content, .logo, .team-section, .invite-right, .invite-left1, .invite-left2, .invite-btn {
+.right-interface, .play-content, .logo, .team-section, .invite-right, .invite-left1, .invite-left2, .invite-btn {
   zoom: 0.70;
 }
-.left-icons {
-  height: 1430px !important;
-}
+
 #app>div.interface.text-2>div.background::before {
     content: "Smu dgy";
     font-family: 'pln';

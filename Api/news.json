@@ -1,11 +1,11 @@
 [
   {
     "category": "general",
-    "title": "Smudgy.store",
-    "content": "You Should use smudgy.store fr",
-    "img": "https://i.ibb.co/kgrwMw83/meow.webp",
-    "imgType": "banner",
-    "link": "https://www.smudgy.store/",
+    "title": "Smudgy Extension",
+    "content": "Browser Extension is out !",
+    "img": "https://fonts.gstatic.com/s/i/productlogos/chrome_store/v7/192px.svg",
+    "imgType": "icon",
+    "link": "https://github.com/OBS-Akuma/Smudgy-Extension",
     "updatedAt": 172800000,
     "live": false
   }

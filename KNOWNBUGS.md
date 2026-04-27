@@ -11,3 +11,6 @@ THis is Not a bug so stop saying it is, will be fixed next update.
 # Twitch Login bug
 
 unknown why its doing this
+
+# add special font(s)
+special fonts (per user)

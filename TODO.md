@@ -4,5 +4,6 @@
 - add linking system
 - ~~Fix the chat being to big (make setting)~~
 - Add Clan look up
-- add Inv value.
+- add Inv value
 - add HCK inter like we did with Obsdidanclient. (scopes, css, textures)
+- Add Lobby badges

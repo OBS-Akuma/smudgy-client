@@ -2,4 +2,6 @@
 - move all of the features from the Extension to the cleint
 - Add clan gradient
 - add linking system
-- Fix the chat being to big (make setting)
+- ~~Fix the chat being to big (make setting)~~
+- Add Clan look up
+- add Inv value.

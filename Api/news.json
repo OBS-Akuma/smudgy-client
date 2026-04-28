@@ -13,9 +13,9 @@
     "category": "general",
     "title": "v0.43.9",
     "content": "added bots Re-added sk8 knife only map Changing settings will no longer expose players Added left-handed camera setting Bots can now be added in private and custom rooms Bots will join empty rooms until players join Bots will join or leave to balance team modes A helper bot will replace a player leaving a ranked game Added street 1v1 map AAdded story parkour map added tenebris parkour map",
-    "img": "https://fonts.gstatic.com/s/i/productlogos/chrome_store/v7/192px.svg",
+    "img": "https://kirka.io/assets/img/light-render.2d0e0214.png",
     "imgType": "banner",
-    "link": "https://kirka.io/assets/img/light-render.2d0e0214.png",
+    "link": "https://kirka.io/hub/news",
     "updatedAt": 172800000,
     "live": true
   }

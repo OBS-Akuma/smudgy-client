@@ -7,3 +7,4 @@
 - add Inv value
 - add HCK inter like we did with Obsdidanclient. (scopes, css, textures)
 - Add Lobby badges
+- add sent Friend rq(s) ONLY WORKS / LOGS IF IN CLIENT

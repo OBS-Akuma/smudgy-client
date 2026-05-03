@@ -2,12 +2,12 @@
   {
     "category": "general",
     "title": "Smudgy Extension",
-    "content": "Browser Extension is out ! (download the new Files)",
+    "content": "Browser Extension BIG UPDATE!!! v0.0.5",
     "img": "https://fonts.gstatic.com/s/i/productlogos/chrome_store/v7/192px.svg",
     "imgType": "icon",
-    "link": "https://github.com/OBS-Akuma/Smudgy-Extension",
+    "link": "https://www.smudgy.store/uploads/icon.png",
     "updatedAt": 172800000,
-    "live": false
+    "live": true
   },
     {
     "category": "general",
@@ -17,6 +17,6 @@
     "imgType": "banner",
     "link": "https://kirka.io/hub/news",
     "updatedAt": 172800000,
-    "live": true
+    "live": false
   }
 ]

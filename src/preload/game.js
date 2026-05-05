@@ -310,7 +310,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             discordBtn.className = "card-cont soc-group";
         }
     }, 300);
-};
+  };
 
   const loadTheme = () => {
     const addedStyles = document.createElement("style");
@@ -1029,6 +1029,217 @@ document.addEventListener("DOMContentLoaded", async () => {
   const handleFriends = () => {
     const settings = ipcRenderer.sendSync("get-settings");
 
+    // ─── Pin System ────────────────────────────────────────────────────────────
+    let pinnedUsers = new Set();
+    let pinnedUsersList = [];
+
+    const loadPinnedUsers = () => {
+      const saved = localStorage.getItem("friendsList_pinned_v2");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          pinnedUsersList = parsed;
+          pinnedUsers = new Set(parsed);
+        } catch (e) {
+          console.error("Error loading pins:", e);
+        }
+      }
+    };
+
+    const savePinnedUsers = () => {
+      try {
+        localStorage.setItem("friendsList_pinned_v2", JSON.stringify(pinnedUsersList));
+      } catch (e) {
+        console.error("Error saving pins:", e);
+      }
+    };
+
+    const isPinned = (friendId) => pinnedUsers.has(friendId);
+
+    const getPinSvg = (isPinnedFlag) => {
+      if (isPinnedFlag) {
+        return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: block;">
+          <defs>
+            <linearGradient id="pinGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#ff4d4d"/>
+              <stop offset="100%" stop-color="#ff0000"/>
+            </linearGradient>
+          </defs>
+          <path d="M12 22C12 22 19 15.5 19 10.5C19 6.35786 15.6421 3 11.5 3C7.35786 3 4 6.35786 4 10.5C4 15.5 12 22 12 22Z"
+                fill="url(#pinGradient)" stroke="#b30000" stroke-width="1.2" stroke-linejoin="round"/>
+          <circle cx="11.5" cy="10.5" r="3" fill="#ffffff" stroke="#ff4d4d" stroke-width="1"/>
+        </svg>`;
+      } else {
+        return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: block;">
+          <path d="M12 22C12 22 19 15.5 19 10.5C19 6.35786 15.6421 3 11.5 3C7.35786 3 4 6.35786 4 10.5C4 15.5 12 22 12 22Z"
+                fill="none" stroke="#888888" stroke-width="1.5" stroke-linejoin="round"/>
+          <circle cx="11.5" cy="10.5" r="3" fill="none" stroke="#888888" stroke-width="1.2"/>
+        </svg>`;
+      }
+    };
+
+    const getFriendId = (friendElement) => {
+      const friendIdElem = friendElement.querySelector(".friend-id");
+      return friendIdElem ? friendIdElem.textContent.trim() : null;
+    };
+
+    const sortFriendsList = () => {
+      const listContainer = document.querySelector(".friends .allo .list");
+      if (!listContainer) return;
+
+      const friends = Array.from(listContainer.querySelectorAll(".friend"));
+      if (!friends.length) return;
+
+      const pinnedFriends = friends.filter(f => isPinned(getFriendId(f)));
+      const unpinnedFriends = friends.filter(f => !isPinned(getFriendId(f)));
+      const sorted = [...pinnedFriends, ...unpinnedFriends];
+
+      let needsReorder = sorted.some((f, i) => listContainer.children[i] !== f);
+      if (needsReorder) sorted.forEach(f => listContainer.appendChild(f));
+    };
+
+    const updateAllPinButtons = () => {
+      document.querySelectorAll(".friend-pin-btn").forEach(btn => {
+        const friendId = btn.getAttribute("data-friend-id");
+        if (friendId) btn.innerHTML = getPinSvg(isPinned(friendId));
+      });
+    };
+
+    const togglePin = (friendId) => {
+      if (pinnedUsers.has(friendId)) {
+        pinnedUsers.delete(friendId);
+        const idx = pinnedUsersList.indexOf(friendId);
+        if (idx > -1) pinnedUsersList.splice(idx, 1);
+      } else {
+        pinnedUsers.add(friendId);
+        pinnedUsersList.push(friendId);
+      }
+      savePinnedUsers();
+      sortFriendsList();
+      updateAllPinButtons();
+      return isPinned(friendId);
+    };
+
+    const addPinButton = (friendElement, friendId) => {
+      if (friendElement.querySelector(".friend-pin-btn")) return;
+
+      const friendRight = friendElement.querySelector(".friend-right");
+      if (!friendRight) return;
+
+      const addDelete = friendRight.querySelector(".add-delete");
+      if (!addDelete) return;
+
+      // Skip friend requests (have an ADD button)
+      if (addDelete.querySelector(".add")) return;
+
+      const pinBtn = document.createElement("div");
+      pinBtn.className = "friend-pin-btn";
+      pinBtn.setAttribute("data-friend-id", friendId);
+      pinBtn.style.cssText = `
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+        background-color: transparent;
+        margin-right: 8px;
+        vertical-align: middle;
+      `;
+      pinBtn.innerHTML = getPinSvg(isPinned(friendId));
+
+      pinBtn.addEventListener("mouseenter", () => { pinBtn.style.transform = "scale(1.1)"; });
+      pinBtn.addEventListener("mouseleave", () => { pinBtn.style.transform = "scale(1)"; });
+      pinBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const newState = togglePin(friendId);
+        pinBtn.innerHTML = getPinSvg(newState);
+      });
+
+      const deleteBtn = addDelete.querySelector(".delete");
+      if (deleteBtn) addDelete.insertBefore(pinBtn, deleteBtn);
+    };
+
+    const processFriendsList = () => {
+      const listContainer = document.querySelector(".friends .allo .list");
+      if (!listContainer) return;
+      listContainer.querySelectorAll(".friend").forEach(friend => {
+        const friendId = getFriendId(friend);
+        if (friendId) addPinButton(friend, friendId);
+      });
+      sortFriendsList();
+    };
+
+    // ─── Spectate Buttons ──────────────────────────────────────────────────────
+    const addSpectateButton = (div) => {
+      if (div.nextElementSibling?.classList.contains("spectate-eye")) return;
+
+      const match = div.textContent.match(/\[(.*?)\]/);
+      const code = match ? match[1] : null;
+      if (!code) return;
+
+      const eyeDiv = document.createElement("div");
+      eyeDiv.className = "spectate-eye";
+      eyeDiv.innerHTML = '<i class="fa-solid fa-eye"></i>';
+      eyeDiv.style.cssText = `
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 8px;
+        padding: 4px;
+        background: #2f3957;
+        border-radius: 4px;
+        color: #ffb914;
+        transition: all 0.2s ease;
+      `;
+
+      eyeDiv.addEventListener("mouseenter", () => {
+        eyeDiv.style.background = "#3e4d7c";
+        eyeDiv.style.transform = "scale(1.05)";
+      });
+      eyeDiv.addEventListener("mouseleave", () => {
+        eyeDiv.style.background = "#2f3957";
+        eyeDiv.style.transform = "scale(1)";
+      });
+
+      div.insertAdjacentElement("afterend", eyeDiv);
+
+      eyeDiv.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const homeBtn = document.querySelector(".home");
+        if (homeBtn) homeBtn.click();
+
+        setTimeout(() => {
+          const joinBtn = document.querySelector(".join-btn");
+          if (joinBtn) joinBtn.click();
+
+          setTimeout(() => {
+            const input = document.querySelector(".input");
+            if (input) {
+              input.value = code;
+              input.dispatchEvent(new Event("input", { bubbles: true }));
+              const modalJoinBtn = document.querySelector(".btn:nth-child(2)");
+              if (modalJoinBtn) modalJoinBtn.click();
+            }
+          }, 500);
+        }, 500);
+      });
+
+      return eyeDiv;
+    };
+
+    const addSpectateButtons = () => {
+      document.querySelectorAll(".online").forEach((div) => {
+        if (div.textContent.trim().toLowerCase().includes("in game")) {
+          addSpectateButton(div);
+        }
+      });
+    };
+
+    // ─── Existing friends logic ────────────────────────────────────────────────
     document.addEventListener("click", (e) => {
       if (e.shiftKey && e.target.classList.contains("online")) {
         const online = e.target;
@@ -1042,6 +1253,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
       }
     });
+
+    // Load saved pins before the interval starts
+    loadPinnedUsers();
 
     const interval = setInterval(() => {
       if (!window.location.href.startsWith(`${base_url}friends`))
@@ -1249,7 +1463,39 @@ document.addEventListener("DOMContentLoaded", async () => {
           }
         });
       }
+
+      // Process pin buttons and spectate buttons each tick
+      processFriendsList();
+      addSpectateButtons();
     }, 250);
+
+    // Also watch for DOM mutations to catch dynamically added friends
+    const friendsContainer = document.querySelector(".friends");
+    if (friendsContainer) {
+      const friendsMutationObserver = new MutationObserver(() => {
+        processFriendsList();
+        addSpectateButtons();
+      });
+      friendsMutationObserver.observe(friendsContainer, { childList: true, subtree: true });
+    }
+
+    // Save pins before the page unloads
+    window.addEventListener("beforeunload", savePinnedUsers);
+
+    // Expose pin system utilities globally for debugging
+    window.pinSystem = {
+      refresh: () => processFriendsList(),
+      getPinned: () => [...pinnedUsersList],
+      clearPinned: () => {
+        pinnedUsers.clear();
+        pinnedUsersList = [];
+        savePinnedUsers();
+        processFriendsList();
+        updateAllPinButtons();
+      },
+      save: () => savePinnedUsers(),
+      load: () => loadPinnedUsers(),
+    };
   };
 
   const customNotification = (data) => {

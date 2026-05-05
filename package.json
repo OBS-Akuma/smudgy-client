@@ -1,6 +1,6 @@
 {
   "name": "smudgy-client",
-  "version": "0.0.1",
+  "version": "0.0.6",
   "description": "Electron client for Kirka.io",
   "main": "src/main.js",
   "scripts": {

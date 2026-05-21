@@ -7,7 +7,7 @@
 - ~~Fix chat being too big (make setting)~~
 - Add clan lookup
 - Add inventory value
-- Add KCH* integration like **we** did with ObsidianClient (scopes, CSS, textures)
+- ~~Add KCH* integration like **we** did with ObsidianClient (scopes, CSS, textures)~~
 - Add lobby badges
 - Add sent friend requests, only works/logs if in client
 - Add wanted poster badge to the ID (#WANTED)

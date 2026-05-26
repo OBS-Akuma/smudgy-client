@@ -21,6 +21,7 @@
 - ~~add open sound folder/file~~
 - ~~add custom End game message (e.g, gg, Good game)~~
 - ~~Make simple lobby invite btns~~
+- make it so users can login with froke then upload / download all needed files. (this will auto upload settings ect.)
 
 <img width="1442" height="827" alt="image" src="https://github.com/user-attachments/assets/6190aba8-8b5d-42ac-a2f7-d17eb2779ac0" />
 

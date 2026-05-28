@@ -1,4 +1,4 @@
-appId: xyz.freaksforever
+appId: store.smudgy.client
 productName: Smudgy Client
 directories:
   output: "build"

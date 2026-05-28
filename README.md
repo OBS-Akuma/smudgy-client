@@ -50,8 +50,12 @@
    * custom Shortids (e.g., FURRIE, GLOWIN)
 * User Interface
    * Friend Search
+   * subnames (stupid verified ppl keep making there names stupid shit like sigma, so this feature allows users to know who is who) contribute @ [this cool link ](https://github.com/OBS-Akuma/KirkaBadges/blob/main/Json/subnames.json)
    * Shift click to open user profile
    * helpful links in About
+   * preview game images
+   * News Card(s)
+   * Simple Invite btns
 
 ## To use the swapper:
 1. Make sure you enabled it in the menu modal settings section

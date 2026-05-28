@@ -31,7 +31,8 @@
     "custom_list_price": false,
     "endgame_message_enabled": false,
     "endgame_message_text": "Good Game",
-    "simple_invite_btns": false
+    "simple_invite_btns": false,
+    "always_show_ingame_menu": false
   },
   "allowed_urls": [
     "https://kirka.io/",

@@ -10,6 +10,16 @@
     "live": false
   },
   {
+    "category": "general",
+    "title": "A New Special drop is live!",
+    "content": "Earn this By watching 15 hours of snipergecko",
+    "img": "https://kirka.io/assets/img/render-mini.a1024de6.webp",
+    "imgType": "icon",
+    "link": "https://www.twitch.tv/sniper_gecko",
+    "updatedAt": 172800000,
+    "live": false
+  },
+  {
     "category": "MenuNews",
     "title": "Meow",
     "content": "Super cool test",

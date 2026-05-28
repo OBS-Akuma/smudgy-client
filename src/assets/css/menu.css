@@ -1,5 +1,6 @@
 @import url("https://fonts.cdnfonts.com/css/satoshi");
 @import url("https://irrvlo.xyz/nameless-font.css");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Poppins:wght@400;600&family=Montserrat:wght@400;600&family=JetBrains+Mono:wght@400;600&family=Press+Start+2P&display=swap");
 
 .menu[data-theme="smudgy"] {
     --dark: 10, 10, 15;
@@ -109,7 +110,9 @@
 }
 
 .menu[data-theme="kirka-arena"] {
-    background: linear-gradient(to bottom left, rgb(0, 141, 0), rgb(19, 51, 1));
+    background: linear-gradient(to bottom left,
+        rgba(0, 141, 0, var(--menu-bg-alpha, 1)),
+        rgba(19, 51, 1, var(--menu-bg-alpha, 1)));
     --dark: 8, 96, 4;
     --light: 255, 255, 255;
     --orange: 11, 197, 6;
@@ -197,8 +200,8 @@
 
 .menu[data-theme="legacy"] {
     background: linear-gradient(to bottom,
-            rgba(var(--green), 0.8),
-            rgba(var(--orange), 0.8));
+            rgba(var(--green), calc(0.8 * var(--menu-bg-alpha, 1))),
+            rgba(var(--orange), calc(0.8 * var(--menu-bg-alpha, 1))));
     backdrop-filter: blur(5px);
     --dark: 255, 255, 255;
     --light: 255, 255, 255;
@@ -217,6 +220,54 @@
 
 .menu[data-theme="legacy"] option {
     color: black;
+}
+
+.menu[data-theme="custom"] {
+    --dark: 10, 10, 15;
+    --light: 255, 255, 255;
+    --orange: 26, 142, 80;
+    --green: 26, 142, 80;
+    --blue: 26, 142, 80;
+    --red: 220, 53, 69;
+    --hover-dark: 31, 31, 31;
+    --hover-light: 255, 255, 255, 0.05;
+    --border: 255, 255, 255, 0.15;
+    --border-active: 255, 255, 255, 0.25;
+    --shadow: 0, 0, 0, 0.5;
+    --opacity-half: 255, 255, 255, 0.5;
+    --opacity-quarter: 255, 255, 255, 0.25;
+}
+
+.menu input[type="color"] {
+    width: 3rem;
+    height: 2rem;
+    border: 0.1rem solid rgba(var(--border));
+    border-radius: 0.25rem;
+    background: rgba(var(--dark), 0.1);
+    cursor: pointer;
+    padding: 0.15rem;
+    appearance: none;
+    outline: none;
+}
+
+.menu input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+.menu input[type="color"]::-webkit-color-swatch {
+    border: none;
+    border-radius: 0.15rem;
+}
+
+.menu .custom-font-buttons {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.menu .custom-font-buttons .juice-button {
+    width: auto;
+    padding: 0 1rem;
 }
 
 .menu ::-webkit-scrollbar {
@@ -254,17 +305,41 @@
 .menu {
     font-family: "Satoshi", sans-serif;
     display: none;
-    width: 55rem;
-    height: 36rem;
-    background: rgba(var(--dark), 1);
+    width: 1100px;
+    height: 720px;
+    position: relative;
+    background: rgba(var(--dark), var(--menu-bg-alpha, 1));
+    backdrop-filter: blur(8px);
     border-radius: 0.75rem;
     border: 1px solid rgba(var(--border));
     box-shadow: 0 0 1rem rgba(var(--shadow));
     color: rgba(var(--light), 1);
     grid-template-columns: 1fr 3fr;
     grid-template-areas: "sidebar content";
-    transition: 0.3s;
     z-index: 9999;
+}
+
+.menu .menu-header {
+    position: absolute;
+    top: -1.1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(var(--dark), 1);
+    border: 1px solid rgba(var(--border));
+    border-radius: 0.5rem;
+    padding: 0.35rem 1.75rem;
+    color: rgba(var(--light), 1);
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: grab;
+    user-select: none;
+    z-index: 10;
+    box-shadow: 0 0 0.5rem rgba(var(--shadow));
+    white-space: nowrap;
+}
+
+.menu .menu-header:active {
+    cursor: grabbing;
 }
 
 .menu[data-active="true"] {
@@ -996,6 +1071,48 @@
     border-radius: 0.25rem;
     padding: 2px 5px;
     font-size: 0.6rem;
+}
+
+.asset-favorite {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 1.6rem;
+    height: 1.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    border-radius: 50%;
+    color: rgba(255, 255, 255, 0.85);
+    cursor: pointer;
+    font-size: 0.8rem;
+    z-index: 3;
+    transition: background 0.15s, color 0.15s, transform 0.1s;
+    padding: 0;
+}
+
+.asset-favorite:hover {
+    background: rgba(0, 0, 0, 0.75);
+    transform: scale(1.08);
+}
+
+.asset-favorite.active {
+    color: rgb(255, 200, 60);
+    background: rgba(0, 0, 0, 0.65);
+}
+
+.asset-fav-section-header {
+    grid-column: 1 / -1;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgba(var(--opacity-half));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.5rem 0 0.25rem;
+    border-bottom: 1px solid rgba(var(--border));
+    margin-bottom: 0.25rem;
 }
 
 .asset-info {

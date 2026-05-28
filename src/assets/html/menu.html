@@ -4,6 +4,9 @@
 />
 
 <div class="menu" data-theme="dark" data-active="true">
+  <div class="menu-header">
+    <span class="title">Smudgy Client</span>
+  </div>
   <aside class="sidebar">
     <div class="search-input">
       <i class="fas fa-search"></i>
@@ -120,6 +123,52 @@
             />
             <label for="ui_animations"></label>
           </div>
+        </div>
+        <div class="option">
+          <div class="left">
+            <span>Hide Smudgy Watermark</span>
+            <span class="description">Remove the watermark overlay on the lobby</span>
+          </div>
+          <div class="checkbox">
+            <input
+              type="checkbox"
+              id="hide_smudgy_watermark"
+              data-setting="hide_smudgy_watermark"
+            />
+            <label for="hide_smudgy_watermark"></label>
+          </div>
+        </div>
+        <div class="option">
+          <div class="left">
+            <span>Watermark Text</span>
+            <span class="description">Custom text for the lobby overlay</span>
+          </div>
+          <input
+            type="text"
+            placeholder="Smu.__.dgy"
+            data-setting="watermark_text"
+          />
+        </div>
+        <div class="option">
+          <div class="left">
+            <span>Watermark Color</span>
+            <span class="description">Leave default for theme color</span>
+          </div>
+          <input type="color" data-setting="watermark_color" />
+        </div>
+        <div class="option">
+          <div class="left">
+            <span>Watermark Size</span>
+            <span class="description">In rem (1–12)</span>
+          </div>
+          <input
+            type="range"
+            min="1"
+            max="12"
+            step="0.1"
+            class="range"
+            data-setting="watermark_size"
+          />
         </div>
       </div>
       <div class="option-group">
@@ -388,7 +437,87 @@
             <option value="catppuccin-mocha">Catppuccin Mocha</option>
             <option value="flexoki">Flexoki</option>
             <option value="legacy">Legacy</option>
+            <option value="custom">Custom</option>
           </select>
+        </div>
+        <div class="option">
+          <div class="left">
+            <span>Menu Opacity</span>
+            <span class="description">0 = transparent, 100 = solid</span>
+          </div>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            class="range"
+            data-setting="menu_opacity"
+          />
+        </div>
+      </div>
+      <div class="option-group custom-theme-only" id="custom-theme-options" style="display: none;">
+        <div class="option">
+          <div class="left">
+            <span>Background Color</span>
+            <span class="description">Main menu surface</span>
+          </div>
+          <input type="color" data-setting="custom_theme_bg" />
+        </div>
+        <div class="option">
+          <div class="left">
+            <span>Text Color</span>
+            <span class="description">All readable text</span>
+          </div>
+          <input type="color" data-setting="custom_theme_text" />
+        </div>
+        <div class="option">
+          <div class="left">
+            <span>Accent Color</span>
+            <span class="description">Toggles, slider thumbs, highlights</span>
+          </div>
+          <input type="color" data-setting="custom_theme_accent" />
+        </div>
+        <div class="option">
+          <div class="left">
+            <span>Border Color</span>
+            <span class="description">Borders and dividers</span>
+          </div>
+          <input type="color" data-setting="custom_theme_border" />
+        </div>
+        <div class="option">
+          <div class="left">
+            <span>Danger Color</span>
+            <span class="description">Reset button, "Requires Restart" tag</span>
+          </div>
+          <input type="color" data-setting="custom_theme_danger" />
+        </div>
+        <div class="option">
+          <span>Font</span>
+          <select data-setting="custom_theme_font">
+            <option value="satoshi">Satoshi (default)</option>
+            <option value="inter">Inter</option>
+            <option value="poppins">Poppins</option>
+            <option value="montserrat">Montserrat</option>
+            <option value="jetbrains-mono">JetBrains Mono</option>
+            <option value="press-start-2p">Press Start 2P</option>
+            <option value="forza">Forza</option>
+            <option value="custom">Custom (Uploaded)</option>
+          </select>
+        </div>
+        <div class="option custom">
+          <div class="left">
+            <span>Custom Font File</span>
+            <span class="description" id="custom-font-status">None uploaded</span>
+          </div>
+          <div class="custom-font-buttons">
+            <button id="upload-custom-font" class="juice-button">
+              <span class="text">Upload Font</span>
+              <div class="custom-border"></div>
+            </button>
+            <button id="remove-custom-font" class="juice-button" style="display: none;">
+              <span class="text">Remove</span>
+              <div class="custom-border"></div>
+            </button>
+          </div>
         </div>
       </div>
       <div class="option-group">
@@ -756,6 +885,9 @@
           <div class="assets-tab active" data-assets-tab="css">CSS</div>
           <div class="assets-tab" data-assets-tab="textures">Textures</div>
           <div class="assets-tab" data-assets-tab="crosshairs">Crosshairs</div>
+          <div class="assets-tab" data-assets-tab="favorites">
+            <i class="fas fa-star"></i> Favorites
+          </div>
         </div>
       </div>
       <div class="option-group assets-grid-group">

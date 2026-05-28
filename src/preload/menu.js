@@ -33,8 +33,7 @@ class Menu {
     const menu = document.createElement("div");
     menu.innerHTML = this.menuHTML;
     menu.id = "juice-menu";
-    menu.style.cssText =
-      "z-index: 99999999; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);";
+    menu.style.cssText = "z-index: 99999999; position: fixed;";
     const menuCSS = document.createElement("style");
     menuCSS.innerHTML = this.menuCSS;
     menu.prepend(menuCSS);
@@ -56,6 +55,8 @@ class Menu {
     this.handleDropdowns();
     this.handleSearch();
     this.handleButtons();
+    this.handleCustomTheme();
+    this.handleDragAndPosition();
     this.handleAboutLinks();
     this.initAssets();
     this.initNews();
@@ -99,9 +100,292 @@ class Menu {
   }
 
   setTheme() {
-    this.menu
-      .querySelector(".menu")
-      .setAttribute("data-theme", this.settings.menu_theme);
+    const menuEl = this.menu.querySelector(".menu");
+    menuEl.setAttribute("data-theme", this.settings.menu_theme);
+
+    const customPanel = this.menu.querySelector("#custom-theme-options");
+    if (customPanel) {
+      customPanel.style.display =
+        this.settings.menu_theme === "custom" ? "flex" : "none";
+    }
+
+    this.applyCustomTheme();
+    this.applyMenuOpacity();
+  }
+
+  applyMenuOpacity() {
+    const menuEl = this.menu.querySelector(".menu");
+    if (!menuEl) return;
+    const raw = parseInt(this.settings.menu_opacity, 10);
+    const alpha = (isNaN(raw) ? 100 : raw) / 100;
+    menuEl.style.setProperty("--menu-bg-alpha", alpha);
+  }
+
+  applyCustomTheme() {
+    const menuEl = this.menu.querySelector(".menu");
+    if (!menuEl) return;
+
+    if (this.settings.menu_theme !== "custom") {
+      const props = [
+        "font-family",
+        "--dark",
+        "--light",
+        "--orange",
+        "--green",
+        "--blue",
+        "--red",
+        "--hover-dark",
+        "--hover-light",
+        "--border",
+        "--border-active",
+        "--shadow",
+        "--opacity-half",
+        "--opacity-quarter",
+      ];
+      for (const p of props) menuEl.style.removeProperty(p);
+      if (this._customThemeStyleEl) {
+        this._customThemeStyleEl.innerHTML = "";
+      }
+      return;
+    }
+
+    const hexToRgb = (hex) => {
+      const v = (hex || "#000000").replace("#", "");
+      return [
+        parseInt(v.substring(0, 2), 16) || 0,
+        parseInt(v.substring(2, 4), 16) || 0,
+        parseInt(v.substring(4, 6), 16) || 0,
+      ];
+    };
+
+    const [br, bg, bb] = hexToRgb(this.settings.custom_theme_bg);
+    const [tr, tg, tb] = hexToRgb(this.settings.custom_theme_text);
+    const [ar, ag, ab] = hexToRgb(this.settings.custom_theme_accent);
+    const [borderR, borderG, borderB] = hexToRgb(
+      this.settings.custom_theme_border
+    );
+    const [dr, dg, db] = hexToRgb(this.settings.custom_theme_danger);
+
+    const lerp = (a, b, t) => Math.round(a + (b - a) * t);
+    const hr = lerp(br, tr, 0.06);
+    const hg = lerp(bg, tg, 0.06);
+    const hb = lerp(bb, tb, 0.06);
+
+    menuEl.style.setProperty("--dark", `${br}, ${bg}, ${bb}`);
+    menuEl.style.setProperty("--light", `${tr}, ${tg}, ${tb}`);
+    menuEl.style.setProperty("--orange", `${ar}, ${ag}, ${ab}`);
+    menuEl.style.setProperty("--green", `${ar}, ${ag}, ${ab}`);
+    menuEl.style.setProperty("--blue", `${ar}, ${ag}, ${ab}`);
+    menuEl.style.setProperty("--red", `${dr}, ${dg}, ${db}`);
+    menuEl.style.setProperty("--hover-dark", `${hr}, ${hg}, ${hb}`);
+    menuEl.style.setProperty("--hover-light", `${tr}, ${tg}, ${tb}, 0.05`);
+    menuEl.style.setProperty(
+      "--border",
+      `${borderR}, ${borderG}, ${borderB}, 0.15`
+    );
+    menuEl.style.setProperty(
+      "--border-active",
+      `${borderR}, ${borderG}, ${borderB}, 0.25`
+    );
+    menuEl.style.setProperty("--opacity-half", `${tr}, ${tg}, ${tb}, 0.5`);
+    menuEl.style.setProperty("--opacity-quarter", `${tr}, ${tg}, ${tb}, 0.25`);
+
+    const fontFamily = this.resolveCustomFontFamily();
+    menuEl.style.fontFamily = `"${fontFamily}", sans-serif`;
+    this.refreshCustomFontStyle(fontFamily);
+  }
+
+  resolveCustomFontFamily() {
+    const FONTS = {
+      satoshi: "Satoshi",
+      inter: "Inter",
+      poppins: "Poppins",
+      montserrat: "Montserrat",
+      "jetbrains-mono": "JetBrains Mono",
+      "press-start-2p": "Press Start 2P",
+      forza: "Forza",
+    };
+    const key = this.settings.custom_theme_font;
+    if (key === "custom") {
+      const customPath = this.settings.custom_theme_custom_font;
+      if (customPath) {
+        return path.basename(customPath).replace(/\.[^.]+$/, "");
+      }
+      return "Satoshi";
+    }
+    return FONTS[key] || "Satoshi";
+  }
+
+  refreshCustomFontStyle(fontFamily) {
+    if (!this._customThemeStyleEl) {
+      this._customThemeStyleEl = document.createElement("style");
+      this._customThemeStyleEl.id = "juice-custom-theme-style";
+      document.head.appendChild(this._customThemeStyleEl);
+    }
+
+    let css = "";
+    const customPath = this.settings.custom_theme_custom_font;
+    if (customPath) {
+      const uploadedFamily = path
+        .basename(customPath)
+        .replace(/\.[^.]+$/, "");
+      const url = "file:///" + customPath.replace(/\\/g, "/");
+      css += `@font-face { font-family: "${uploadedFamily}"; src: url("${url}"); }\n`;
+    }
+
+    css += `.menu[data-theme="custom"], .menu[data-theme="custom"] input, .menu[data-theme="custom"] textarea, .menu[data-theme="custom"] select, .menu[data-theme="custom"] button, .menu[data-theme="custom"] .change-keybind { font-family: "${fontFamily}", sans-serif !important; }\n`;
+
+    this._customThemeStyleEl.innerHTML = css;
+  }
+
+  handleCustomTheme() {
+    const statusEl = this.menu.querySelector("#custom-font-status");
+    const removeBtn = this.menu.querySelector("#remove-custom-font");
+    const uploadBtn = this.menu.querySelector("#upload-custom-font");
+    if (!uploadBtn) return;
+
+    const refreshStatus = () => {
+      const p = this.settings.custom_theme_custom_font;
+      if (p) {
+        statusEl.innerText = path.basename(p);
+        removeBtn.style.display = "";
+      } else {
+        statusEl.innerText = "None uploaded";
+        removeBtn.style.display = "none";
+      }
+    };
+
+    refreshStatus();
+
+    uploadBtn.addEventListener("click", async () => {
+      const result = await ipcRenderer.invoke("upload-custom-font");
+      if (!result) return;
+      this.settings.custom_theme_custom_font = result;
+      ipcRenderer.send("update-setting", "custom_theme_custom_font", result);
+      refreshStatus();
+      this.applyCustomTheme();
+    });
+
+    removeBtn.addEventListener("click", async () => {
+      await ipcRenderer.invoke(
+        "remove-custom-font",
+        this.settings.custom_theme_custom_font
+      );
+      this.settings.custom_theme_custom_font = "";
+      ipcRenderer.send("update-setting", "custom_theme_custom_font", "");
+      refreshStatus();
+      this.applyCustomTheme();
+    });
+  }
+
+  handleDragAndPosition() {
+    const wrapper = this.menu;
+    const menuEl = this.menu.querySelector(".menu");
+    const header = this.menu.querySelector(".menu-header");
+    if (!menuEl) return;
+
+    const getMenuSize = () => {
+      const w =
+        menuEl.offsetWidth ||
+        parseInt(getComputedStyle(menuEl).width, 10) ||
+        1100;
+      const h =
+        menuEl.offsetHeight ||
+        parseInt(getComputedStyle(menuEl).height, 10) ||
+        720;
+      return { w, h };
+    };
+
+    let positioned = false;
+    try {
+      const savedPos = JSON.parse(
+        this.localStorage.getItem("juice-menu-pos") || "null"
+      );
+      if (savedPos) {
+        const { w, h } = getMenuSize();
+        const maxLeft = Math.max(0, window.innerWidth - w);
+        const maxTop = Math.max(0, window.innerHeight - h);
+        wrapper.style.left =
+          Math.max(0, Math.min(maxLeft, savedPos.left)) + "px";
+        wrapper.style.top =
+          Math.max(0, Math.min(maxTop, savedPos.top)) + "px";
+        positioned = true;
+      }
+    } catch {}
+
+    if (!positioned) {
+      const { w, h } = getMenuSize();
+      wrapper.style.left = Math.max(0, (window.innerWidth - w) / 2) + "px";
+      wrapper.style.top = Math.max(0, (window.innerHeight - h) / 2) + "px";
+    }
+
+    if (!header) return;
+    header.addEventListener("mousedown", (e) => {
+      if (e.button !== 0) return;
+      e.preventDefault();
+
+      const startX = e.clientX;
+      const startY = e.clientY;
+      const startLeft = parseInt(wrapper.style.left, 10) || 0;
+      const startTop = parseInt(wrapper.style.top, 10) || 0;
+
+      const onMove = (ev) => {
+        wrapper.style.left = startLeft + (ev.clientX - startX) + "px";
+        wrapper.style.top = startTop + (ev.clientY - startY) + "px";
+      };
+
+      const onUp = () => {
+        document.removeEventListener("mousemove", onMove);
+        document.removeEventListener("mouseup", onUp);
+        this.localStorage.setItem(
+          "juice-menu-pos",
+          JSON.stringify({
+            left: parseInt(wrapper.style.left, 10) || 0,
+            top: parseInt(wrapper.style.top, 10) || 0,
+          })
+        );
+      };
+
+      document.addEventListener("mousemove", onMove);
+      document.addEventListener("mouseup", onUp);
+    });
+  }
+
+  applyWatermark() {
+    const id = "juice-watermark-style";
+    const existing = document.getElementById(id);
+    if (existing) existing.remove();
+
+    if (this.settings.hide_smudgy_watermark) {
+      const style = document.createElement("style");
+      style.id = id;
+      style.textContent = `
+        #app > div.interface.text-2 > div.background::before {
+          content: "" !important;
+          display: none !important;
+        }
+      `;
+      document.head.appendChild(style);
+      return;
+    }
+
+    const text = this.settings.watermark_text || "Smu.__.dgy";
+    const color = this.settings.watermark_color || "";
+    const size = this.settings.watermark_size || "6.9";
+
+    const escapedText = text.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+    const rules = [`content: "${escapedText}" !important`];
+    if (color) rules.push(`color: ${color} !important`);
+    if (size) rules.push(`font-size: ${size}rem !important`);
+
+    const style = document.createElement("style");
+    style.id = id;
+    style.textContent = `
+      #app > div.interface.text-2 > div.background::before {
+        ${rules.join(";\n        ")};
+      }
+    `;
+    document.head.appendChild(style);
   }
 
   handleKeyEvents() {
@@ -161,6 +445,8 @@ class Menu {
     if (this.settings["simple_invite_btns"]) {
       this.injectSimpleInviteBtns();
     }
+
+    this.applyWatermark();
   }
 
   applyServerZoom(value) {
@@ -229,6 +515,23 @@ class Menu {
         if (existing) existing.remove();
       }
     }
+
+    if (setting && setting.startsWith("custom_theme_")) {
+      this.applyCustomTheme();
+    }
+
+    if (setting === "menu_opacity") {
+      this.applyMenuOpacity();
+    }
+
+    if (
+      setting === "hide_smudgy_watermark" ||
+      setting === "watermark_text" ||
+      setting === "watermark_color" ||
+      setting === "watermark_size"
+    ) {
+      this.applyWatermark();
+    }
   }
 
   handleMenuInputChanges() {
@@ -236,7 +539,8 @@ class Menu {
     const textareas = this.menu.querySelectorAll("textarea[data-setting]");
 
     inputs.forEach((input) => {
-      const eventType = input.type === "range" ? "input" : "change";
+      const eventType =
+        input.type === "range" || input.type === "color" ? "input" : "change";
       input.addEventListener(eventType, () => this.handleMenuInputChange(input));
     });
 
@@ -259,6 +563,10 @@ class Menu {
 
     if (setting === "menu_theme") {
       this.setTheme();
+    }
+
+    if (setting && setting.startsWith("custom_theme_")) {
+      this.applyCustomTheme();
     }
 
     document.dispatchEvent(event);
@@ -689,11 +997,46 @@ class Menu {
     const TEXTURE_KEY = "SETTINGS___SETTING/BLOCKS___SETTING/TEXTURE_URL___SETTING";
     const CROSSHAIR_KEY = "SETTINGS___SETTING/SNIPER___SETTING/SCOPE_URL___SETTING";
 
+    const FAV_KEY = "juice-asset-favorites";
+    const DAYMIAN_BASE = "https://css.daymian.xyz";
+    const DAYMIAN_EXCLUDED = new Set([
+      "pink",
+      "purp",
+      "uwu",
+      "wolfey",
+      "jett",
+      "monochrome",
+    ]);
+
     let textureData = [];
     let crosshairData = [];
     let cssData = [];
     let currentType = "css";
     let loaded = false;
+
+    let favorites;
+    try {
+      favorites = new Set(JSON.parse(localStorage.getItem(FAV_KEY) || "[]"));
+    } catch {
+      favorites = new Set();
+    }
+
+    const favKey = (type, id) => `${type}:${id}`;
+    const isFav = (type, id) => favorites.has(favKey(type, id));
+    const saveFavs = () => {
+      localStorage.setItem(FAV_KEY, JSON.stringify(Array.from(favorites)));
+    };
+    const toggleFav = (type, id) => {
+      const key = favKey(type, id);
+      if (favorites.has(key)) favorites.delete(key);
+      else favorites.add(key);
+      saveFavs();
+    };
+    const sortByFav = (data, type, getId) =>
+      [...data].sort(
+        (a, b) =>
+          (isFav(type, getId(b)) ? 1 : 0) - (isFav(type, getId(a)) ? 1 : 0)
+      );
 
     const getEls = () => ({
       grid: this.menu.querySelector("#assets-grid"),
@@ -701,77 +1044,200 @@ class Menu {
       tabs: this.menu.querySelectorAll(".assets-tab"),
     });
 
+    const showReloadToast = () => {
+      const existing = this.menu.querySelector("#assets-reload-toast");
+      if (existing) return;
+      const toast = document.createElement("div");
+      toast.id = "assets-reload-toast";
+      toast.innerHTML = `
+        <i class="fas fa-rotate-right"></i>
+        <span>Reload the page for changes to apply</span>
+        <button class="toast-reload-btn">Reload</button>
+      `;
+      this.menu.querySelector("#assets-options").prepend(toast);
+      toast.querySelector(".toast-reload-btn").addEventListener("click", () => {
+        location.reload();
+      });
+    };
+
+    const buildAssetCard = (item, type) => {
+      const imgSrc =
+        type === "textures" ? item.textureImage : item.Crosshair;
+      if (!imgSrc) return null;
+      const storageKey =
+        type === "textures" ? TEXTURE_KEY : CROSSHAIR_KEY;
+      const favActive = isFav(type, item.id);
+
+      const card = document.createElement("div");
+      card.className = "asset-card";
+      if (item.label === "featured") card.classList.add("featured");
+
+      card.innerHTML = `
+        <div class="asset-img-wrap">
+          <img src="${imgSrc}" alt="${item.id}" />
+          <button class="asset-favorite ${favActive ? "active" : ""}" title="${favActive ? "Unfavorite" : "Favorite"}">
+            <i class="fas fa-star"></i>
+          </button>
+          ${item.label === "featured" ? `<div class="asset-badge"><i class="fas fa-star"></i></div>` : ""}
+        </div>
+        <div class="asset-info">
+          <span class="asset-id">${item.id}</span>
+          <span class="asset-owner">${item.owner || "Unknown"}</span>
+          ${item.tags && item.tags.length ? `<div class="asset-tags">${item.tags.map(t => `<span class="asset-tag">${t}</span>`).join("")}</div>` : ""}
+        </div>
+        <button class="asset-apply juice-button">
+          <span class="text">Apply</span>
+          <div class="custom-border"></div>
+        </button>
+      `;
+
+      const favBtn = card.querySelector(".asset-favorite");
+      favBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleFav(type, item.id);
+        favBtn.classList.toggle("active");
+        favBtn.title = favBtn.classList.contains("active")
+          ? "Unfavorite"
+          : "Favorite";
+        if (currentType === "favorites") renderGrid("favorites");
+      });
+
+      card.querySelector(".asset-apply").addEventListener("click", () => {
+        localStorage.setItem(storageKey, JSON.stringify(imgSrc));
+        const btn = card.querySelector(".asset-apply .text");
+        btn.innerText = "Applied!";
+        card.classList.add("applied");
+        showReloadToast();
+        setTimeout(() => {
+          btn.innerText = "Apply";
+          card.classList.remove("applied");
+        }, 1500);
+      });
+
+      return card;
+    };
+
     const renderGrid = (type) => {
       const { grid } = getEls();
       if (!grid) return;
       grid.innerHTML = "";
+      grid.style.gridTemplateColumns = "";
 
       if (type === "css") {
-        this.renderCSSGrid(grid, cssData);
+        this.renderCSSGrid(grid, cssData, {
+          isFav,
+          toggleFav,
+          sortByFav,
+          onToggle: () => {
+            if (currentType === "favorites") renderGrid("favorites");
+          },
+        });
+        return;
+      }
+
+      if (type === "favorites") {
+        const textureFavs = textureData.filter((i) => isFav("textures", i.id));
+        const crosshairFavs = crosshairData.filter((i) =>
+          isFav("crosshairs", i.id)
+        );
+        const cssFavs = cssData.filter(
+          (i) =>
+            isFav("css", i.title) &&
+            i.availability !== "showcase" &&
+            !!i.downloadUrl
+        );
+
+        if (
+          !textureFavs.length &&
+          !crosshairFavs.length &&
+          !cssFavs.length
+        ) {
+          grid.innerHTML = `<div class="assets-empty"><i class="fas fa-star"></i><span>No favorites yet — click the star on any asset to add it here</span></div>`;
+          return;
+        }
+
+        const addSection = (label, items, sectionType) => {
+          if (!items.length) return;
+          const header = document.createElement("div");
+          header.className = "asset-fav-section-header";
+          header.innerText = label;
+          grid.appendChild(header);
+          items.forEach((item) => {
+            const card =
+              sectionType === "css"
+                ? this.buildCSSCardElement(item, {
+                    isFav,
+                    toggleFav,
+                    onToggle: () => renderGrid("favorites"),
+                    settings: this.settings,
+                    menu: this.menu,
+                    showReloadToast,
+                  })
+                : buildAssetCard(item, sectionType);
+            if (card) grid.appendChild(card);
+          });
+        };
+
+        addSection("Textures", textureFavs, "textures");
+        addSection("Crosshairs", crosshairFavs, "crosshairs");
+        addSection("CSS Themes", cssFavs, "css");
         return;
       }
 
       const data = type === "textures" ? textureData : crosshairData;
-      const storageKey = type === "textures" ? TEXTURE_KEY : CROSSHAIR_KEY;
-
       if (!data.length) {
         grid.innerHTML = `<div class="assets-empty"><i class="fas fa-box-open"></i><span>No items found</span></div>`;
         return;
       }
 
-      data.forEach((item) => {
-        const imgSrc = type === "textures" ? item.textureImage : item.Crosshair;
-        if (!imgSrc) return;
-
-        const card = document.createElement("div");
-        card.className = "asset-card";
-        if (item.label === "featured") card.classList.add("featured");
-
-        card.innerHTML = `
-          <div class="asset-img-wrap">
-            <img src="${imgSrc}" alt="${item.id}" />
-            ${item.label === "featured" ? `<div class="asset-badge"><i class="fas fa-star"></i></div>` : ""}
-          </div>
-          <div class="asset-info">
-            <span class="asset-id">${item.id}</span>
-            <span class="asset-owner">${item.owner || "Unknown"}</span>
-            ${item.tags && item.tags.length ? `<div class="asset-tags">${item.tags.map(t => `<span class="asset-tag">${t}</span>`).join("")}</div>` : ""}
-          </div>
-          <button class="asset-apply juice-button">
-            <span class="text">Apply</span>
-            <div class="custom-border"></div>
-          </button>
-        `;
-
-        card.querySelector(".asset-apply").addEventListener("click", () => {
-          localStorage.setItem(storageKey, JSON.stringify(imgSrc));
-          const btn = card.querySelector(".asset-apply .text");
-          btn.innerText = "Applied!";
-          card.classList.add("applied");
-
-          const existing = this.menu.querySelector("#assets-reload-toast");
-          if (!existing) {
-            const toast = document.createElement("div");
-            toast.id = "assets-reload-toast";
-            toast.innerHTML = `
-              <i class="fas fa-rotate-right"></i>
-              <span>Reload the page for changes to apply</span>
-              <button class="toast-reload-btn">Reload</button>
-            `;
-            this.menu.querySelector("#assets-options").prepend(toast);
-            toast.querySelector(".toast-reload-btn").addEventListener("click", () => {
-              location.reload();
-            });
-          }
-
-          setTimeout(() => {
-            btn.innerText = "Apply";
-            card.classList.remove("applied");
-          }, 1500);
-        });
-
-        grid.appendChild(card);
+      const sorted = sortByFav(data, type, (item) => item.id);
+      sorted.forEach((item) => {
+        const card = buildAssetCard(item, type);
+        if (card) grid.appendChild(card);
       });
+    };
+
+    const fetchDaymianCSS = async () => {
+      try {
+        const res = await fetch(DAYMIAN_BASE + "/");
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const html = await res.text();
+        const doc = new DOMParser().parseFromString(html, "text/html");
+        const items = [];
+        doc.querySelectorAll(".css-card").forEach((card) => {
+          const titleEl = card.querySelector(".card-name");
+          const downloadEl = card.querySelector(".btn-download");
+          if (!titleEl || !downloadEl) return;
+          const title = titleEl.textContent.trim();
+          if (DAYMIAN_EXCLUDED.has(title.toLowerCase())) return;
+          const downloadHref = downloadEl.getAttribute("href");
+          if (!downloadHref) return;
+          const imgs = [...card.querySelectorAll(".card-images img")]
+            .map((img) => img.getAttribute("src"))
+            .filter(Boolean)
+            .map((src) => new URL(src, DAYMIAN_BASE).href);
+          const filters = (card.dataset.filters || "")
+            .split(",")
+            .map((t) => t.trim())
+            .filter(Boolean);
+          items.push({
+            title,
+            description: "",
+            homeImage: imgs[0] || "",
+            ingameImage: imgs[1] || imgs[0] || "",
+            tags: filters,
+            availability: "free",
+            owner: "daymian",
+            discord: "",
+            label: "",
+            downloadUrl: new URL(downloadHref, DAYMIAN_BASE).href,
+          });
+        });
+        return items;
+      } catch (e) {
+        console.error("[Daymian] Failed to fetch CSS list:", e);
+        return [];
+      }
     };
 
     const loadData = async () => {
@@ -782,14 +1248,15 @@ class Menu {
       grid.style.display = "none";
 
       try {
-        const [texRes, crossRes, cssRes] = await Promise.all([
-          fetch(TEXTURE_API),
-          fetch(CROSSHAIR_API),
-          fetch(CSS_API),
+        const [tex, cross, css, daymian] = await Promise.all([
+          fetch(TEXTURE_API).then((r) => r.json()),
+          fetch(CROSSHAIR_API).then((r) => r.json()),
+          fetch(CSS_API).then((r) => r.json()),
+          fetchDaymianCSS(),
         ]);
-        textureData = await texRes.json();
-        crosshairData = await crossRes.json();
-        cssData = await cssRes.json();
+        textureData = tex;
+        crosshairData = cross;
+        cssData = [...css, ...daymian];
       } catch (err) {
         loading.style.display = "none";
         grid.style.display = "grid";
@@ -830,76 +1297,33 @@ class Menu {
     }
   }
 
-  renderCSSGrid(grid, cssData) {
+  renderCSSGrid(grid, cssData, favCtx) {
     if (!cssData.length) {
       grid.innerHTML = `<div class="assets-empty"><i class="fas fa-box-open"></i><span>No CSS themes found</span></div>`;
       return;
     }
 
-    // Force 4-column layout for CSS grid
     grid.style.gridTemplateColumns = "repeat(4, 1fr)";
 
-    cssData.filter(item => !item.tags || !item.tags.map(t => t.toLowerCase()).includes("showcase")).forEach((item) => {
-      const card = document.createElement("div");
-      card.className = "asset-card css-card";
-      if (item.label === "featured") card.classList.add("featured");
+    const visible = cssData.filter(
+      (item) =>
+        item.availability !== "showcase" &&
+        !!item.downloadUrl &&
+        (!item.tags ||
+          !item.tags.map((t) => t.toLowerCase()).includes("showcase"))
+    );
+    const sorted = favCtx
+      ? favCtx.sortByFav(visible, "css", (i) => i.title)
+      : visible;
 
-      const availabilityBadge = item.availability === "free"
-        ? `<span class="asset-tag availability free">Free</span>`
-        : `<span class="asset-tag availability paid">Paid</span>`;
-
-      const truncatedTitle = item.title.length > 18 ? item.title.slice(0, 18).trimEnd() + "…" : item.title;
-
-      card.innerHTML = `
-        <div class="asset-img-wrap css-img-wrap">
-          <img src="${item.homeImage}" alt="${item.title}" />
-          ${item.label === "featured" ? `<div class="asset-badge"><i class="fas fa-star"></i></div>` : ""}
-        </div>
-        <div class="asset-info">
-          <span class="asset-id" title="${item.title}">${truncatedTitle}</span>
-          <span class="asset-owner">${item.owner || "Unknown"}</span>
-          ${item.description ? `<span class="asset-description">${item.description}</span>` : ""}
-          <div class="asset-tags">
-            ${availabilityBadge}
-            ${item.tags && item.tags.length ? item.tags.map(t => `<span class="asset-tag">${t}</span>`).join("") : ""}
-          </div>
-        </div>
-        <div class="css-card-actions">
-          ${item.discord ? `<a href="${item.discord}" target="_blank" class="asset-discord juice-button"><span class="text"><i class="fab fa-discord"></i></span><div class="custom-border"></div></a>` : ""}
-          <button class="asset-apply juice-button">
-            <span class="text">Apply</span>
-            <div class="custom-border"></div>
-          </button>
-        </div>
-      `;
-
-      card.querySelector(".asset-apply").addEventListener("click", () => {
-        const url = item.downloadUrl;
-        if (!url) return;
-
-        this.settings["css_link"] = url;
-        ipcRenderer.send("update-setting", "css_link", url);
-
-        this.settings["css_enabled"] = true;
-        ipcRenderer.send("update-setting", "css_enabled", true);
-
-        const cssLinkInput = this.menu.querySelector("[data-setting='css_link']");
-        if (cssLinkInput) cssLinkInput.value = url;
-        const cssEnabledInput = this.menu.querySelector("#css_enabled");
-        if (cssEnabledInput) cssEnabledInput.checked = true;
-
-        ["css_link", "css_enabled"].forEach((key) => {
-          document.dispatchEvent(new CustomEvent("juice-settings-changed", {
-            detail: { setting: key, value: this.settings[key] },
-          }));
-        });
-
-        const btn = card.querySelector(".asset-apply .text");
-        btn.innerText = "Applied!";
-        card.classList.add("applied");
-
-        const existing = this.menu.querySelector("#assets-reload-toast");
-        if (!existing) {
+    sorted.forEach((item) => {
+      const card = this.buildCSSCardElement(item, {
+        ...favCtx,
+        settings: this.settings,
+        menu: this.menu,
+        showReloadToast: () => {
+          const existing = this.menu.querySelector("#assets-reload-toast");
+          if (existing) return;
           const toast = document.createElement("div");
           toast.id = "assets-reload-toast";
           toast.innerHTML = `
@@ -911,16 +1335,102 @@ class Menu {
           toast.querySelector(".toast-reload-btn").addEventListener("click", () => {
             location.reload();
           });
-        }
-
-        setTimeout(() => {
-          btn.innerText = "Apply";
-          card.classList.remove("applied");
-        }, 1500);
+        },
       });
-
       grid.appendChild(card);
     });
+  }
+
+  buildCSSCardElement(item, ctx) {
+    const { isFav, toggleFav, onToggle, settings, menu, showReloadToast } = ctx;
+    const favActive = isFav ? isFav("css", item.title) : false;
+
+    const card = document.createElement("div");
+    card.className = "asset-card css-card";
+    if (item.label === "featured") card.classList.add("featured");
+
+    const availabilityBadge =
+      item.availability === "free"
+        ? `<span class="asset-tag availability free">Free</span>`
+        : `<span class="asset-tag availability paid">Paid</span>`;
+
+    const truncatedTitle =
+      item.title.length > 18
+        ? item.title.slice(0, 18).trimEnd() + "…"
+        : item.title;
+
+    card.innerHTML = `
+      <div class="asset-img-wrap css-img-wrap">
+        <img src="${item.homeImage}" alt="${item.title}" />
+        <button class="asset-favorite ${favActive ? "active" : ""}" title="${favActive ? "Unfavorite" : "Favorite"}">
+          <i class="fas fa-star"></i>
+        </button>
+        ${item.label === "featured" ? `<div class="asset-badge"><i class="fas fa-star"></i></div>` : ""}
+      </div>
+      <div class="asset-info">
+        <span class="asset-id" title="${item.title}">${truncatedTitle}</span>
+        <span class="asset-owner">${item.owner || "Unknown"}</span>
+        ${item.description ? `<span class="asset-description">${item.description}</span>` : ""}
+        <div class="asset-tags">
+          ${availabilityBadge}
+          ${item.tags && item.tags.length ? item.tags.map(t => `<span class="asset-tag">${t}</span>`).join("") : ""}
+        </div>
+      </div>
+      <div class="css-card-actions">
+        ${item.discord ? `<a href="${item.discord}" target="_blank" class="asset-discord juice-button"><span class="text"><i class="fab fa-discord"></i></span><div class="custom-border"></div></a>` : ""}
+        <button class="asset-apply juice-button">
+          <span class="text">Apply</span>
+          <div class="custom-border"></div>
+        </button>
+      </div>
+    `;
+
+    if (toggleFav) {
+      const favBtn = card.querySelector(".asset-favorite");
+      favBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleFav("css", item.title);
+        favBtn.classList.toggle("active");
+        favBtn.title = favBtn.classList.contains("active")
+          ? "Unfavorite"
+          : "Favorite";
+        if (onToggle) onToggle();
+      });
+    }
+
+    card.querySelector(".asset-apply").addEventListener("click", () => {
+      const url = item.downloadUrl;
+      if (!url) return;
+
+      settings["css_link"] = url;
+      ipcRenderer.send("update-setting", "css_link", url);
+      settings["css_enabled"] = true;
+      ipcRenderer.send("update-setting", "css_enabled", true);
+
+      const cssLinkInput = menu.querySelector("[data-setting='css_link']");
+      if (cssLinkInput) cssLinkInput.value = url;
+      const cssEnabledInput = menu.querySelector("#css_enabled");
+      if (cssEnabledInput) cssEnabledInput.checked = true;
+
+      ["css_link", "css_enabled"].forEach((key) => {
+        document.dispatchEvent(
+          new CustomEvent("juice-settings-changed", {
+            detail: { setting: key, value: settings[key] },
+          })
+        );
+      });
+
+      const btn = card.querySelector(".asset-apply .text");
+      btn.innerText = "Applied!";
+      card.classList.add("applied");
+      showReloadToast();
+      setTimeout(() => {
+        btn.innerText = "Apply";
+        card.classList.remove("applied");
+      }, 1500);
+    });
+
+    return card;
   }
 
   initNews() {

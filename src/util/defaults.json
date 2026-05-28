@@ -31,7 +31,19 @@
     "custom_list_price": false,
     "endgame_message_enabled": false,
     "endgame_message_text": "Good Game",
-    "simple_invite_btns": false
+    "simple_invite_btns": false,
+    "custom_theme_bg": "#0a0a0f",
+    "custom_theme_text": "#ffffff",
+    "custom_theme_accent": "#1a8e50",
+    "custom_theme_border": "#ffffff",
+    "custom_theme_danger": "#dc3545",
+    "custom_theme_font": "satoshi",
+    "custom_theme_custom_font": "",
+    "menu_opacity": "100",
+    "hide_smudgy_watermark": false,
+    "watermark_text": "Smu.__.dgy",
+    "watermark_color": "",
+    "watermark_size": "6.9"
   },
   "allowed_urls": [
     "https://kirka.io/",

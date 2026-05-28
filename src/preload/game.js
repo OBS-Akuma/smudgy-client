@@ -1,6 +1,7 @@
 const Menu = require("./menu");
 const { opener } = require("../addons/opener");
 const { customReqScripts } = require("../addons/customReqScripts");
+const { initServerPresets } = require("../addons/serverPresets");
 const { ipcRenderer } = require("electron");
 const fs = require("fs");
 const path = require("path");
@@ -1583,6 +1584,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     loadTheme();
     applyUIFeatures();
+    initServerPresets();
   };
 
   handleInitialLoad();

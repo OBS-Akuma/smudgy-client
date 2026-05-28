@@ -1,8 +1,11 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 const { autoUpdater } = require("electron-updater");
+const log = require("electron-log");
 const { initGame } = require("./game");
 const path = require("path");
 
+log.transports.file.level = "debug";
+autoUpdater.logger = log;
 autoUpdater.autoDownload = true;
 
 autoUpdater.setFeedURL({

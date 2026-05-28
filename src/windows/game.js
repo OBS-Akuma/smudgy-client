@@ -1,4 +1,4 @@
-const { BrowserWindow, ipcMain, app, shell } = require("electron");
+const { BrowserWindow, ipcMain, app, shell, dialog } = require("electron");
 const { default_settings, allowed_urls } = require("../util/defaults.json");
 const { registerShortcuts } = require("../util/shortcuts");
 const { applySwitches } = require("../util/switches");
@@ -89,6 +89,34 @@ ipcMain.on("reset-juice-settings", () => {
   store.set("settings", default_settings);
   app.relaunch();
   app.quit();
+});
+
+ipcMain.handle("upload-custom-font", async () => {
+  const result = await dialog.showOpenDialog({
+    title: "Select a font file",
+    filters: [{ name: "Fonts", extensions: ["ttf", "otf", "woff", "woff2"] }],
+    properties: ["openFile"],
+  });
+  if (result.canceled || !result.filePaths[0]) return null;
+
+  const sourcePath = result.filePaths[0];
+  const fontsDir = path.join(app.getPath("userData"), "customFonts");
+  if (!fs.existsSync(fontsDir)) {
+    fs.mkdirSync(fontsDir, { recursive: true });
+  }
+
+  const destPath = path.join(fontsDir, path.basename(sourcePath));
+  fs.copyFileSync(sourcePath, destPath);
+  return destPath;
+});
+
+ipcMain.handle("remove-custom-font", async (_e, fontPath) => {
+  if (fontPath && fs.existsSync(fontPath)) {
+    try {
+      fs.unlinkSync(fontPath);
+    } catch {}
+  }
+  return true;
 });
 
 let gameWindow;

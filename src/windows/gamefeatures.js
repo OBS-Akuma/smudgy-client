@@ -14,10 +14,12 @@ const { initGameFeatures } = (() => {
         let subnameInterval = null;
         
         // Background API variables
-        const BANNER_API_URL = "https://raw.githubusercontent.com/OBS-Akuma/KirkaBadges/refs/heads/main/Json/Banner.json";
-        let bannerData = [];
+        const ALL_BANNERS_API = "https://www.smudgy.store/api/user-banners";
+        const SINGLE_BANNER_API = "https://www.smudgy.store/api/user-banners?kirkaId=";
         let appliedElements = new Map();
-        let bgInterval = null;
+        let bgIsProcessing = false;
+        let currentProfileIdentifier = null;
+        let hasFetchedForCurrentPage = false;
         
         async function fetchCustomIdMappings() {
           try {
@@ -53,183 +55,254 @@ const { initGameFeatures } = (() => {
         }
         
         // Background API functions
-        async function fetchBannerData() {
+        async function fetchSpecificUserBanner(identifier, isLongId) {
+          if (!identifier) return null;
           try {
-            const response = await fetch(BANNER_API_URL);
-            bannerData = await response.json();
-            console.log('[Background] Loaded banner data:', bannerData.length, 'items');
-            return true;
-          } catch (error) {
-            console.error('[Background] Failed to load banner data:', error);
-            return false;
-          }
+            if (isLongId || identifier.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+              const response = await fetch(ALL_BANNERS_API);
+              const data = await response.json();
+              if (data.success && data.banners) {
+                return data.banners.find(b => b.userLongId === identifier && b.equipped === true) || null;
+              }
+            } else {
+              const response = await fetch(\`\${SINGLE_BANNER_API}\${identifier}\`);
+              const data = await response.json();
+              if (data.success && data.banners && data.banners.length > 0) {
+                return data.banners.find(b => b.equipped === true) || null;
+              }
+            }
+            return null;
+          } catch { return null; }
         }
         
-        function getIdFromURL() {
+        async function fetchAllUsersBanners() {
+          try {
+            const response = await fetch(ALL_BANNERS_API);
+            const data = await response.json();
+            if (data.success && data.banners) return data.banners.filter(b => b.equipped === true);
+            return [];
+          } catch { return []; }
+        }
+        
+        function isProfilePage() {
+          return window.location.pathname.match(/\\/profile\\/([^\\/?#]+)/) !== null;
+        }
+        
+        function isFriendsPage() {
+          return window.location.pathname === '/friends' || window.location.pathname.startsWith('/friends/');
+        }
+        
+        function getIdentifierFromURL() {
           const match = window.location.pathname.match(/\\/profile\\/([^\\/?#]+)/);
           if (match) {
-            return match[1];
+            const identifier = match[1];
+            const isLongId = identifier.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+            return { identifier, isLongId: !!isLongId };
           }
           return null;
         }
         
-        function findBannerById(id) {
-          if (!id) return null;
-          return bannerData.find(b => b.shortid === id || b.longid === id);
+        function getIdsFromElement(element) {
+          const shortIdElement = element.querySelector('.friend-id');
+          let shortId = shortIdElement ? shortIdElement.textContent.trim() : null;
+          let longId = null;
+          
+          const badgesDiv = element.querySelector('.kirka-badges');
+          if (badgesDiv) {
+            if (badgesDiv.getAttribute('data-short-id')) shortId = badgesDiv.getAttribute('data-short-id');
+            if (badgesDiv.getAttribute('data-long-id')) longId = badgesDiv.getAttribute('data-long-id');
+          }
+          
+          const longIdElement = element.querySelector('.user-long-id, .long-id, [data-user-id]');
+          if (longIdElement) longId = longIdElement.getAttribute('data-user-id') || longIdElement.textContent.trim();
+          
+          element.querySelectorAll('a[href*="/profile/"]').forEach(link => {
+            const match = link.getAttribute('href').match(/\\/profile\\/([^\\/?#]+)/);
+            if (match && match[1].match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+              longId = match[1];
+            }
+          });
+          
+          return { shortId, longId };
         }
         
-        function getShortIdFromElement(element) {
-          // Try to get ID from friend-id element
-          const idElement = element.querySelector('.friend-id');
-          if (idElement) {
-            const id = idElement.textContent.trim();
-            console.log('[Background] Found friend-id:', id);
-            return id;
+        function findBannerByIds(banners, shortId, longId) {
+          if (!banners || banners.length === 0) return null;
+          if (shortId) {
+            const m = banners.find(b => b.kirkaId === shortId && b.equipped === true);
+            if (m) return m;
           }
-          
-          // Try from profile URL
-          const urlId = getIdFromURL();
-          if (urlId) {
-            console.log('[Background] Found URL ID:', urlId);
-            return urlId;
-          }
-          
+          if (longId) return banners.find(b => b.userLongId === longId && b.equipped === true) || null;
           return null;
         }
         
         function preserveProgressBar(element) {
           const progressLines = element.querySelectorAll('.progress-line');
           progressLines.forEach(progressLine => {
-            progressLine.style.cssText = progressLine.style.cssText;
+            progressLine.style.backdropFilter = '';
+            progressLine.style.backgroundColor = '';
+            progressLine.style.background = '';
             progressLine.style.removeProperty('backdrop-filter');
-            progressLine.style.removeProperty('background');
             progressLine.style.removeProperty('background-color');
-            
+            progressLine.style.removeProperty('background');
             const innerProgress = progressLine.querySelector('.progress');
             if (innerProgress) {
+              innerProgress.style.backdropFilter = '';
+              innerProgress.style.backgroundColor = '';
+              innerProgress.style.background = '';
               innerProgress.style.removeProperty('backdrop-filter');
-              innerProgress.style.removeProperty('background');
               innerProgress.style.removeProperty('background-color');
+              innerProgress.style.removeProperty('background');
             }
           });
         }
         
-        function applyBackground(element, shortId, imageUrl) {
-          if (appliedElements.has(element)) {
-            console.log('[Background] Already applied to element:', shortId);
-            return;
-          }
+        function shouldSkipElement(el) {
+          if (el.closest('.you-head')) return true;
+          if (el.classList && el.classList.contains('you-head')) return true;
+          if (el.closest('.map-image')) return true;
+          if (el.classList && el.classList.contains('map-image')) return true;
+          if (el.closest('.progress-line')) return true;
+          if (el.closest('.avatar')) return true;
+          if (el.classList && el.classList.contains('nickname')) return true;
+          if (el.closest('.close')) return true;
+          if (el.classList && el.classList.contains('close')) return true;
+          return false;
+        }
+        
+        function applyTransparentEffect(element) {
+          if (!element || shouldSkipElement(element)) return;
+          element.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+          element.style.background = 'transparent';
+          element.style.backdropFilter = 'blur(4px)';
+        }
+        
+        function applyBackground(element, identifier, imageUrl) {
+          if (appliedElements.has(element)) return;
           
-          console.log('[Background] Applying background for:', shortId, imageUrl);
+          appliedElements.set(element, { identifier, imageUrl });
+          element.setAttribute('data-bg-applied', identifier);
           
-          appliedElements.set(element, { shortId, imageUrl });
-          element.setAttribute('data-bg-applied', shortId);
-          
-          // Apply background to main element
-          element.style.backgroundImage = \`url('\${imageUrl}')\`;
-          element.style.backgroundSize = 'cover';
-          element.style.backgroundPosition = 'center center';
-          element.style.backgroundRepeat = 'no-repeat';
+          element.style.background = \`url('\${imageUrl}') center center / cover no-repeat\`;
           element.style.backgroundColor = 'transparent';
+          element.style.backdropFilter = 'none';
           
-          // Make all child divs transparent with blur
-          const allDivs = element.querySelectorAll('div');
-          allDivs.forEach(div => {
-            // Skip progress line and avatar
-            if (div.classList.contains('progress-line') || div.classList.contains('avatar')) {
-              return;
-            }
-            if (div.closest('.progress-line')) return;
-            if (div.closest('.avatar')) return;
-            
-            div.style.backgroundColor = 'transparent !important';
-            div.style.background = 'transparent !important';
-            div.style.backdropFilter = 'blur(2px)';
+          element.querySelectorAll('div').forEach(div => {
+            if (shouldSkipElement(div) || div === element) return;
+            if (!div.classList.contains('bg-overlay')) applyTransparentEffect(div);
           });
           
-          // Specific container handling
           const containers = [
             '.friend-left', '.friend-right', '.level-cont', '.friend-desc',
-            '.player-cont', '.you', '.you-head', '.content', '.top-medium',
+            '.add-delete', '.add', '.delete', '.friend-pin-btn',
+            '.player-cont', '.you', '.content', '.top-medium',
             '.top', '.card', '.medium', '.statistics', '.bottom',
             '.profile-cont', '.profile-holder', '.statistic', '.stat-name',
             '.stat-value', '.progress-text-cont', '.progress-level', '.progress-exp'
           ];
-          
           containers.forEach(selector => {
-            const elements = element.querySelectorAll(selector);
-            elements.forEach(el => {
-              if (el.closest('.progress-line')) return;
-              if (el.closest('.avatar')) return;
-              el.style.backgroundColor = 'transparent';
-              el.style.background = 'transparent';
-              el.style.backdropFilter = 'blur(2px)';
+            element.querySelectorAll(selector).forEach(el => {
+              if (shouldSkipElement(el) || el === element) return;
+              applyTransparentEffect(el);
             });
           });
           
           preserveProgressBar(element);
+          const existingOverlay = element.querySelector('.bg-overlay');
+          if (existingOverlay) existingOverlay.remove();
         }
         
-        function scanAndApplyBackgrounds() {
-          if (!bannerData || bannerData.length === 0) {
-            console.log('[Background] No banner data available yet');
-            return;
+        function applyTopBarEffect() {
+          const topBar = document.querySelector('.top-bar');
+          if (topBar && !appliedElements.has(topBar)) {
+            const leftSection = topBar.querySelector('.left');
+            if (leftSection && !shouldSkipElement(leftSection)) applyTransparentEffect(leftSection);
+            appliedElements.set(topBar, { identifier: 'top-bar', imageUrl: null });
           }
+        }
+        
+        async function handleProfilePage(identifier, isLongId) {
+          if (!identifier) return false;
+          const profileKey = isLongId ? \`long:\${identifier}\` : \`short:\${identifier}\`;
+          if (currentProfileIdentifier === profileKey && hasFetchedForCurrentPage) return true;
+          currentProfileIdentifier = profileKey;
+          hasFetchedForCurrentPage = true;
           
-          console.log('[Background] Scanning for elements...');
+          const banner = await fetchSpecificUserBanner(identifier, isLongId);
+          const profileContainer = document.querySelector('.profile-cont, .profile-holder');
+          if (profileContainer && banner) {
+            if (appliedElements.has(profileContainer)) appliedElements.delete(profileContainer);
+            applyBackground(profileContainer, identifier, banner.imageUrl);
+            applyTopBarEffect();
+            return true;
+          }
+          return false;
+        }
+        
+        async function handleFriendsPage() {
+          if (hasFetchedForCurrentPage) return;
+          hasFetchedForCurrentPage = true;
           
-          // Apply to friends list
-          const friends = document.querySelectorAll('.friend');
-          console.log('[Background] Found friends:', friends.length);
+          const banners = await fetchAllUsersBanners();
+          if (!banners || banners.length === 0) return;
           
-          friends.forEach(friend => {
-            const shortId = getShortIdFromElement(friend);
-            if (shortId) {
-              const banner = bannerData.find(b => b.shortid === shortId);
-              if (banner && !appliedElements.has(friend)) {
-                applyBackground(friend, shortId, banner.image);
-              } else if (banner) {
-                console.log('[Background] Already applied to friend:', shortId);
+          document.querySelectorAll('.friend').forEach(friend => {
+            if (!appliedElements.has(friend)) {
+              const { shortId, longId } = getIdsFromElement(friend);
+              const banner = findBannerByIds(banners, shortId, longId);
+              if (banner) {
+                const identifier = banner.kirkaId === shortId ? shortId : longId;
+                applyBackground(friend, identifier, banner.imageUrl);
               }
             }
           });
-          
-          // Apply to profile page
-          const profileContainer = document.querySelector('.profile-cont, .profile-holder');
-          if (profileContainer && !appliedElements.has(profileContainer)) {
-            const urlId = getIdFromURL();
-            if (urlId) {
-              const banner = findBannerById(urlId);
-              if (banner) {
-                applyBackground(profileContainer, banner.shortid, banner.image);
-              } else {
-                console.log('[Background] No banner found for profile ID:', urlId);
-              }
+        }
+        
+        async function scanAndApplyBackgrounds() {
+          if (bgIsProcessing) return;
+          bgIsProcessing = true;
+          try {
+            if (isProfilePage()) {
+              const urlInfo = getIdentifierFromURL();
+              if (urlInfo) await handleProfilePage(urlInfo.identifier, urlInfo.isLongId);
+            } else if (isFriendsPage()) {
+              await handleFriendsPage();
             }
+          } finally {
+            bgIsProcessing = false;
           }
         }
         
         function maintainBackgroundEffects() {
-          // Re-apply transparency to elements that have backgrounds
-          appliedElements.forEach((data, element) => {
-            if (element && document.body.contains(element)) {
-              const allDivs = element.querySelectorAll('div');
-              allDivs.forEach(div => {
-                if (div.classList.contains('progress-line') || div.classList.contains('avatar')) {
-                  return;
-                }
-                if (div.closest('.progress-line')) return;
-                if (div.closest('.avatar')) return;
-                
-                div.style.backgroundColor = 'transparent';
-                div.style.background = 'transparent';
-                div.style.backdropFilter = 'blur(2px)';
+          document.querySelectorAll('.friend').forEach(friend => {
+            if (appliedElements.has(friend)) {
+              friend.querySelectorAll('div').forEach(div => {
+                if (shouldSkipElement(div) || div === friend) return;
+                if (!div.classList.contains('bg-overlay')) applyTransparentEffect(div);
               });
-              preserveProgressBar(element);
-            } else {
-              appliedElements.delete(element);
+              preserveProgressBar(friend);
             }
           });
+          
+          const profileContainer = document.querySelector('.profile-cont, .profile-holder');
+          if (profileContainer && appliedElements.has(profileContainer)) {
+            profileContainer.querySelectorAll('div').forEach(div => {
+              if (shouldSkipElement(div) || div === profileContainer) return;
+              if (!div.classList.contains('bg-overlay')) applyTransparentEffect(div);
+            });
+            preserveProgressBar(profileContainer);
+          }
+          
+          const topBar = document.querySelector('.top-bar');
+          if (topBar && appliedElements.has(topBar)) {
+            const leftSection = topBar.querySelector('.left');
+            if (leftSection && !shouldSkipElement(leftSection)) applyTransparentEffect(leftSection);
+          }
+        }
+        
+        function resetBgPageState() {
+          hasFetchedForCurrentPage = false;
+          currentProfileIdentifier = null;
         }
         
         function navigateToProfile(shortId) {
@@ -381,21 +454,14 @@ const { initGameFeatures } = (() => {
         
         async function initBackgrounds() {
           console.log('[Background] Initializing...');
-          const success = await fetchBannerData();
-          if (success) {
-            console.log('[Background] Banner data loaded, starting scans');
-            // Initial scan
-            setTimeout(() => {
-              scanAndApplyBackgrounds();
-            }, 500);
-            
-            // Periodic scan for new elements
-            if (bgInterval) clearInterval(bgInterval);
-            bgInterval = setInterval(() => {
-              scanAndApplyBackgrounds();
-              maintainBackgroundEffects();
-            }, 2000);
-          }
+          await new Promise(resolve => setTimeout(resolve, 500));
+          await scanAndApplyBackgrounds();
+          maintainBackgroundEffects();
+          
+          // Periodic maintenance
+          setInterval(() => {
+            maintainBackgroundEffects();
+          }, 2000);
         }
         
         // Navigation handling
@@ -405,6 +471,7 @@ const { initGameFeatures } = (() => {
           if (currentUrl !== lastUrl) {
             lastUrl = currentUrl;
             console.log('[Navigation] URL changed to:', currentUrl);
+            resetBgPageState();
             setTimeout(() => {
               checkAndRedirectCustomId();
               injectAllSubnames();
@@ -417,6 +484,7 @@ const { initGameFeatures } = (() => {
         const originalPushState = history.pushState;
         history.pushState = function() {
           originalPushState.apply(this, arguments);
+          resetBgPageState();
           setTimeout(() => {
             checkAndRedirectCustomId();
             injectAllSubnames();
@@ -425,6 +493,7 @@ const { initGameFeatures } = (() => {
         };
         
         window.addEventListener('popstate', () => {
+          resetBgPageState();
           setTimeout(() => {
             checkAndRedirectCustomId();
             injectAllSubnames();

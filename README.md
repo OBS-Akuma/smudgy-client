@@ -9,9 +9,19 @@
   <a href="/">
     <img src="https://img.shields.io/github/downloads/OBS-Akuma/smudgy-client/total" />
   </a>
+     <a href="/">
+    <img src="https://img.shields.io/badge/version-0.0.11-blue" />
+  </a>
   <a>
     <img src="https://img.shields.io/github/repo-size/OBS-Akuma/smudgy-client" />
   </a>
+    <a href="https://discord.gg/HjJCwm5">
+        <img src="https://img.shields.io/discord/1487795704989487196?logo=discord&logoColor=white"
+            alt="Chat on Discord">
+    </a>
+    <a href="https://github.com/OBS-Akuma/Smudgy-client/pulse" alt="Activity">
+        <img src="https://img.shields.io/github/commit-activity/m/OBS-Akuma/Smudgy-client" />
+    </a>
 </div>
 
 ## Keybinds

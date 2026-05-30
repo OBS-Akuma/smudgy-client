@@ -10,18 +10,18 @@ win:
         - x64
         - ia32
   icon: "src/assets/img/icon.png"
-  artifactName: "${name}-${version}.${ext}"
+  artifactName: "${name}-${arch}-${version}.${ext}"
 mac:
   target: dmg
   icon: "src/assets/img/icon.icns"
-  artifactName: "${name}-${version}.${ext}"
+  artifactName: "${name}-${arch}-${version}.${ext}"
 linux:
   target:
     - AppImage
     - tar.gz
   category: Game
   icon: "src/assets/img/icon.png"
-  artifactName: "${name}-${version}.${ext}"
+  artifactName: "${name}-${arch}-${version}.${ext}"
 publish:
   - provider: github
     owner: OBS-Akuma

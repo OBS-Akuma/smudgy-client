@@ -1199,3 +1199,31 @@
 .invite-right, .invite-left1, .invite-left2, .invite-btn {
   zoom: 0.50;
 }
+.assets-subtabs {
+  display: flex;
+  flex-direction: column;
+  padding-left: 1rem;
+  gap: 0.1rem;
+  margin-bottom: 0.25rem;
+}
+
+.assets-subtab {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  color: rgba(var(--light), 0.6);
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+  border-radius: 0 4px 4px 0;
+}
+
+.assets-subtab:hover {
+  color: rgba(var(--light), 1);
+  border-left-color: rgba(var(--orange), 0.5);
+}
+
+.assets-subtab.active {
+  color: rgba(var(--orange), 1);
+  border-left-color: rgba(var(--orange), 1);
+  font-weight: 600;
+}

@@ -12,11 +12,11 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos-14, windows-latest, ubuntu-latest]  # Changed from macos-13
+        os: [macos-13, windows-latest, ubuntu-latest]
         include:
           - os: windows-latest
             arch: x64
-          - os: macos-14  # Changed from macos-13
+          - os: macos-13
             arch: x64
           - os: ubuntu-latest
             arch: x64
@@ -25,13 +25,16 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js (Match Electron 10's internal version)
         uses: actions/setup-node@v4
         with:
-          node-version: '14.21.3'  # Updated from 18.x
+          node-version: '12.22.12'  # Last Node 12 LTS
 
       - name: Install Dependencies
         run: npm install
+        env:
+          ELECTRON_MIRROR: "https://cdn.npmmirror.com/binaries/electron/"
+          ELECTRON_CUSTOM_DIR: "v10.4.7"
 
       - name: Get version and name from package.json
         id: get_version_name
@@ -40,7 +43,7 @@ jobs:
           echo "name=$(node -p "require('./package.json').name")" >> $GITHUB_OUTPUT
 
       - name: Create Release
-        if: matrix.os == 'ubuntu-latest'  # Only create once
+        if: matrix.os == 'ubuntu-latest'
         id: create_release
         uses: softprops/action-gh-release@v2.0.6
         env:

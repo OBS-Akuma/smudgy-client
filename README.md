@@ -3,25 +3,14 @@
     <span>Smudgy Client</span>
 </h1>
 <div align="center">
-  <a href="https://smudgy.store/">
-    <img src="https://img.shields.io/badge/Visit-Smudgy.store-green" />
-  </a>
-  <a href="/">
-    <img src="https://img.shields.io/github/downloads/OBS-Akuma/smudgy-client/total" />
-  </a>
-     <a href="/">
-    <img src="https://img.shields.io/badge/version-0.0.11-blue" />
-  </a>
-  <a>
-    <img src="https://img.shields.io/github/repo-size/OBS-Akuma/smudgy-client" />
-  </a>
-    <a href="https://discord.gg/HjJCwm5">
+        <img src="https://img.shields.io/badge/Visit-Smudgy.store-green" />
+        <img src="https://img.shields.io/github/downloads/OBS-Akuma/smudgy-client/total" />
+        <img src="https://img.shields.io/badge/version-0.0.11-blue" />
+        <img src="https://img.shields.io/github/repo-size/OBS-Akuma/smudgy-client" />
         <img src="https://img.shields.io/discord/1487795704989487196?logo=discord&logoColor=white"
-            alt="Chat on Discord">
-    </a>
-    <a href="https://github.com/OBS-Akuma/Smudgy-client/pulse" alt="Activity">
         <img src="https://img.shields.io/github/commit-activity/m/OBS-Akuma/Smudgy-client" />
-    </a>
+        <img src="https://img.shields.io/github/commit-activity/m/OBS-Akuma/Smudgy-client" />
+        <img src="https://img.shields.io/github/commit-activity/m/OBS-Akuma/Smudgy-client" />
 </div>
 
 ## Keybinds

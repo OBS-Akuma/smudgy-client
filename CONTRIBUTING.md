@@ -3,6 +3,12 @@
     <span>Contributing to Smudgy Client</span>
 </h1>
 
+<div align="center">
+  <a href="https://smudgy.store/">
+    <img src="https://contrib.rocks/image?repo=OBS-Akuma/Smudgy-client" />
+  </a>
+</div>
+
 First off, thank you for considering contributing to Smudgy Client! It's people like you that make this client better for everyone.
 
 ## Code of Conduct

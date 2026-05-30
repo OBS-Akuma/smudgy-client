@@ -25,25 +25,21 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js (Match Electron 10's internal version)
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '12.22.12'  # Last Node 12 LTS
+          node-version: '18.x'
 
       - name: Install Dependencies
         run: npm install
-        env:
-          ELECTRON_MIRROR: "https://cdn.npmmirror.com/binaries/electron/"
-          ELECTRON_CUSTOM_DIR: "v10.4.7"
 
       - name: Get version and name from package.json
         id: get_version_name
         run: |
-          echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
-          echo "name=$(node -p "require('./package.json').name")" >> $GITHUB_OUTPUT
+          echo "::set-output name=version::$(node -p "require('./package.json').version")"
+          echo "::set-output name=name::$(node -p "require('./package.json').name")"
 
       - name: Create Release
-        if: matrix.os == 'ubuntu-latest'
         id: create_release
         uses: softprops/action-gh-release@v2.0.6
         env:

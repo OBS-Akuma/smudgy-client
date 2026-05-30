@@ -1,4 +1,4 @@
-name: Build
+name: Multi-Platform Build
 
 on:
   workflow_dispatch:
@@ -12,14 +12,20 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos-13, windows-latest, ubuntu-latest]
+        os: [macos-13, macos-14, windows-latest, ubuntu-latest]
         include:
           - os: windows-latest
             arch: x64
+            platform: windows
           - os: macos-13
             arch: x64
+            platform: mac
+          - os: macos-14
+            arch: arm64
+            platform: mac
           - os: ubuntu-latest
             arch: x64
+            platform: linux
 
     steps:
       - name: Checkout Repository
@@ -36,8 +42,8 @@ jobs:
       - name: Get version and name from package.json
         id: get_version_name
         run: |
-          echo "::set-output name=version::$(node -p "require('./package.json').version")"
-          echo "::set-output name=name::$(node -p "require('./package.json').name")"
+          echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+          echo "name=$(node -p "require('./package.json').name")" >> $GITHUB_OUTPUT
 
       - name: Create Release
         id: create_release
@@ -51,7 +57,15 @@ jobs:
           prerelease: false
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Electron App
+      - name: Build Electron App (macOS)
+        if: matrix.platform == 'mac'
+        run: npm run build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+
+      - name: Build Electron App (Windows/Linux)
+        if: matrix.platform != 'mac'
         run: npm run build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

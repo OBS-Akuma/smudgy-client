@@ -15,16 +15,13 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos-13, macos-14, windows-latest, ubuntu-latest]
+        os: [macos-13, windows-latest, ubuntu-latest]
         include:
           - os: windows-latest
             arch: x64
             platform: windows
           - os: macos-13
             arch: x64
-            platform: mac
-          - os: macos-14
-            arch: arm64
             platform: mac
           - os: ubuntu-latest
             arch: x64

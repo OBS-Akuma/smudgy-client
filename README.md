@@ -12,7 +12,7 @@
   <a>
     <img src="https://img.shields.io/github/repo-size/OBS-Akuma/smudgy-client" />
   </a>
-      <a>
+  <a>
     <img src="https://kirkaprofilesembeded.morgan905499.workers.dev/badges" />
   </a>
 </div>

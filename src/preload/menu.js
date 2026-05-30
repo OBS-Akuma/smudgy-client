@@ -46,6 +46,7 @@ class Menu {
     this.setUser();
     this.setKeybind();
     this.setTheme();
+    this.applyWatermark();
     this.handleKeyEvents();
     this.initMenu();
     this.handleMenuKeybindChange();
@@ -535,6 +536,23 @@ class Menu {
         const existing = document.getElementById("juice-endgame-script");
         if (existing) existing.remove();
       }
+    }
+
+    if (
+      setting === "hide_smudgy_watermark" ||
+      setting === "watermark_text" ||
+      setting === "watermark_color" ||
+      setting === "watermark_size"
+    ) {
+      this.applyWatermark();
+    }
+
+    if (setting === "menu_opacity") {
+      this.applyMenuOpacity();
+    }
+
+    if (setting && setting.startsWith("custom_theme_")) {
+      this.applyCustomTheme();
     }
   }
 

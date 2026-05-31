@@ -190,19 +190,43 @@ const createWindow = () => {
       } else if (url.startsWith(`${base_url}games/`)) {
         state = "In a match meow";
       } else if (url.startsWith(`${base_url}profile/`)) {
-
         const profileMatch = url.match(`${base_url}profile/(.+)`);
         if (profileMatch && profileMatch[1]) {
-          const username = profileMatch[1];
-          state = `Viewing player profile #${username}`;
+          const shortId = profileMatch[1];
+          state = `Viewing player profile #${shortId}`;
+          
+          // Set the profile picture as small image
+          const activity = gameWindow.DiscordRPC.defaultActivity();
+          activity.state = state;
+          activity.smallImageKey = `https://www.smudgy.store/api/list/profile.png?meow=${shortId}`;
+          activity.smallImageText = `Viewing ${shortId}'s profile`;
+          gameWindow.DiscordRPC.setActivity(activity);
         } else {
           state = "Viewing a profile meow";
+          const activity = gameWindow.DiscordRPC.defaultActivity();
+          activity.state = state;
+          delete activity.smallImageKey;
+          delete activity.smallImageText;
+          gameWindow.DiscordRPC.setActivity(activity);
         }
       } else {
         state = "In the lobby meow";
+        const activity = gameWindow.DiscordRPC.defaultActivity();
+        activity.state = state;
+        delete activity.smallImageKey;
+        delete activity.smallImageText;
+        gameWindow.DiscordRPC.setActivity(activity);
       }
 
-      gameWindow.DiscordRPC.setState(state);
+      if (!url.startsWith(`${base_url}profile/`) && !stateMap[url] && !url.startsWith(`${base_url}games/`)) {
+        const activity = gameWindow.DiscordRPC.defaultActivity();
+        activity.state = state;
+        delete activity.smallImageKey;
+        delete activity.smallImageText;
+        gameWindow.DiscordRPC.setActivity(activity);
+      } else if (!url.startsWith(`${base_url}profile/`)) {
+        gameWindow.DiscordRPC.setState(state);
+      }
     }
   });
 

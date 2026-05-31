@@ -195,10 +195,11 @@ const createWindow = () => {
           const shortId = profileMatch[1];
           state = `Viewing player profile #${shortId}`;
           
-          // Set the profile picture as small image
+          // Set the profile picture as small image with random number to bypass cache
+          const randomNumbers = Math.floor(Math.random() * 1000000);
           const activity = gameWindow.DiscordRPC.defaultActivity();
           activity.state = state;
-          activity.smallImageKey = `https://www.smudgy.store/api/list/profile.png?meow=${shortId}`;
+          activity.smallImageKey = `https://www.smudgy.store/api/list/profile.png?meow=${shortId}&v=${randomNumbers}`;
           activity.smallImageText = `Viewing ${shortId}'s profile`;
           gameWindow.DiscordRPC.setActivity(activity);
         } else {

@@ -18,7 +18,7 @@ const initResourceSwapper = () => {
   );
   const assetsFolder = path.join(SWAP_FOLDER, "assets");
   const folders = ["css", "media", "img", "glb", "js"];
-  let folder_regex_generator = "JuiceClient[\\\\/]swapper[\\\\/]assets[\\\\/](";
+  let folder_regex_generator = "SmudgyClient[\\\\/]swapper[\\\\/]assets[\\\\/](";
   folder_regex_generator += folders.join("|");
   folder_regex_generator += ")[\\\\/][^\\\\/]+\\.[^.]+$";
   let folder_regex = new RegExp(folder_regex_generator, "");

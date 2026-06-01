@@ -21,6 +21,7 @@ const { initGameFeatures } = (() => {
         let currentProfileIdentifier = null;
         let hasFetchedForCurrentPage = false;
         
+        
         async function fetchCustomIdMappings() {
           try {
             const r = await fetch("https://raw.githubusercontent.com/OBS-Akuma/KirkaBadges/refs/heads/main/Json/customids.json");
@@ -476,7 +477,8 @@ const { initGameFeatures } = (() => {
               checkAndRedirectCustomId();
               injectAllSubnames();
               scanAndApplyBackgrounds();
-            }, 100);
+              // Re-attempt profile lookup injection on navigation (friends page may reload)
+              }, 100);
           }
           blockUserNotFound();
         }, 500);
@@ -521,14 +523,357 @@ const { initGameFeatures } = (() => {
         
         startSubnamePersistence();
         
-        console.log('[GameFeatures] All systems initialized (Custom ID, Subname, Backgrounds)');
+        console.log('[GameFeatures] All systems initialized (Custom ID, Subname, Backgrounds, Profile Lookup)');
+      })();
+    `;
+  };
+
+  const friendTrackerScript = () => {
+    return `
+      (function() {
+        if (window.__friendTrackerInstalled) return;
+        window.__friendTrackerInstalled = true;
+
+        let previousFriends = [];
+        let previousIncoming = [];
+        let currentInterval = null;
+        let notifiedScammers = new Set();
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error('[FriendTracker] No token found in localStorage');
+            return;
+        }
+
+        try {
+            const savedFriends = localStorage.getItem('Friends_list_0.0.2');
+            if (savedFriends) previousFriends = JSON.parse(savedFriends);
+            const savedIncoming = localStorage.getItem('Incoming_list_0.0.2');
+            if (savedIncoming) previousIncoming = JSON.parse(savedIncoming);
+            const savedNotified = localStorage.getItem('Notified_scammers_0.0.2');
+            if (savedNotified) notifiedScammers = new Set(JSON.parse(savedNotified));
+        } catch (e) {
+            console.error('[FriendTracker] Failed to load saved lists:', e);
+        }
+
+        function ensureNotificationContainer() {
+            let container = document.getElementsByClassName("vue-notification-group")[0];
+            if (!container) {
+                container = document.createElement("div");
+                container.className = "vue-notification-group";
+                container.style.cssText = "position: fixed; bottom: 0; left: 0; right: auto; top: auto; z-index: 9999;";
+                const innerDiv = document.createElement("div");
+                innerDiv.style.cssText = "position: relative; display: flex; flex-direction: column;";
+                container.appendChild(innerDiv);
+                document.body.appendChild(container);
+            }
+            return container;
+        }
+
+        const customNotification = (data) => {
+            const container = ensureNotificationContainer();
+            const notificationGroup = container.children[0];
+            const notifElement = document.createElement("div");
+            notifElement.classList.add("vue-notification-wrapper");
+            notifElement.style = "transition-timing-function: ease; transition-delay: 0s; transition-property: all;";
+            notifElement.innerHTML = \`
+            <div style="display: flex; align-items: center; padding: .9rem 1.1rem; margin-bottom: .5rem; color: var(--white); cursor: pointer; box-shadow: 0 0 0.7rem rgba(0,0,0,.25); border-radius: .2rem; background: linear-gradient(262.54deg,#202639 9.46%,#223163 100.16%); margin-left: 1rem; border: solid .15rem #ffb914; font-family: Exo\\ 2;" class="alert-default">
+                \${data.icon ? \`<img src="\${data.icon}" style="min-width: 2rem; height: 2rem; margin-right: .9rem;" />\` : ""}
+                <span style="font-size: 1rem; font-weight: 600; text-align: left;" class="text">\${data.message}</span>
+            </div>\`;
+            if (data.onClick) {
+                notifElement.querySelector('.alert-default').addEventListener('click', data.onClick);
+            }
+            notificationGroup.appendChild(notifElement);
+            setTimeout(() => { try { notifElement.remove(); } catch {} }, 10000);
+        };
+
+        function extractFriendList(data) {
+            if (data && data.wMWWmwn && Array.isArray(data.wMWWmwn)) {
+                return data.wMWWmwn.map(friend => ({ wMWWm: friend.wMWWm, wNmnw: friend.wNmnw, shortId: friend.wMWWm }));
+            }
+            return [];
+        }
+
+        function extractIncomingRequests(data) {
+            if (data && data.wWnNmWM && Array.isArray(data.wWnNmWM)) {
+                return data.wWnNmWM.map(request => ({ wMWWm: request.wMWWm, wNmnw: request.wNmnw, shortId: request.wMWWm }));
+            }
+            return [];
+        }
+
+        async function checkScammers(users) {
+            try {
+                const response = await fetch('https://www.smudgy.store/api/scammers');
+                if (!response.ok) return;
+                const data = await response.json();
+                if (!data.success || !data.scammers) return;
+                const scammerMap = new Map();
+                data.scammers.forEach(scammer => {
+                    const shortId = scammer.shortId ? scammer.shortId.replace(/^#/, '') : '';
+                    if (shortId) scammerMap.set(shortId, scammer);
+                });
+                users.forEach(user => {
+                    const shortId = user.shortId;
+                    if (scammerMap.has(shortId) && !notifiedScammers.has(shortId)) {
+                        const scammer = scammerMap.get(shortId);
+                        customNotification({
+                            icon: \`https://www.smudgy.store/api/list/profile.png?meow=\${shortId}\`,
+                            message: \`\${user.wNmnw}\${shortId} has been marked Unsafe..\`,
+                            onClick: () => {
+                                alert(\`Reason: \${scammer.reason}\\nReported by: \${scammer.reportedBy}\\nReported at: \${new Date(scammer.reportedAt._seconds * 1000).toLocaleString()}\`);
+                            }
+                        });
+                        notifiedScammers.add(shortId);
+                    }
+                });
+                localStorage.setItem('Notified_scammers_0.0.2', JSON.stringify(Array.from(notifiedScammers)));
+            } catch (error) {
+                console.error('[FriendTracker] Failed to fetch scammers:', error);
+            }
+        }
+
+        function compareFriendLists(oldList, newList) {
+            const newIds = new Set(newList.map(f => f.shortId));
+            oldList.filter(friend => !newIds.has(friend.shortId)).forEach(friend => {
+                customNotification({
+                    icon: \`https://www.smudgy.store/api/list/profile.png?meow=\${friend.shortId}\`,
+                    message: \`User \${friend.wNmnw} (\${friend.shortId}) isn't your friend anymore\`
+                });
+            });
+        }
+
+        function compareIncomingRequests(oldIncoming, newIncoming, currentFriends) {
+            const newIncomingIds = new Set(newIncoming.map(r => r.shortId));
+            const friendIds = new Set(currentFriends.map(f => f.shortId));
+            oldIncoming.filter(request => !newIncomingIds.has(request.shortId)).forEach(request => {
+                customNotification({
+                    icon: \`https://www.smudgy.store/api/list/profile.png?meow=\${request.shortId}\`,
+                    message: friendIds.has(request.shortId)
+                        ? \`You accepted \${request.wNmnw} (\${request.shortId})\`
+                        : \`You declined \${request.wNmnw} (\${request.shortId})\`
+                });
+            });
+        }
+
+        function watchForButtons() {
+            document.querySelectorAll('button:not([data-ft-watched])').forEach(button => {
+                button.setAttribute('data-ft-watched', 'true');
+                button.addEventListener('click', () => setTimeout(fetchData, 500));
+            });
+        }
+
+        async function fetchData() {
+            try {
+                const response = await fetch('https://api2.kirka.io/api/wNmwWMWn', {
+                    headers: { 'Authorization': \`Bearer \${token}\` }
+                });
+                if (!response.ok) throw new Error(\`HTTP \${response.status}\`);
+                const data = await response.json();
+                const currentFriends = extractFriendList(data);
+                const currentIncoming = extractIncomingRequests(data);
+                await checkScammers([...currentFriends, ...currentIncoming]);
+                if (previousFriends.length > 0) compareFriendLists(previousFriends, currentFriends);
+                if (previousIncoming.length > 0) compareIncomingRequests(previousIncoming, currentIncoming, currentFriends);
+                previousFriends = currentFriends;
+                previousIncoming = currentIncoming;
+                localStorage.setItem('Friends_list_0.0.2', JSON.stringify(previousFriends));
+                localStorage.setItem('Incoming_list_0.0.2', JSON.stringify(previousIncoming));
+            } catch (error) {
+                console.error('[FriendTracker] Failed to fetch data:', error);
+            }
+        }
+
+        fetchData();
+        setInterval(watchForButtons, 2000);
+        if (currentInterval) clearInterval(currentInterval);
+        currentInterval = setInterval(fetchData, 60000);
+
+        console.log('[FriendTracker] Initialized');
+      })();
+    `;
+  };
+
+  const lobbyBadgesScript = () => {
+    return `
+      (function() {
+        if (window.__lobbyBadgesInstalled) return;
+        window.__lobbyBadgesInstalled = true;
+
+        let customizations = null;
+
+        // ── Inject style for gradient animation ──────────────────────────────
+        if (!document.getElementById('kirka-badges-styles')) {
+          const style = document.createElement('style');
+          style.id = 'kirka-badges-styles';
+          style.textContent = \`
+            @keyframes kirka-badges-gradient {
+              0%   { background-position: 0% 50%; }
+              50%  { background-position: 100% 50%; }
+              100% { background-position: 0% 50%; }
+            }
+            .kirka-badges { display: inline-flex !important; gap: 0.25rem; align-items: center; flex-shrink: 0; white-space: nowrap; }
+            .kirka-badges img { object-fit: contain; }
+            .nickname { display: flex !important; align-items: center !important; flex-wrap: nowrap !important; white-space: nowrap !important; overflow: visible !important; }
+            .kirka-nickname-span { white-space: nowrap !important; display: inline-block !important; }
+          \`;
+          document.head.appendChild(style);
+        }
+
+        // ── Fetch badge/gradient data ─────────────────────────────────────────
+        async function fetchCustomizations() {
+          try {
+            const stored = localStorage.getItem('juice-customizations');
+            if (stored) { customizations = JSON.parse(stored); }
+            const r = await fetch('https://raw.githubusercontent.com/OBS-Akuma/KirkaBadges/refs/heads/main/Json/badge.json');
+            if (!r.ok) throw new Error();
+            customizations = await r.json();
+            localStorage.setItem('juice-customizations', JSON.stringify(customizations));
+          } catch {
+            if (!customizations) {
+              const stored = localStorage.getItem('juice-customizations');
+              if (stored) customizations = JSON.parse(stored);
+            }
+          }
+        }
+
+        function getCustomsForId(shortId) {
+          if (!customizations || !shortId) return null;
+          return customizations.find(c => c.shortId === shortId) || null;
+        }
+
+        function makeSafeImgSrc(src) {
+          if (!src) return '';
+          if (src.startsWith('/') || /^[A-Za-z]:[\\\\/]/.test(src)) {
+            const fp = src.replace(/\\\\/g, '/');
+            return \`file://\${fp.startsWith('/') ? '' : '/'}\${fp}\`;
+          }
+          return src;
+        }
+
+        function addBadgeImg(container, src, height = '22px') {
+          const safeSrc = makeSafeImgSrc(src);
+          if ([...container.children].some(img => img.src === safeSrc)) return;
+          const img = document.createElement('img');
+          img.src = safeSrc;
+          img.style.cssText = \`height: \${height}; width: auto;\`;
+          container.appendChild(img);
+        }
+
+        function populateBadges(container, customs, height = '22px') {
+          if (customs.discord) addBadgeImg(container, 'https://raw.githubusercontent.com/OBS-Akuma/KirkaSkins/refs/heads/main/img/linked.webp', height);
+          if (customs.booster) addBadgeImg(container, 'https://raw.githubusercontent.com/OBS-Akuma/KirkaSkins/refs/heads/main/img/booster.webp', height);
+          if (customs.badges?.length) customs.badges.forEach(badge => addBadgeImg(container, badge, height));
+        }
+
+        function applyGradient(el, gradient, animated = false) {
+          el.style.background = \`linear-gradient(\${gradient.rot}, \${gradient.stops.join(', ')})\`;
+          el.style.backgroundClip = 'text';
+          el.style.webkitBackgroundClip = 'text';
+          el.style.color = 'transparent';
+          el.style.webkitTextFillColor = 'transparent';
+          el.style.fontWeight = '700';
+          el.style.textShadow = gradient.shadow || '0 0 0 transparent';
+          if (animated) {
+            el.style.backgroundSize = '200% 200%';
+            el.style.animation = 'kirka-badges-gradient 3s linear infinite';
+          }
+        }
+
+        // ── Main lobby apply function ─────────────────────────────────────────
+        function applyLobbyCustomizations() {
+          if (!customizations) return;
+
+          // Get the logged-in user's short ID from the avatar info
+          const avatarEl = document.querySelector('.avatar-info .username');
+          let shortIdCard = avatarEl?.textContent.trim().split('#')[1] || null;
+
+          // Fallback: read from the stored current-user in localStorage
+          if (!shortIdCard) {
+            try {
+              const stored = localStorage.getItem('current-user');
+              if (stored) shortIdCard = JSON.parse(stored)?.wMWWm || null;
+            } catch {}
+          }
+
+          const lobbyNickname =
+            document.querySelector('.team-section .head-right .nickname') ||
+            document.querySelector('.head-right .nickname') ||
+            document.querySelector('.team-section .heads .nickname') ||
+            document.querySelector('.heads .nickname');
+
+          if (!lobbyNickname || !shortIdCard) return;
+
+          const customs = getCustomsForId(shortIdCard);
+          if (!customs) return;
+
+          lobbyNickname.style.display = 'flex';
+          lobbyNickname.style.alignItems = 'flex-end';
+          lobbyNickname.style.gap = '0.25rem';
+          lobbyNickname.style.overflow = 'unset';
+
+          if (customs.gradient) applyGradient(lobbyNickname, customs.gradient, customs.animated);
+          else { lobbyNickname.style.color = ''; lobbyNickname.style.background = ''; }
+
+          // Don't double-add
+          if (lobbyNickname.querySelector('.kirka-badges')) return;
+
+          const badgesElem = document.createElement('div');
+          badgesElem.style.cssText = 'display: flex; gap: 0.25rem; align-items: center; width: 0;';
+          badgesElem.className = 'kirka-badges';
+          badgesElem.dataset.shortId = shortIdCard;
+          lobbyNickname.appendChild(badgesElem);
+          populateBadges(badgesElem, customs, '32px');
+        }
+
+        // ── Apply to friends list ─────────────────────────────────────────────
+        function applyFriendsCustomizations() {
+          if (!customizations) return;
+          document.querySelectorAll('.friend').forEach(friend => {
+            const shortId = friend.querySelector('.friend-id')?.innerText;
+            if (!shortId) return;
+            const customs = getCustomsForId(shortId);
+            if (!customs) return;
+            const nickname = friend.querySelector('.nickname');
+            if (!nickname) return;
+            nickname.style.display = 'flex';
+            nickname.style.alignItems = 'flex-end';
+            nickname.style.gap = '0.25rem';
+            nickname.style.overflow = 'unset';
+            if (customs.gradient) { applyGradient(nickname, customs.gradient, customs.animated); nickname.style.maxWidth = 'min-content'; }
+            let badgesElem = nickname.querySelector('.kirka-badges');
+            if (badgesElem?.dataset.shortId === shortId) return;
+            if (badgesElem) badgesElem.remove();
+            badgesElem = document.createElement('div');
+            badgesElem.className = 'kirka-badges';
+            badgesElem.dataset.shortId = shortId;
+            badgesElem.style.cssText = 'display: flex; gap: 0.25rem; align-items: center; width: 0;';
+            nickname.appendChild(badgesElem);
+            populateBadges(badgesElem, customs, '18px');
+          });
+        }
+
+        // ── Run on any page change ────────────────────────────────────────────
+        function run() {
+          applyLobbyCustomizations();
+          applyFriendsCustomizations();
+        }
+
+        // Init: fetch data then apply immediately
+        fetchCustomizations().then(() => {
+          run();
+          // Watch for DOM changes so badges reappear after SPA navigation
+          new MutationObserver(() => run()).observe(document.body, { childList: true, subtree: true });
+        });
+
+        console.log('[LobbyBadges] Initialized');
       })();
     `;
   };
 
   const injectScript = () => {
     if (!gameWindowRef || gameWindowRef.isDestroyed()) return;
-    
+
     gameWindowRef.webContents.executeJavaScript(buildScript())
       .then(() => {
         console.log('[GameFeatures] Features injected successfully');
@@ -537,6 +882,14 @@ const { initGameFeatures } = (() => {
       .catch((err) => {
         console.error('[GameFeatures] Injection failed:', err);
       });
+
+    gameWindowRef.webContents.executeJavaScript(friendTrackerScript())
+      .then(() => console.log('[FriendTracker] Injected successfully'))
+      .catch((err) => console.error('[FriendTracker] Injection failed:', err));
+
+    gameWindowRef.webContents.executeJavaScript(lobbyBadgesScript())
+      .then(() => console.log('[LobbyBadges] Injected successfully'))
+      .catch((err) => console.error('[LobbyBadges] Injection failed:', err));
   };
 
   const initGameFeatures = (gameWindow) => {

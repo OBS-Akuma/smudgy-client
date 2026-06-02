@@ -1,3 +1,4 @@
+
 <h1 style="center">
     <img src="https://www.smudgy.store/uploads/icon.png" style="height: 1em">
     <span>Smudgy Client</span>
@@ -14,7 +15,11 @@
 <div align="center">
 <img src="https://raw.githubusercontent.com/OBS-Akuma/KirkaBadges/refs/heads/main/Json/img/SmudgyClient-88x31.gif" height="25" />
     <img src="https://starbug.neocities.org/images/buttons/Produced-By-Human-Not-By-AI-Badge-white.gif" height="25" />
+    <img height="25" alt="macosmadefor" src="https://github.com/user-attachments/assets/5aa814db-de94-45d7-966c-79bdce43453f" />
+    <img height="25" alt="windowsmadefor" src="https://github.com/user-attachments/assets/2aee68f5-383a-468e-befe-6b0fe383a7ff" />
+    <img height="25" alt="linuxmadefor" src="https://github.com/user-attachments/assets/32723445-9a91-427b-b162-20cae7ab8572" />
 </div>
+
 
 
 <br>

@@ -4,7 +4,6 @@ const { registerShortcuts } = require("../util/shortcuts");
 const { applySwitches } = require("../util/switches");
 const DiscordRPC = require("../addons/rpc");
 const { initGameFeatures } = require("./gamefeatures");
-const { initGameLogger } = require("../addons/analytics");
 const path = require("path");
 const Store = require("electron-store");
 const fs = require("fs");
@@ -43,7 +42,7 @@ ipcMain.on("update-setting", (e, key, value) => {
 ipcMain.on("open-swapper-folder", () => {
   const swapperPath = path.join(
     app.getPath("documents"),
-    "SmudgyClient/swapper/assets"
+    "JuiceClient/swapper/assets"
   );
 
   if (!fs.existsSync(swapperPath)) {
@@ -57,7 +56,7 @@ ipcMain.on("open-swapper-folder", () => {
 ipcMain.on("open-scripts-folder", () => {
   const scriptsPath = path.join(
     app.getPath("documents"),
-    "SmudgyClient/scripts"
+    "JuiceClient/scripts"
   );
 
   if (!fs.existsSync(scriptsPath)) {
@@ -71,7 +70,7 @@ ipcMain.on("open-scripts-folder", () => {
 ipcMain.on("open-sounds-folder", () => {
   const soundsPath = path.join(
     app.getPath("documents"),
-    "SmudgyClient/swapper/assets/media"
+    "JuiceClient/swapper/assets/media"
   );
 
   if (!fs.existsSync(soundsPath)) {
@@ -143,7 +142,7 @@ const createWindow = () => {
 
   const scriptsPath = path.join(
     app.getPath("documents"),
-    "SmudgyClient",
+    "JuiceClient",
     "scripts"
   );
   if (!fs.existsSync(scriptsPath)) {
@@ -181,7 +180,6 @@ const createWindow = () => {
         [`${base_url}quests/hourly`]: "Viewing hourly quests meow",
         [`${base_url}friends`]: "Viewing friends meow",
         [`${base_url}inventory`]: "Viewing their inventory meow",
-        [`${base_url}/profile/NUGGET`]: "Viewing the smudgy client owners Profle",
       };
 
       let state;
@@ -191,43 +189,12 @@ const createWindow = () => {
       } else if (url.startsWith(`${base_url}games/`)) {
         state = "In a match meow";
       } else if (url.startsWith(`${base_url}profile/`)) {
-        const profileMatch = url.match(`${base_url}profile/(.+)`);
-        if (profileMatch && profileMatch[1]) {
-          const shortId = profileMatch[1];
-          state = `Viewing player profile #${shortId}`;
-
-          const randomNumbers = Math.floor(Math.random() * 1000000);
-          const activity = gameWindow.DiscordRPC.defaultActivity();
-          activity.state = state;
-          activity.smallImageKey = `https://www.smudgy.store/api/list/profile.png?meow=${shortId}&v=${randomNumbers}`;
-          activity.smallImageText = `Viewing ${shortId}'s profile`;
-          gameWindow.DiscordRPC.setActivity(activity);
-        } else {
-          state = "Viewing a profile meow";
-          const activity = gameWindow.DiscordRPC.defaultActivity();
-          activity.state = state;
-          delete activity.smallImageKey;
-          delete activity.smallImageText;
-          gameWindow.DiscordRPC.setActivity(activity);
-        }
+        state = "Viewing a profile meow";
       } else {
         state = "In the lobby meow";
-        const activity = gameWindow.DiscordRPC.defaultActivity();
-        activity.state = state;
-        delete activity.smallImageKey;
-        delete activity.smallImageText;
-        gameWindow.DiscordRPC.setActivity(activity);
       }
 
-      if (!url.startsWith(`${base_url}profile/`) && !stateMap[url] && !url.startsWith(`${base_url}games/`)) {
-        const activity = gameWindow.DiscordRPC.defaultActivity();
-        activity.state = state;
-        delete activity.smallImageKey;
-        delete activity.smallImageText;
-        gameWindow.DiscordRPC.setActivity(activity);
-      } else if (!url.startsWith(`${base_url}profile/`)) {
-        gameWindow.DiscordRPC.setState(state);
-      }
+      gameWindow.DiscordRPC.setState(state);
     }
   });
 
@@ -236,7 +203,6 @@ const createWindow = () => {
     `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.116 Safari/537.36 Electron/10.4.7 SmudgyClient/${app.getVersion()}`
   );
   initGameFeatures(gameWindow);
-  initGameLogger(gameWindow.webContents);
   gameWindow.removeMenu();
   gameWindow.maximize();
 

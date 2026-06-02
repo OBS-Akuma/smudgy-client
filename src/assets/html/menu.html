@@ -15,7 +15,7 @@
     <div class="sep"></div>
     <div class="tab-group">
       <div data-tab="ui" class="juice tab active">
-        <i class="fas fa-tv"></i>
+        <i class="fas fa-solid fa-desktop"></i>
         UI
       </div>
       <div data-tab="game" class="juice tab">
@@ -26,7 +26,7 @@
     <div class="sep"></div>
     <div class="tab-group">
       <div data-tab="performance" class="juice tab">
-        <i class="fas fa-tachometer-alt"></i>
+        <i class="fas fa-solid fa-chart-simple"></i>
         Performance
       </div>
       <div data-tab="client" class="juice tab">
@@ -38,7 +38,7 @@
         Plugins
       </div>
       <div data-tab="about" class="juice tab">
-        <i class="fas fa-circle-info"></i>
+        <i class="fas fa-solid fa-question"></i>
         About
       </div>
       <div data-tab="assets" class="juice tab">
@@ -47,14 +47,10 @@
       </div>
       <div class="assets-subtabs" id="assets-subtabs" style="display:none;">
         <div class="assets-subtab active" data-assets-tab="css"><i class="fas fa-code"></i> CSS</div>
-        <div class="assets-subtab" data-assets-tab="textures"><i class="fas fa-image"></i> Textures</div>
-        <div class="assets-subtab" data-assets-tab="crosshairs"><i class="fas fa-crosshairs"></i> Crosshairs</div>
-        <div class="assets-subtab" data-assets-tab="maps"><i class="fas fa-map"></i> Maps</div>
-        <div class="assets-subtab" data-assets-tab="favorites"><i class="fas fa-star"></i> Favorites</div>
-      </div>
-      <div data-tab="analytics" class="juice tab">
-        <i class="fas fa-chart-line"></i>
-        Analytics
+  <div class="assets-subtab" data-assets-tab="textures"><i class="fas fa-image"></i> Textures</div>
+  <div class="assets-subtab" data-assets-tab="crosshairs"><i class="fas fa-crosshairs"></i> Crosshairs</div>
+  <div class="assets-subtab" data-assets-tab="maps"><i class="fas fa-map"></i> Maps</div>
+  <div class="assets-subtab" data-assets-tab="favorites"><i class="fas fa-star"></i> Favorites</div>
       </div>
     </div>
     <div class="footer">
@@ -389,6 +385,60 @@
             </span>
           </div>
           <button class="juice change-keybind"></button>
+        </div>
+      </div>
+      <div class="option-group">
+        <div class="option">
+          <div class="left requires-refresh">
+            <span>General News</span>
+            <span class="description">Smudgy-related news</span>
+          </div>
+          <div class="checkbox">
+            <input
+              type="checkbox"
+              id="general_news"
+              data-setting="general_news"
+            />
+            <label for="general_news"></label>
+          </div>
+        </div>
+        <div class="option">
+          <div class="left requires-refresh">
+            <span>Promotional News</span>
+            <span class="description"
+              >Live events (has a "LIVE" indicator)</span
+            >
+          </div>
+          <div class="checkbox">
+            <input
+              type="checkbox"
+              id="promotional_news"
+              data-setting="promotional_news"
+            />
+            <label for="promotional_news"></label>
+          </div>
+        </div>
+        <div class="option">
+          <div class="left requires-refresh">
+            <span>Event News</span>
+            <span class="description">Events that you can participate in</span>
+          </div>
+          <div class="checkbox">
+            <input type="checkbox" id="event_news" data-setting="event_news" />
+            <label for="event_news"></label>
+          </div>
+        </div>
+        <div class="option">
+          <div class="left requires-refresh">
+            <span>Alerts</span>
+            <span class="description"
+              >Important alerts mainly posted by Kirka Staff</span
+            >
+          </div>
+          <div class="checkbox">
+            <input type="checkbox" id="alert_news" data-setting="alert_news" />
+            <label for="alert_news"></label>
+          </div>
         </div>
       </div>
       <div class="option-group">
@@ -827,28 +877,6 @@
       </div>
       <div class="option-group">
         <div class="about-top compact">
-          <img src="https://ktiers.com/imgs/ktiersIcon.png" />
-          <div class="about-info compact">
-            <span class="title">Kirka Tiers</span>
-            <div class="about-more">
-              <div></div>
-              <div class="about-buttons">
-                <a
-                  href="https://ktiers.com"
-                  target="_blank"
-                  class="about-juice alt"
-                >
-                  <i class="fas fa-arrow-up-right-from-square"></i>
-                  <p>View</p>
-                  <div class="custom-border"></div>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="option-group">
-        <div class="about-top compact">
           <img src="https://www.redditstatic.com/shreddit/assets/favicon/192x192.png" />
           <div class="about-info compact">
             <span class="title">Kirka Reddit</span>
@@ -878,56 +906,13 @@
         <div id="assets-grid" class="assets-grid" style="display:none;"></div>
       </div>
     </div>
-
-    <!-- ANALYTICS TAB -->
-    <div id="analytics-options" class="juice options">
+    <div id="news-options" class="juice options">
       <div class="option-group">
-        <div class="analytics-header">
-          <div class="analytics-stat-cards">
-            <div class="analytics-stat-card">
-              <i class="fas fa-clock"></i>
-              <div class="analytics-stat-value" id="analytics-total-time">—</div>
-              <div class="analytics-stat-label">Total Playtime</div>
-            </div>
-            <div class="analytics-stat-card">
-              <i class="fas fa-gamepad"></i>
-              <div class="analytics-stat-value" id="analytics-total-games">—</div>
-              <div class="analytics-stat-label">Games Played</div>
-            </div>
-            <div class="analytics-stat-card">
-              <i class="fas fa-hourglass-half"></i>
-              <div class="analytics-stat-value" id="analytics-avg-time">—</div>
-              <div class="analytics-stat-label">Avg. Game Time</div>
-            </div>
-            <div class="analytics-stat-card">
-              <i class="fas fa-calendar-day"></i>
-              <div class="analytics-stat-value" id="analytics-today-time">—</div>
-              <div class="analytics-stat-label">Today</div>
-            </div>
-          </div>
+        <div id="news-loading" class="assets-loading" style="display:none;">
+          <i class="fas fa-spinner fa-spin"></i> Loading...
         </div>
-      </div>
-      <div class="option-group">
-        <div class="analytics-section-title">
-          <i class="fas fa-calendar-week"></i>
-          Playtime by Day
-        </div>
-        <div class="analytics-bar-chart" id="analytics-bar-chart">
-          <div class="analytics-empty" id="analytics-empty-state">
-            <i class="fas fa-chart-line"></i>
-            <span>No data yet, play some games first ;3</span>
-          </div>
-        </div>
-      </div>
-      <div class="option-group">
-        <div class="analytics-section-title">
-          <i class="fas fa-list"></i>
-          Recent Sessions
-        </div>
-        <div class="analytics-sessions" id="analytics-sessions-list">
-        </div>
+        <div id="news-feed" style="display:none;"></div>
       </div>
     </div>
-
   </div>
 </div>

@@ -47,10 +47,14 @@
       </div>
       <div class="assets-subtabs" id="assets-subtabs" style="display:none;">
         <div class="assets-subtab active" data-assets-tab="css"><i class="fas fa-code"></i> CSS</div>
-  <div class="assets-subtab" data-assets-tab="textures"><i class="fas fa-image"></i> Textures</div>
-  <div class="assets-subtab" data-assets-tab="crosshairs"><i class="fas fa-crosshairs"></i> Crosshairs</div>
-  <div class="assets-subtab" data-assets-tab="maps"><i class="fas fa-map"></i> Maps</div>
-  <div class="assets-subtab" data-assets-tab="favorites"><i class="fas fa-star"></i> Favorites</div>
+        <div class="assets-subtab" data-assets-tab="textures"><i class="fas fa-image"></i> Textures</div>
+        <div class="assets-subtab" data-assets-tab="crosshairs"><i class="fas fa-crosshairs"></i> Crosshairs</div>
+        <div class="assets-subtab" data-assets-tab="maps"><i class="fas fa-map"></i> Maps</div>
+        <div class="assets-subtab" data-assets-tab="favorites"><i class="fas fa-star"></i> Favorites</div>
+      </div>
+      <div data-tab="analytics" class="juice tab">
+        <i class="fas fa-chart-line"></i>
+        Analytics
       </div>
       <div data-tab="news" class="juice tab">
         <i class="far fa-newspaper"></i>
@@ -932,6 +936,57 @@
         <div id="assets-grid" class="assets-grid" style="display:none;"></div>
       </div>
     </div>
+
+    <!-- ANALYTICS TAB -->
+    <div id="analytics-options" class="juice options">
+      <div class="option-group">
+        <div class="analytics-header">
+          <div class="analytics-stat-cards">
+            <div class="analytics-stat-card">
+              <i class="fas fa-clock"></i>
+              <div class="analytics-stat-value" id="analytics-total-time">—</div>
+              <div class="analytics-stat-label">Total Playtime</div>
+            </div>
+            <div class="analytics-stat-card">
+              <i class="fas fa-gamepad"></i>
+              <div class="analytics-stat-value" id="analytics-total-games">—</div>
+              <div class="analytics-stat-label">Games Played</div>
+            </div>
+            <div class="analytics-stat-card">
+              <i class="fas fa-hourglass-half"></i>
+              <div class="analytics-stat-value" id="analytics-avg-time">—</div>
+              <div class="analytics-stat-label">Avg. Game Time</div>
+            </div>
+            <div class="analytics-stat-card">
+              <i class="fas fa-calendar-day"></i>
+              <div class="analytics-stat-value" id="analytics-today-time">—</div>
+              <div class="analytics-stat-label">Today</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="option-group">
+        <div class="analytics-section-title">
+          <i class="fas fa-calendar-week"></i>
+          Playtime by Day
+        </div>
+        <div class="analytics-bar-chart" id="analytics-bar-chart">
+          <div class="analytics-empty" id="analytics-empty-state">
+            <i class="fas fa-chart-line"></i>
+            <span>No data yet play some games first :3</span>
+          </div>
+        </div>
+      </div>
+      <div class="option-group">
+        <div class="analytics-section-title">
+          <i class="fas fa-list"></i>
+          Recent Sessions
+        </div>
+        <div class="analytics-sessions" id="analytics-sessions-list">
+        </div>
+      </div>
+    </div>
+
     <div id="news-options" class="juice options">
       <div class="option-group">
         <div id="news-loading" class="assets-loading" style="display:none;">

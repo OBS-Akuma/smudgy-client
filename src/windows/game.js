@@ -4,6 +4,7 @@ const { registerShortcuts } = require("../util/shortcuts");
 const { applySwitches } = require("../util/switches");
 const DiscordRPC = require("../addons/rpc");
 const { initGameFeatures } = require("./gamefeatures");
+const { initGameLogger } = require("./analytics");
 const path = require("path");
 const Store = require("electron-store");
 const fs = require("fs");
@@ -194,8 +195,7 @@ const createWindow = () => {
         if (profileMatch && profileMatch[1]) {
           const shortId = profileMatch[1];
           state = `Viewing player profile #${shortId}`;
-          
-          // Set the profile picture as small image with random number to bypass cache
+
           const randomNumbers = Math.floor(Math.random() * 1000000);
           const activity = gameWindow.DiscordRPC.defaultActivity();
           activity.state = state;
@@ -236,6 +236,7 @@ const createWindow = () => {
     `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.116 Safari/537.36 Electron/10.4.7 SmudgyClient/${app.getVersion()}`
   );
   initGameFeatures(gameWindow);
+  initGameLogger(gameWindow.webContents);
   gameWindow.removeMenu();
   gameWindow.maximize();
 

@@ -1,4 +1,3 @@
-
 <h1 style="center">
     <img src="https://www.smudgy.store/uploads/icon.png" style="height: 1em">
     <span>Smudgy Client</span>
@@ -18,6 +17,7 @@
     <img height="25" alt="macosmadefor" src="https://github.com/user-attachments/assets/5aa814db-de94-45d7-966c-79bdce43453f" />
     <img height="25" alt="windowsmadefor" src="https://github.com/user-attachments/assets/2aee68f5-383a-468e-befe-6b0fe383a7ff" />
     <img height="25" alt="linuxmadefor" src="https://github.com/user-attachments/assets/32723445-9a91-427b-b162-20cae7ab8572" />
+    <img height="25" alt="IdiotProof" src="https://github.com/user-attachments/assets/1a28c8e5-9913-4946-b004-832aaf22c9e4" />
 </div>
 
 

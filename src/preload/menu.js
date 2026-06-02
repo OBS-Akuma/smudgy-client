@@ -1,7 +1,6 @@
 const { ipcRenderer } = require("electron");
 const fs = require("fs");
 const path = require("path");
-const { app } = require("electron");
 const { version } = require("../../package.json");
 
 class Menu {
@@ -26,7 +25,7 @@ class Menu {
       scripts: this.menu.querySelector("#scripts-options"),
       about: this.menu.querySelector("#about-client"),
       assets: this.menu.querySelector("#assets-options"),
-      analytics: this.menu.querySelector("#analytics-options"),
+      news: this.menu.querySelector("#news-options"),
     };
   }
 
@@ -61,7 +60,7 @@ class Menu {
     this.handleDragAndPosition();
     this.handleAboutLinks();
     this.initAssets();
-    this.initAnalytics();
+    this.initNews();
     this.localStorage.getItem("juice-menu-tab")
       ? this.handleTabChange(
           this.menu.querySelector(
@@ -464,6 +463,8 @@ class Menu {
     styleEl.innerHTML = `.right-interface, .play-content, .players-lobby, .heads[data-v-00ce7b25], .logo, .playerholderelement { zoom: ${value}; }`;
   }
 
+  // ── Always Show In-Game Menu ──────────────────────────────────────────────
+
   injectAlwaysShowIngameMenu() {
     if (document.getElementById("juice-always-show-ingame-menu")) return;
     const link = document.createElement("link");
@@ -477,6 +478,8 @@ class Menu {
     const el = document.getElementById("juice-always-show-ingame-menu");
     if (el) el.remove();
   }
+
+  // ─────────────────────────────────────────────────────────────────────────
 
   handleMenuKeybindChange() {
     const changeKeybindButton = this.menu.querySelector(".change-keybind");
@@ -631,14 +634,10 @@ class Menu {
     tab.classList.add("active");
     this.tabToContentMap[tab.dataset.tab].classList.add("active");
 
+    // Show/hide assets subtabs in sidebar
     const subtabs = this.menu.querySelector("#assets-subtabs");
     if (subtabs) {
       subtabs.style.display = tabName === "assets" ? "flex" : "none";
-    }
-
-    // Reload analytics data every time the tab is opened
-    if (tabName === "analytics") {
-      this.loadAnalytics();
     }
   }
 
@@ -1054,175 +1053,6 @@ class Menu {
     document.head.appendChild(script);
   }
 
-  // ── Analytics ─────────────────────────────────────────────────────────────
-
-  initAnalytics() {
-    // Wire up the tab click to reload data each time
-    const analyticsTab = this.menu.querySelector(`[data-tab="analytics"]`);
-    if (analyticsTab) {
-      analyticsTab.addEventListener("click", () => this.loadAnalytics());
-    }
-  }
-
-  async loadAnalytics() {
-    const analyticsPath = path.join(
-      require("electron").remote
-        ? require("electron").remote.app.getPath("documents")
-        : ipcRenderer.sendSync("get-documents-path"),
-      "SmudgyClient",
-      "clientdata",
-      "analytics.json"
-    );
-
-    let data = { score: [], playtime: [] };
-
-    try {
-      if (fs.existsSync(analyticsPath)) {
-        data = JSON.parse(fs.readFileSync(analyticsPath, "utf8")) || data;
-      }
-    } catch (err) {
-      console.error("[Analytics] Failed to read analytics.json:", err);
-    }
-
-    this.renderAnalytics(data);
-  }
-
-  renderAnalytics(data) {
-    const playtime = data.playtime || [];
-
-    // ── Helpers ──────────────────────────────────────────────────────────────
-    const fmtDuration = (ms) => {
-      if (!ms || ms < 0) return "0m";
-      const totalSec = Math.floor(ms / 1000);
-      const h = Math.floor(totalSec / 3600);
-      const m = Math.floor((totalSec % 3600) / 60);
-      const s = totalSec % 60;
-      if (h > 0) return `${h}h ${m}m`;
-      if (m > 0) return `${m}m ${s}s`;
-      return `${s}s`;
-    };
-
-    const fmtTime = (iso) => {
-      try {
-        return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-      } catch { return ""; }
-    };
-
-    // ── Aggregate stats ───────────────────────────────────────────────────────
-    let totalMs = 0;
-    let totalGames = 0;
-    playtime.forEach((day) => {
-      totalMs += day.playtime || 0;
-      totalGames += (day.games || []).length;
-    });
-
-    const today = new Date();
-    const todayStr = [
-      today.getFullYear(),
-      String(today.getMonth() + 1).padStart(2, "0"),
-      String(today.getDate()).padStart(2, "0"),
-    ].join("-");
-    const todayEntry = playtime.find((d) => d.date === todayStr);
-    const todayMs = todayEntry ? todayEntry.playtime || 0 : 0;
-    const avgMs = totalGames > 0 ? Math.floor(totalMs / totalGames) : 0;
-
-    // ── Stat cards ────────────────────────────────────────────────────────────
-    const setText = (id, val) => {
-      const el = this.menu.querySelector(`#${id}`);
-      if (el) el.textContent = val;
-    };
-
-    setText("analytics-total-time", fmtDuration(totalMs));
-    setText("analytics-total-games", totalGames);
-    setText("analytics-avg-time", fmtDuration(avgMs));
-    setText("analytics-today-time", fmtDuration(todayMs));
-
-    // ── Bar chart — last 7 days ───────────────────────────────────────────────
-    const chartEl = this.menu.querySelector("#analytics-bar-chart");
-    const emptyEl = this.menu.querySelector("#analytics-empty-state");
-    if (!chartEl) return;
-
-    // Build last-7-days array
-    const days7 = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const key = [
-        d.getFullYear(),
-        String(d.getMonth() + 1).padStart(2, "0"),
-        String(d.getDate()).padStart(2, "0"),
-      ].join("-");
-      const entry = playtime.find((p) => p.date === key);
-      days7.push({
-        label: d.toLocaleDateString([], { weekday: "short" }),
-        ms: entry ? entry.playtime || 0 : 0,
-        games: entry ? (entry.games || []).length : 0,
-      });
-    }
-
-    const hasAnyData = days7.some((d) => d.ms > 0);
-
-    if (!hasAnyData && playtime.length === 0) {
-      if (emptyEl) emptyEl.style.display = "flex";
-      chartEl.querySelectorAll(".analytics-bar-wrap").forEach((el) => el.remove());
-    } else {
-      if (emptyEl) emptyEl.style.display = "none";
-
-      const maxMs = Math.max(...days7.map((d) => d.ms), 1);
-
-      // Clear old bars
-      chartEl.querySelectorAll(".analytics-bar-wrap").forEach((el) => el.remove());
-
-      days7.forEach((day) => {
-        const pct = Math.max((day.ms / maxMs) * 100, day.ms > 0 ? 4 : 0);
-        const wrap = document.createElement("div");
-        wrap.className = "analytics-bar-wrap";
-        wrap.innerHTML = `
-          <div class="analytics-bar-tooltip">${fmtDuration(day.ms)} · ${day.games} game${day.games !== 1 ? "s" : ""}</div>
-          <div class="analytics-bar" style="height: ${pct}%"></div>
-          <div class="analytics-bar-label">${day.label}</div>
-        `;
-        chartEl.appendChild(wrap);
-      });
-    }
-
-    // ── Recent sessions ───────────────────────────────────────────────────────
-    const sessionsList = this.menu.querySelector("#analytics-sessions-list");
-    if (!sessionsList) return;
-    sessionsList.innerHTML = "";
-
-    // Flatten all games, sort newest first, take last 20
-    const allGames = [];
-    playtime.forEach((day) => {
-      (day.games || []).forEach((g) => allGames.push(g));
-    });
-    allGames.sort((a, b) => new Date(b.date) - new Date(a.date));
-    const recent = allGames.slice(0, 20);
-
-    if (!recent.length) {
-      sessionsList.innerHTML = `<div class="analytics-empty-sessions"><i class="fas fa-gamepad"></i><span>No sessions recorded yet</span></div>`;
-      return;
-    }
-
-    recent.forEach((game) => {
-      const row = document.createElement("div");
-      row.className = "analytics-session-row";
-      row.innerHTML = `
-        <div class="analytics-session-code">
-          <i class="fas fa-hashtag"></i>
-          <span>${game.gameCode || "Unknown"}</span>
-        </div>
-        <div class="analytics-session-meta">
-          <span class="analytics-session-duration">${fmtDuration(game.duration)}</span>
-          <span class="analytics-session-time">${fmtTime(game.date)}</span>
-        </div>
-      `;
-      sessionsList.appendChild(row);
-    });
-  }
-
-  // ─────────────────────────────────────────────────────────────────────────
-
   initAssets() {
     const TEXTURE_API = "https://raw.githubusercontent.com/imnotkoolkid/KCH/refs/heads/main/data/texture.json";
     const CROSSHAIR_API = "https://raw.githubusercontent.com/imnotkoolkid/KCH/refs/heads/main/data/crosshair.json";
@@ -1342,6 +1172,7 @@ class Menu {
       return card;
     };
 
+    // ── Maps grid renderer ─────────────────────────────────────────────────
     const renderMapsGrid = (grid, data) => {
       grid.innerHTML = "";
       grid.style.gridTemplateColumns = "repeat(3, 1fr)";
@@ -1399,6 +1230,7 @@ class Menu {
         grid.appendChild(card);
       });
     };
+    // ──────────────────────────────────────────────────────────────────────
 
     const renderGrid = (type) => {
       const { grid } = getEls();
@@ -1549,6 +1381,7 @@ class Menu {
       grid.style.display = "grid";
       renderGrid(currentType);
 
+      // Sync active state on sidebar subtabs
       const subtabContainer = this.menu.querySelector("#assets-subtabs");
       if (subtabContainer) {
         subtabContainer.querySelectorAll(".assets-subtab").forEach(t => {
@@ -1557,6 +1390,7 @@ class Menu {
       }
     };
 
+    // Sidebar subtab clicks
     const subtabContainer = this.menu.querySelector("#assets-subtabs");
     if (subtabContainer) {
       subtabContainer.addEventListener("click", (e) => {
@@ -1569,6 +1403,7 @@ class Menu {
       });
     }
 
+    // Main Assets tab click — show subtabs and lazy-load
     const mainTab = this.menu.querySelector(`[data-tab="assets"]`);
     if (mainTab) {
       mainTab.addEventListener("click", () => {
@@ -1709,6 +1544,131 @@ class Menu {
     });
 
     return card;
+  }
+
+  initNews() {
+    const NEWS_API = "https://raw.githubusercontent.com/OBS-Akuma/smudgy-client/refs/heads/main/Api/news.json";
+    let loaded = false;
+
+    const getEls = () => ({
+      feed: this.menu.querySelector("#news-feed"),
+      loading: this.menu.querySelector("#news-loading"),
+    });
+
+    const renderNews = (items) => {
+      const { feed, loading } = getEls();
+      if (!feed) return;
+      loading.style.display = "none";
+      feed.innerHTML = "";
+
+      const filtered = items.filter(item => item.category === "MenuNews");
+
+      if (!filtered.length) {
+        feed.innerHTML = `<div class="assets-empty"><i class="far fa-newspaper"></i><span>No news right now</span></div>`;
+        return;
+      }
+
+      filtered.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "news-menu-card";
+        card.style.cssText = `
+          width: 100%;
+          border: 4px solid #3e4d7c;
+          border-bottom: 4px solid #26335b;
+          border-top: 4px solid #4d5c8b;
+          background-color: #3b4975;
+          display: flex;
+          flex-direction: column;
+          position: relative;
+          margin-bottom: 0.5rem;
+          box-sizing: border-box;
+          ${item.link ? "cursor: pointer;" : ""}
+        `;
+
+        if (item.img && item.imgType === "banner") {
+          const img = document.createElement("img");
+          img.src = item.img;
+          img.style.cssText = "width: 100%; max-height: 7.5rem; object-fit: cover; object-position: center;";
+          card.appendChild(img);
+        }
+
+        if (item.live) {
+          const badge = document.createElement("span");
+          badge.innerText = "LIVE";
+          badge.style.cssText = `
+            position: absolute; top: 0; right: 0;
+            background-color: #4dbf4d; color: #fff;
+            padding: 0.15rem 0.25rem; font-size: 0.75rem;
+            font-weight: 600; border-radius: 0 0 0 0.25rem;
+          `;
+          card.appendChild(badge);
+        } else if (item.updatedAt && item.updatedAt > Date.now() - 432000000) {
+          const badge = document.createElement("span");
+          badge.innerText = "NEW";
+          badge.style.cssText = `
+            position: absolute; top: 0; right: 0;
+            background-color: #e24f4f; color: #fff;
+            padding: 0.15rem 0.25rem; font-size: 0.75rem;
+            font-weight: 600; border-radius: 0 0 0 0.25rem;
+          `;
+          card.appendChild(badge);
+        }
+
+        const content = document.createElement("div");
+        content.style.cssText = "padding: 0.5rem; display: flex; flex-direction: column; gap: 0.25rem; text-align: left;";
+
+        const title = document.createElement("span");
+        title.innerText = item.title;
+        title.style.cssText = "font-size: 1.2rem; font-weight: 600; color: #ffb914;";
+        content.appendChild(title);
+
+        if (item.content) {
+          const text = document.createElement("span");
+          text.innerText = item.content;
+          text.style.cssText = "font-size: 0.9rem; color: #fff;";
+          content.appendChild(text);
+        }
+
+        card.appendChild(content);
+
+        if (item.link) {
+          card.addEventListener("click", () => {
+            ipcRenderer.send("open-external", item.link);
+          });
+        }
+
+        feed.appendChild(card);
+      });
+    };
+
+    const loadNews = async () => {
+      const { feed, loading } = getEls();
+      if (!feed || !loading) return;
+      loading.style.display = "flex";
+      feed.style.display = "none";
+
+      try {
+        const res = await fetch(NEWS_API);
+        const data = await res.json();
+        loading.style.display = "none";
+        feed.style.display = "block";
+        renderNews(data);
+      } catch (err) {
+        loading.style.display = "none";
+        feed.style.display = "block";
+        feed.innerHTML = `<div class="assets-empty"><i class="fas fa-triangle-exclamation"></i><span>Failed to load news</span></div>`;
+      }
+    };
+
+    const newsTab = this.menu.querySelector(`[data-tab="news"]`);
+    if (newsTab) {
+      newsTab.addEventListener("click", () => {
+        if (!loaded) {
+          loaded = true;
+          loadNews();
+        }
+      });
+    }
   }
 
   createModal(title, description) {

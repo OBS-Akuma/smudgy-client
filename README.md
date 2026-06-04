@@ -1,6 +1,8 @@
 <h1 style="center">
     <img src="https://www.smudgy.store/uploads/icon.png" style="height: 1em">
-    <span>Smudgy Client</span>
+    <span>Smudgy Client</span> 
+    
+<span></span> 
 </h1>
 <div align="center">
         <img src="https://img.shields.io/badge/Visit-Smudgy.store-green" />
@@ -123,3 +125,10 @@
 [Xip](https://kirka.io/) for sexy [kirka](https://kirka.io/)
 
 [dawn-client](https://github.com/zVipexx/dawn-client) same client features as me, some stolen some we bot had when Forking [Juice Client](https://github.com/irrvlo/juice-client) 
+
+<div align="center">
+    
+  **you must give prominent author credit in the documentation or about box this goes for any file in this repo as of June 4th 26.)**  
+  
+</a>
+</div>

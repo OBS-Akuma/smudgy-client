@@ -58,6 +58,8 @@
 **Newest Linked User**  
 <a href="https://www.smudgy.store/api/list/woah.png" target="_blank" rel="noopener noreferrer">
   <img src="https://www.smudgy.store/api/list/woah.png" alt="Linked user badge" width="45" height="45" style="border:none; vertical-align:middle">
+
+  <img src="https://github.com/user-attachments/assets/9409e200-4f58-45d1-b616-b3658e23b909" alt="Linked user badge" width="" height="" style="border:none; vertical-align:middle">
 </a>
 </div>
 

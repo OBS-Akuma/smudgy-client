@@ -26,6 +26,7 @@ class Menu {
       about: this.menu.querySelector("#about-client"),
       assets: this.menu.querySelector("#assets-options"),
       news: this.menu.querySelector("#news-options"),
+      counts: this.menu.querySelector("#counts-options"),
     };
   }
 
@@ -61,6 +62,7 @@ class Menu {
     this.handleAboutLinks();
     this.initAssets();
     this.initNews();
+    this.initCounts();
     this.localStorage.getItem("juice-menu-tab")
       ? this.handleTabChange(
           this.menu.querySelector(
@@ -1669,6 +1671,66 @@ class Menu {
         }
       });
     }
+  }
+
+  initCounts() {
+    const listEl = this.menu.querySelector("#counts-list");
+    const clearBtn = this.menu.querySelector("#clear-localstorage");
+    const countEl = this.menu.querySelector("#counts-total");
+    if (!clearBtn || !listEl) return;
+
+    const render = () => {
+      listEl.innerHTML = "";
+      const keys = Object.keys(localStorage).sort();
+
+      if (countEl) countEl.innerText = `${keys.length} key${keys.length !== 1 ? "s" : ""}`;
+
+      if (!keys.length) {
+        listEl.innerHTML = `<div class="assets-empty"><i class="fas fa-box-open"></i><span>localStorage is empty</span></div>`;
+        return;
+      }
+
+      keys.forEach(key => {
+        const row = document.createElement("div");
+        row.className = "option";
+        row.style.cssText = "flex-direction: column; align-items: flex-start; gap: 0.15rem; word-break: break-all; cursor: default;";
+
+        const raw = localStorage.getItem(key) ?? "";
+        let preview = raw;
+        if (preview.length > 80) preview = preview.slice(0, 80) + "…";
+
+        row.innerHTML = `
+          <span style="font-weight: 600; font-size: 0.85rem;">${key}</span>
+          <span class="description" style="font-size: 0.75rem; opacity: 0.55; font-family: monospace;">${preview}</span>
+        `;
+
+        listEl.appendChild(row);
+      });
+    };
+
+    // Re-render whenever the tab is clicked so the list is always fresh
+    const countsTab = this.menu.querySelector(`[data-tab="counts"]`);
+    if (countsTab) countsTab.addEventListener("click", render);
+
+    let clickCount = 0;
+    clearBtn.addEventListener("click", () => {
+      clickCount++;
+      const textEl = clearBtn.querySelector(".text");
+      const descEl = clearBtn.querySelector(".description");
+
+      if (clickCount === 1) {
+        clearBtn.style.background = "rgba(var(--red), 0.25)";
+        textEl.innerText = "Are you sure?";
+        descEl.innerText = "Click again to confirm — this cannot be undone";
+      } else {
+        localStorage.clear();
+        clickCount = 0;
+        clearBtn.style.background = "";
+        textEl.innerText = "Clear All localStorage";
+        descEl.innerText = "Deletes every key stored in localStorage";
+        render();
+      }
+    });
   }
 
   createModal(title, description) {

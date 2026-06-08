@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smudgy Client</title>
+  <style>
+    @font-face {
+      font-family: "Kanit";
+      src: url("../Kanit-Regular.ttf") format("truetype");
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 600px;
+      height: 300px;
+      color: white;
+      text-shadow: 0 0 0.5rem black;
+      font-family: "Kanit", sans-serif;
+      -webkit-app-region: drag;
+    }
+
+    .splash {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: url("../img/Froke_banner.webp") no-repeat center center / cover;
+      border-radius: 1.5rem;
+      padding: 0.75rem 1rem;
+      box-sizing: border-box;
+      position: relative;
+    }
+
+    .border {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 0.25rem solid rgb(255, 255, 255, 0.25);
+      border-radius: 1.5rem;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+  <div class="splash">
+    <div class="status"></div>
+    <div class="ver"></div>
+  </div>
+  <div class="border"></div>
+
+  <script>
+    const splash = document.querySelector('.splash');
+    const statusDiv = document.querySelector('.status');
+    const verDiv = document.querySelector('.ver');
+    
+    splash.style.display = 'flex';
+    splash.style.flexDirection = 'column';
+    splash.style.justifyContent = 'space-between';
+    splash.style.alignItems = 'flex-start';
+    splash.insertBefore(statusDiv, splash.firstChild);
+    
+    verDiv.style.alignSelf = 'flex-end';
+    
+    fetch('https://raw.githubusercontent.com/OBS-Akuma/smudgy-client/refs/heads/main/Api/dyk.json')
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then(data => {
+        const facts = Object.values(data[0]);
+        const randomFact = facts[Math.floor(Math.random() * facts.length)];
+        const dykDiv = document.createElement('div');
+        dykDiv.textContent = randomFact;
+        dykDiv.style.fontSize = '1rem';
+        splash.appendChild(dykDiv);
+      })
+      .catch(error => {
+        console.error('API Error:', error);
+        const errorDiv = document.createElement('div');
+        errorDiv.textContent = 'Failed to load fact';
+        errorDiv.style.fontSize = '1rem';
+        errorDiv.style.color = '#ff9999';
+        splash.appendChild(errorDiv);
+      });
+  </script>
+</body>
+</html>

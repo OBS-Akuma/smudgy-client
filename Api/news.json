@@ -1,21 +1,11 @@
 [
   {
-    "category": "general",
-    "title": "Smudgy Client",
-    "content": "Nugs",
-    "img": "https://www.smudgy.store/uploads/icon.png",
+    "category": "event",
+    "title": "[Ranked]",
+    "content": "New Ranked tmr, SAD",
+    "img": "https://cdn.discordapp.com/avatars/359425032432123905/5eb803b8f0d181ae8d89c4ed60955b70.webp?size=1024",
     "imgType": "icon",
     "link": "https://client.smudgy.store",
-    "updatedAt": 172800000,
-    "live": false
-  },
-  {
-    "category": "MenuNews",
-    "title": "Meow",
-    "content": "Wowza this is a test",
-    "img": "https://raw.githubusercontent.com/OBS-Akuma/KirkaBadges/refs/heads/main/Json/img/James_hex.webp",
-    "imgType": "banner",
-    "link": "https://discord.gg/QMBArEhGJ2",
     "updatedAt": 172800000,
     "live": false
   }

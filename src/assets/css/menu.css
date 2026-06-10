@@ -1227,3 +1227,357 @@
   border-left-color: rgba(var(--orange), 1);
   font-weight: 600;
 }
+/* ============================================================
+   TOOLS SUBTABS — sidebar subtab list shared by all tool panels
+   ============================================================ */
+
+.tools-subtabs {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 0 4px 8px;
+}
+
+.tools-subtab {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: rgba(var(--light), 0.6);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  user-select: none;
+  position: relative;
+}
+
+.tools-subtab:hover {
+  background: rgba(var(--light), 0.06);
+  color: rgba(var(--light), 0.9);
+}
+
+.tools-subtab.active {
+  background: rgba(var(--orange), 0.12);
+  color: rgba(var(--orange), 1);
+}
+
+.tools-subtab.locked {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.tools-lock-icon {
+  margin-left: auto;
+  font-size: 10px;
+  opacity: 0.5;
+}
+
+/* ============================================================
+   LOCKED PANEL OVERLAY (player lookup, inventory lookup)
+   ============================================================ */
+
+.tools-locked-content {
+  position: relative;
+  pointer-events: none;
+  user-select: none;
+}
+
+.tools-locked-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(var(--dark), 0.65);
+  backdrop-filter: blur(3px);
+  border-radius: 8px;
+  font-size: 13px;
+  color: rgba(var(--light), 0.5);
+  text-align: center;
+  padding: 16px;
+}
+
+.tools-locked-overlay i {
+  font-size: 20px;
+  opacity: 0.4;
+}
+
+.tools-locked-placeholder {
+  opacity: 0.3;
+}
+
+.tools-wip-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: rgba(var(--orange), 0.85) !important;
+}
+
+/* ============================================================
+   SKINS HEADER — search bar + filter dropdowns
+   ============================================================ */
+
+.skins-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 16px 8px;
+  border-bottom: 1px solid rgba(var(--border), 0.15);
+  background: rgba(var(--dark), 0.4);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.skins-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(var(--light), 0.05);
+  border: 1px solid rgba(var(--border));
+  border-radius: 7px;
+  padding: 0 10px;
+  transition: border-color 0.15s;
+}
+
+.skins-search-wrap:focus-within {
+  border-color: rgba(var(--orange), 0.5);
+}
+
+.skins-search-wrap i {
+  font-size: 12px;
+  color: rgba(var(--light), 0.35);
+  flex-shrink: 0;
+}
+
+.skins-search-wrap input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  padding: 8px 0;
+  font-size: 13px;
+  color: rgba(var(--light), 1);
+}
+
+.skins-search-wrap input::placeholder {
+  color: rgba(var(--light), 0.3);
+}
+
+.skins-filters {
+  display: flex;
+  gap: 8px;
+}
+
+.skins-filters select {
+  flex: 1;
+  background: rgba(var(--dark), 0.6);
+  border: 1px solid rgba(var(--border));
+  border-radius: 7px;
+  padding: 6px 10px;
+  font-size: 12px;
+  color: rgba(var(--light), 0.85);
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(255,255,255,0.3)'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
+}
+
+.skins-filters select:focus,
+.skins-filters select:hover {
+  border-color: rgba(var(--orange), 0.45);
+}
+
+/* ============================================================
+   SKINS GRID
+   ============================================================ */
+
+.skins-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  gap: 10px;
+  padding: 12px 16px 16px;
+  overflow-y: auto;
+}
+
+/* ============================================================
+   SKIN CARD
+   ============================================================ */
+
+.skin-card {
+  display: flex;
+  flex-direction: column;
+  background: rgba(var(--dark), 0.55);
+  border: 1px solid rgba(var(--border));
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.15s, transform 0.12s;
+  cursor: default;
+}
+
+.skin-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Rarity-tinted left border accent */
+.skin-card.skin-rarity-common     { border-left: 3px solid #8c8c8c; }
+.skin-card.skin-rarity-uncommon   { border-left: 3px solid #4caf50; }
+.skin-card.skin-rarity-rare       { border-left: 3px solid #2196f3; }
+.skin-card.skin-rarity-epic       { border-left: 3px solid #9c27b0; }
+.skin-card.skin-rarity-legendary  { border-left: 3px solid #ff9800; }
+.skin-card.skin-rarity-mythical   { border-left: 3px solid #f44336; }
+
+/* Hover glow matching rarity */
+.skin-card.skin-rarity-common:hover     { border-color: #8c8c8c; box-shadow: 0 0 0 1px rgba(140,140,140,0.25); }
+.skin-card.skin-rarity-uncommon:hover   { border-color: #4caf50; box-shadow: 0 0 0 1px rgba(76,175,80,0.25); }
+.skin-card.skin-rarity-rare:hover       { border-color: #2196f3; box-shadow: 0 0 0 1px rgba(33,150,243,0.25); }
+.skin-card.skin-rarity-epic:hover       { border-color: #9c27b0; box-shadow: 0 0 0 1px rgba(156,39,176,0.25); }
+.skin-card.skin-rarity-legendary:hover  { border-color: #ff9800; box-shadow: 0 0 0 1px rgba(255,152,0,0.25); }
+.skin-card.skin-rarity-mythical:hover   { border-color: #f44336; box-shadow: 0 0 0 1px rgba(244,67,54,0.25); }
+
+/* ── Image area ── */
+
+.skin-img-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: rgba(var(--light), 0.03);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.skin-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 8px;
+  box-sizing: border-box;
+  transition: transform 0.2s;
+}
+
+.skin-card:hover .skin-img-wrap img {
+  transform: scale(1.06);
+}
+
+.skin-no-img {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: rgba(var(--light), 0.12);
+  font-size: 32px;
+}
+
+/* ── Rarity badge (top-right corner) ── */
+
+.skin-rarity-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+  line-height: 1.4;
+}
+
+.skin-rarity-badge.skin-rarity-common    { background: rgba(140,140,140,0.25); color: #b0b0b0; }
+.skin-rarity-badge.skin-rarity-uncommon  { background: rgba(76,175,80,0.2);    color: #81c784; }
+.skin-rarity-badge.skin-rarity-rare      { background: rgba(33,150,243,0.2);   color: #64b5f6; }
+.skin-rarity-badge.skin-rarity-epic      { background: rgba(156,39,176,0.2);   color: #ce93d8; }
+.skin-rarity-badge.skin-rarity-legendary { background: rgba(255,152,0,0.2);    color: #ffb74d; }
+.skin-rarity-badge.skin-rarity-mythical  { background: rgba(244,67,54,0.2);    color: #ef9a9a; }
+
+/* ── Info block ── */
+
+.skin-info {
+  padding: 8px 10px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.skin-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(var(--light), 0.95);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.skin-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.skin-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  color: rgba(var(--light), 0.45);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.skin-meta-row i {
+  font-size: 9px;
+  flex-shrink: 0;
+  color: rgba(var(--light), 0.25);
+}
+
+.skin-obtain {
+  color: rgba(var(--light), 0.35);
+}
+
+/* ============================================================
+   EMPTY / LOADING STATES (reused from assets, added here for
+   completeness in case your assets styles aren't present)
+   ============================================================ */
+
+.assets-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 32px;
+  font-size: 13px;
+  color: rgba(var(--light), 0.4);
+  width: 100%;
+}
+
+.assets-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 40px 16px;
+  font-size: 13px;
+  color: rgba(var(--light), 0.35);
+  width: 100%;
+  text-align: center;
+}
+
+.assets-empty i {
+  font-size: 28px;
+  opacity: 0.25;
+}

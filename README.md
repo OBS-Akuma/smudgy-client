@@ -32,7 +32,6 @@
 <a href="https://love.daymian.xyz/"><img src="https://love.daymian.xyz/icon.png" width="25" height="25" style="max-width:25px; border:none; margin:0; padding:0; vertical-align:middle;"></a>
 <a href="https://drift.daymian.xyz/"><img src="https://drift.daymian.xyz/assets/driftnobg.png" width="25" height="25" style="max-width:25px; border:none; margin:0; padding:0; vertical-align:middle;"></a>
 <a href="https://css.daymian.xyz"><img src="https://css.daymian.xyz/imgs/icon.png" width="25" height="25" style="max-width:25px; border:none; margin:0; padding:0; vertical-align:middle;"></a>
-<a href="https://sillimons.fun"><img src="https://sillimons.fun/favicon.svg" width="25" height="25" style="max-width:25px; border:none; margin:0; padding:0; vertical-align:middle;"></a>
 <a href="https://kirka.lukeskywalk.com/"><img src="https://kirka.lukeskywalk.com/kirkatradeslogo_36x36.png" width="25" height="25" style="max-width:25px; border:none; margin:0; padding:0; vertical-align:middle;"></a>
 <a href="https://tricko.pro/"><img src="https://tricko.pro/icon.svg" width="25" height="25" style="max-width:25px; border:none; margin:0; padding:0; vertical-align:middle;"></a>
 <a href="https://kirkacommunityhub.pages.dev/"><img src="https://kirkacommunityhub.pages.dev/assets/icon.png" width="25" height="25" style="max-width:25px; border:none; margin:0; padding:0; vertical-align:middle;"></a>

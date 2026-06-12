@@ -124,7 +124,7 @@
 
 [Xip](https://kirka.io/) for sexy [kirka](https://kirka.io/)
 
-[dawn-client](https://github.com/zVipexx/dawn-client) same client features as me, some stolen some we bot had when Forking [Juice Client](https://github.com/irrvlo/juice-client) 
+[dawn-client](https://github.com/zVipexx/dawn-client) same client features as me, some stolen some we had when Forking [Juice Client](https://github.com/irrvlo/juice-client) 
 
 [ulpiano](https://discord.com/users/1353521991688261662) For the SmudgyAssets
 

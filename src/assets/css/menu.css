@@ -17,6 +17,21 @@
     --opacity-half: 255, 255, 255, 0.5;
     --opacity-quarter: 255, 255, 255, 0.25;
 }
+.menu[data-theme="dawn"] {
+    --dark: 32, 20, 10;
+    --light: 255, 245, 230;
+    --orange: 255, 140, 0;
+    --green: 201, 143, 67;
+    --blue: 255, 173, 96;
+    --red: 220, 85, 47;
+    --hover-dark: 48, 30, 15;
+    --hover-light: 255, 245, 230, 0.05;
+    --border: 255, 245, 230, 0.15;
+    --border-active: 255, 245, 230, 0.25;
+    --shadow: 60, 30, 10, 0.5;
+    --opacity-half: 255, 245, 230, 0.5;
+    --opacity-quarter: 255, 245, 230, 0.25;
+}
 .menu[data-theme="dark"] {
     --dark: 20, 20, 20;
     --light: 255, 255, 255;
@@ -806,6 +821,20 @@
 .about-kirkatools:hover {
     background: rgb(41 9 0);
 }
+.about-smudgy {
+    background: #1A8E50;
+}
+
+.about-smudgy:hover {
+    background: #1A8E50;
+}
+
+.about-smudgy img {
+    width: 1.5rem;
+    height: 1.5rem;
+    object-fit: contain;
+}
+
 
 .about-juice {
     background: rgba(var(--orange));
@@ -931,16 +960,6 @@
     color: rgba(var(--light));
 }
 
-.menu {
-    width: 90vw !important;
-    height: 80vh !important;
-    max-height: unset !important;
-    max-width: unset !important;
-}
-.daily-rewards-btn,
-.special-message-home {
-    display: none !important;
-}
 #app>div.interface.text-2>div.background::before {
     content: "Smu.__.dgy";
     font-family: 'minecraft';
@@ -1565,4 +1584,52 @@
 .assets-search-wrap {
   margin: 0 0 10px 0;
   flex-shrink: 0;
+}
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.tab-scroll {
+  flex: 1 1 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+}
+
+.tab-scroll::-webkit-scrollbar {
+  width: 3px;
+}
+
+.tab-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tab-scroll::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+}
+
+.sidebar .footer {
+  flex-shrink: 0;
+}
+.ver {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.footer-icon {
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+}
+.menu {
+    transition: transform 0.05s ease-out !important;
+}
+.button.guest-login-btn,
+.daily-rewards-btn,
+.special-message-home {
+    display: none !important;
 }

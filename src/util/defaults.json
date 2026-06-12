@@ -3,6 +3,7 @@
     "perm_crosshair": true,
     "hitmarker_link": "",
     "killicon_link": "",
+    "lobby_logo_link": "",
     "ui_animations": true,
     "hide_chat": false,
     "hide_interface": false,
@@ -44,6 +45,7 @@
     "hide_smudgy_watermark": false,
     "watermark_text": "Smu.__.dgy",
     "watermark_color": "",
+    "client_menu_size": "1",
     "watermark_size": "6.9"
   },
   "allowed_urls": [

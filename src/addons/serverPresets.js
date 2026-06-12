@@ -34,6 +34,39 @@ const flash = (el) => {
   }, 700);
 };
 
+const getMapNameFromSettings = (modal) => {
+  // Try to get the map code from the input
+  const mapInput = modal.querySelector(".keybind-input .input");
+  if (mapInput && mapInput.value) {
+    try {
+      // Parse the map code to extract the mapName property
+      // The map code is likely a JSON string like {"mapName":"Acid", ...}
+      const mapCode = mapInput.value;
+      const parsedMap = JSON.parse(mapCode);
+      if (parsedMap.mapName) {
+        return parsedMap.mapName;
+      }
+    } catch (e) {
+      // If parsing fails, try to extract mapName using regex
+      const match = mapInput.value.match(/["']mapName["']\s*:\s*["']([^"']+)["']/);
+      if (match && match[1]) {
+        return match[1];
+      }
+    }
+  }
+  
+  // Fallback: try to get from the select dropdown
+  const mapSelect = modal.querySelector(".wrapper-input.select .input");
+  if (mapSelect) {
+    const selected = mapSelect.querySelector(".selected");
+    if (selected && selected.textContent) {
+      return selected.textContent.trim();
+    }
+  }
+  
+  return null;
+};
+
 const snapshotSettings = (modal) => {
   const data = {};
   modal.querySelectorAll(".wrapper-input.select .input").forEach((input) => {
@@ -51,6 +84,11 @@ const snapshotSettings = (modal) => {
   });
   const mapInput = modal.querySelector(".keybind-input .input");
   if (mapInput) data["__customMap"] = mapInput.value;
+  
+  // Store the actual map name from the map code
+  const mapName = getMapNameFromSettings(modal);
+  if (mapName) data["__mapName"] = mapName;
+  
   return data;
 };
 
@@ -75,6 +113,16 @@ const applySettings = (modal, data) => {
     mapInput.value = data["__customMap"];
     mapInput.dispatchEvent(new Event("input", { bubbles: true }));
   }
+};
+
+const getPresetNameFromData = (settings, index) => {
+  // Try to get the map name from stored __mapName
+  if (settings.__mapName) {
+    return settings.__mapName;
+  }
+  
+  // Fallback to Preset ${index + 1}
+  return `Preset ${index + 1}`;
 };
 
 const injectStyles = () => {
@@ -266,9 +314,18 @@ const renderList = (modal) => {
     const item = document.createElement("div");
     item.className = "kp-item";
     item.dataset.idx = String(i);
+    
+    // Get the preset name based on map name or fallback to Preset ${i + 1}
+    let displayName;
+    if (preset.name && !preset.name.startsWith("Preset ")) {
+      displayName = preset.name;
+    } else {
+      displayName = getPresetNameFromData(preset.settings, i);
+    }
+    
     item.innerHTML = `
       <span class="kp-drag" draggable="true" title="Drag to reorder">⋮⋮</span>
-      <input class="kp-name" type="text" value="${esc(preset.name)}" spellcheck="false">
+      <input class="kp-name" type="text" value="${esc(displayName)}" spellcheck="false">
       <div class="kp-actions">
         <button class="kp-btn apply" title="Apply">▶</button>
         <button class="kp-btn over"  title="Overwrite with current settings">⟲</button>
@@ -279,7 +336,7 @@ const renderList = (modal) => {
     const nameInput = item.querySelector(".kp-name");
     nameInput.addEventListener("change", (e) => {
       const ps = loadPresets();
-      ps[i].name = e.target.value.trim() || `Preset ${i + 1}`;
+      ps[i].name = e.target.value.trim();
       savePresets(ps);
     });
 
@@ -289,8 +346,17 @@ const renderList = (modal) => {
 
     item.querySelector(".over").addEventListener("click", () => {
       const ps = loadPresets();
-      ps[i].settings = snapshotSettings(modal);
+      const newSettings = snapshotSettings(modal);
+      ps[i].settings = newSettings;
+      // Only auto-update name if it was previously a default Preset X name
+      if (!ps[i].name || ps[i].name.startsWith("Preset ")) {
+        const newName = getPresetNameFromData(newSettings, i);
+        if (newName !== `Preset ${i + 1}`) {
+          ps[i].name = newName;
+        }
+      }
       savePresets(ps);
+      renderList(modal);
       flash(item);
     });
 
@@ -390,9 +456,12 @@ const initPanel = (modal) => {
 
   panel.querySelector(".kp-save-btn").addEventListener("click", () => {
     const ps = loadPresets();
+    const newSettings = snapshotSettings(modal);
+    const mapName = getMapNameFromSettings(modal);
+    
     ps.push({
-      name: `Preset ${ps.length + 1}`,
-      settings: snapshotSettings(modal),
+      name: mapName || `Preset ${ps.length + 1}`,
+      settings: newSettings,
     });
     savePresets(ps);
     renderList(modal);

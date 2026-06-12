@@ -6,6 +6,8 @@ const { ipcRenderer } = require("electron");
 const fs = require("fs");
 const path = require("path");
 
+require("../addons/Custom Skin Link")
+
 const scriptsPath = ipcRenderer.sendSync("get-scripts-path");
 const scripts = fs.readdirSync(scriptsPath);
 
@@ -98,7 +100,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     keybindReminder.id = "juice-keybind-reminder";
     keybindReminder.style = `position: absolute; left: 147px; bottom: 10px; font-size: 0.9rem; color: #fff; width: max-content`;
 
-    keybindReminder.innerText = `Press ${settings.menu_keybind} to open the client menu, Meow <3`;
+    keybindReminder.innerText = `Press ${settings.menu_keybind} to open the client menu v${require("../../package.json").version}`;
 
     if (
       !document.querySelector("#app > .interface") ||
@@ -443,6 +445,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         styles.push(
           "* { transition: none !important; animation: none !important; }"
         );
+        if (settings.lobby_logo_link !== "")
+        styles.push(
+          `.logo { content: url(${formatLink(
+            settings.lobby_logo_link
+          )}) !important; }`
+        );
       if (settings.rave_mode)
         styles.push(
           "canvas { animation: rotateHue 1s linear infinite !important; }"
@@ -467,6 +475,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         "interface_opacity",
         "interface_bounds",
         "hitmarker_link",
+        "killicon_link",
+        "lobby_logo_link",
         "ui_animations",
         "rave_mode",
         "spectate_button",

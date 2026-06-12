@@ -24,6 +24,7 @@ class Menu {
       client: this.menu.querySelector("#client-options"),
       scripts: this.menu.querySelector("#scripts-options"),
       about: this.menu.querySelector("#about-client"),
+      Credits: this.menu.querySelector("#Credits-options"),
       assets: this.menu.querySelector("#assets-options"),
       news: this.menu.querySelector("#news-options"),
       tools: this.menu.querySelector("#tools-options"),
@@ -75,7 +76,7 @@ class Menu {
 
   setVersion() {
     this.menu.querySelectorAll(".ver").forEach((element) => {
-      element.innerText = `v${version}`;
+      element.innerText = `Version ${version}`;
     });
   }
 
@@ -89,7 +90,7 @@ class Menu {
   setKeybind() {
     this.menu.querySelector(
       ".keybind"
-    ).innerText = `Press ${this.settings.menu_keybind} to toggle menu`;
+    ).innerText = `${this.settings.menu_keybind} to toggle the client menu `;
     if (!this.localStorage.getItem("juice-menu")) {
       this.localStorage.setItem(
         "juice-menu",
@@ -405,7 +406,7 @@ class Menu {
     });
   }
 
-  initMenu() {
+initMenu() {
     const inputs = this.menu.querySelectorAll("input[data-setting]");
     const textareas = this.menu.querySelectorAll("textarea[data-setting]");
     const selects = this.menu.querySelectorAll("select[data-setting]");
@@ -430,57 +431,113 @@ class Menu {
 
     selects.forEach((select) => {
       const setting = select.dataset.setting;
-      const value = this.settings[setting];
+      const value = this.settings[setting] ?? settingDefaults[setting];
       select.value = value;
     });
 
     textareas.forEach((textarea) => {
       const setting = textarea.dataset.setting;
-      const value = this.settings[setting];
+      const value = this.settings[setting] ?? settingDefaults[setting];
       textarea.value = value;
     });
 
+    // Apply zooms separately - they target different elements
     const serverZoom = this.settings["server_zoom"] ?? 1;
     this.applyServerZoom(serverZoom);
+
+    const clientMenuSize = this.settings["client_menu_size"] ?? 1;
+    this.applyClientZoom(clientMenuSize);
 
     if (this.settings["endgame_message_enabled"]) {
       this.injectEndGameMessageScript();
     }
 
-    if (this.settings["simple_invite_btns"]) {
-      this.injectSimpleInviteBtns();
-    }
-
     if (this.settings["always_show_ingame_menu"]) {
       this.injectAlwaysShowIngameMenu();
     }
-  }
+}
 
-  applyServerZoom(value) {
+applyServerZoom(value) {
     let styleEl = document.getElementById("juice-server-zoom");
     if (!styleEl) {
       styleEl = document.createElement("style");
       styleEl.id = "juice-server-zoom";
       document.head.appendChild(styleEl);
     }
-    styleEl.innerHTML = `.right-interface, .play-content, .players-lobby, .heads[data-v-00ce7b25], .logo, .playerholderelement { zoom: ${value}; }`;
-  }
+    // Only target lobby/server elements
+    styleEl.innerHTML = `
+      .right-interface, 
+      .play-content, 
+      .players-lobby, 
+      .heads[data-v-00ce7b25], 
+      .logo, 
+      .playerholderelement { 
+        zoom: ${value}; 
+      }
+    `;
+}
+
+applyClientZoom(value) {
+    let styleEl = document.getElementById("juice-client-zoom");
+    if (!styleEl) {
+      styleEl = document.createElement("style");
+      styleEl.id = "juice-client-zoom";
+      document.head.appendChild(styleEl);
+    }
+    // Find the actual client menu - try multiple possible selectors
+    // Use !important to override any inherited zoom
+    styleEl.innerHTML = `
+      .menu {
+        transform: scale(${value}) !important;
+        transform-origin: top left !important;
+      }
+    `;
+}
 
   // ── Always Show In-Game Menu ──────────────────────────────────────────────
 
-  injectAlwaysShowIngameMenu() {
-    if (document.getElementById("juice-always-show-ingame-menu")) return;
-    const link = document.createElement("link");
-    link.id = "juice-always-show-ingame-menu";
-    link.rel = "stylesheet";
-    link.href = "https://irrvlo.xyz/aosb.css";
-    document.head.appendChild(link);
-  }
+injectAlwaysShowIngameMenu() {
+  if (document.getElementById("juice-always-show-ingame-menu")) return;
+  
+  const link = document.createElement("link");
+  link.id = "juice-always-show-ingame-menu";
+  link.rel = "stylesheet";
+  link.href = "https://irrvlo.xyz/aosb.css";
+  document.head.appendChild(link);
 
-  removeAlwaysShowIngameMenu() {
-    const el = document.getElementById("juice-always-show-ingame-menu");
-    if (el) el.remove();
+  // Watch for removal and re-inject in real time
+  this.observeMenuRemoval();
+}
+
+observeMenuRemoval() {
+  if (this.menuObserver) this.menuObserver.disconnect();
+
+  this.menuObserver = new MutationObserver((mutations) => {
+    const removed = mutations.some(mutation => 
+      Array.from(mutation.removedNodes).some(node => 
+        node.id === "juice-always-show-ingame-menu" || 
+        (node.nodeType === 1 && node.querySelector?.("#juice-always-show-ingame-menu"))
+      )
+    );
+    
+    if (removed && !document.getElementById("juice-always-show-ingame-menu")) {
+      console.log("Menu style removed, re-injecting...");
+      this.injectAlwaysShowIngameMenu();
+    }
+  });
+
+  this.menuObserver.observe(document.head, { childList: true, subtree: true });
+}
+
+removeAlwaysShowIngameMenu() {
+  const el = document.getElementById("juice-always-show-ingame-menu");
+  if (el) el.remove();
+  
+  if (this.menuObserver) {
+    this.menuObserver.disconnect();
+    this.menuObserver = null;
   }
+}
 
   // ─────────────────────────────────────────────────────────────────────────
 
@@ -508,7 +565,7 @@ class Menu {
     });
   }
 
-  handleMenuInputChange(input) {
+ handleMenuInputChange(input) {
     const setting = input.dataset.setting;
     const type = input.type;
     const value = type === "checkbox" ? input.checked : input.value;
@@ -523,13 +580,8 @@ class Menu {
     if (setting === "server_zoom") {
       this.applyServerZoom(value);
     }
-
-    if (setting === "simple_invite_btns") {
-      if (value) {
-        this.injectSimpleInviteBtns();
-      } else {
-        this.removeSimpleInviteBtns();
-      }
+    if (setting === "client_menu_size") {
+      this.applyClientZoom(value);  // ← FIXED: Now calls correct function
     }
 
     if (setting === "always_show_ingame_menu") {
@@ -855,91 +907,23 @@ class Menu {
     });
   }
 
-  injectSimpleInviteBtns() {
-    if (this._simpleInviteActive) return;
 
-    const originalInviteBtn = document.querySelector('.invite-btn');
-    if (!originalInviteBtn) return;
-
-    const privateBtn = document.querySelector('#create-btn');
-    if (!privateBtn) return;
-
-    const hiddenSelectors = ['.invite-btn', '.invite-right', '.invite-left1', '.invite-left2'];
-    const hiddenElements = [];
-    hiddenSelectors.forEach(selector => {
-      document.querySelectorAll(selector).forEach(el => {
-        hiddenElements.push({ el, prevDisplay: el.style.display });
-        el.style.display = 'none';
-      });
+removeSimpleInviteBtns() {
+  const script = document.getElementById("juice-simple-invite-btn");
+  if (script) script.remove();
+  
+  // Also clean up any remaining DOM elements
+  const spacer = document.getElementById('juice-simple-invite-spacer');
+  if (spacer) spacer.remove();
+  
+  // Restore hidden elements
+  const hiddenSelectors = ['.invite-btn', '.invite-right', '.invite-left1', '.invite-left2'];
+  hiddenSelectors.forEach(selector => {
+    document.querySelectorAll(selector).forEach(el => {
+      el.style.display = '';
     });
-
-    const newInviteBtn = document.createElement('button');
-    for (let attr of privateBtn.attributes) {
-      newInviteBtn.setAttribute(attr.name, attr.value);
-    }
-    newInviteBtn.id = 'new-invite-btn';
-
-    const computedStyle = window.getComputedStyle(privateBtn);
-    newInviteBtn.style.margin = computedStyle.margin;
-    newInviteBtn.style.padding = computedStyle.padding;
-    newInviteBtn.style.position = 'relative';
-    newInviteBtn.style.display = computedStyle.display;
-    newInviteBtn.style.alignItems = computedStyle.alignItems;
-    newInviteBtn.style.justifyContent = computedStyle.justifyContent;
-    newInviteBtn.style.gap = computedStyle.gap;
-    newInviteBtn.style.height = computedStyle.height;
-    newInviteBtn.style.boxSizing = computedStyle.boxSizing;
-
-    const privateWidth = privateBtn.offsetWidth;
-    newInviteBtn.style.width = (privateWidth * 2) + 'px';
-    newInviteBtn.style.minWidth = (privateWidth * 2) + 'px';
-    newInviteBtn.style.transform = 'translateX(20px)';
-    newInviteBtn.style.margin = '0';
-
-    newInviteBtn.innerHTML = `
-      <div data-v-e32a4426="" class="triangle"></div>
-      <div data-v-e32a4426="" class="text"> INVITE </div>
-      <div data-v-e32a4426="" class="WwNwmM">
-        <div data-v-e32a4426="" class="border-top border"></div>
-        <div data-v-e32a4426="" class="border-bottom border"></div>
-      </div>
-    `;
-
-    newInviteBtn.onclick = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      originalInviteBtn.click();
-    };
-
-    const spacer = document.createElement('div');
-    spacer.id = 'juice-simple-invite-spacer';
-    spacer.style.height = (privateBtn.offsetHeight + 15) + 'px';
-    spacer.style.width = '95%';
-    spacer.style.display = 'flex';
-    spacer.style.justifyContent = 'center';
-    spacer.style.alignItems = 'center';
-    spacer.style.overflow = 'visible';
-    spacer.style.position = 'relative';
-    spacer.appendChild(newInviteBtn);
-
-    privateBtn.parentNode.insertBefore(spacer, privateBtn);
-
-    this._simpleInviteActive = true;
-    this._simpleInviteCleanup = () => {
-      spacer.remove();
-      hiddenElements.forEach(({ el, prevDisplay }) => {
-        el.style.display = prevDisplay;
-      });
-      this._simpleInviteActive = false;
-      this._simpleInviteCleanup = null;
-    };
-  }
-
-  removeSimpleInviteBtns() {
-    if (this._simpleInviteCleanup) {
-      this._simpleInviteCleanup();
-    }
-  }
+  });
+}
 
   injectEndGameMessageScript() {
     if (document.getElementById("juice-endgame-script")) return;

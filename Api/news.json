@@ -1,8 +1,8 @@
 [
   {
-    "category": "event",
-    "title": "Super cool message from Akuma",
-    "content": "Keep Kirkaing",
+    "category": "general",
+    "title": "v0.0.18 is out now!",
+    "content": "The latest version of Smudgy Client, v0.0.18, is now available for download! This update includes several bug fixes and performance improvements to enhance your gaming experience. We highly recommend updating to the latest version to enjoy the best performance and stability. Download it now from our official website!",
     "img": "https://cdn.discordapp.com/avatars/1169111190824308768/65c5989bdc973560c10fbef531b37a67.png",
     "imgType": "icon",
     "link": "https://client.smudgy.store",

@@ -21,14 +21,14 @@ let canvas = document.createElement("canvas");
 canvas.id = "canvas_colorpicker";
 let colorpicker_head_label = document.createElement("label");
 colorpicker_head_label.setAttribute("for", "colorpicker_head");
-colorpicker_head_label.innerHTML = "Head";
+colorpicker_head_label.innerHTML = "Head color";
 let colorpicker_head = document.createElement("input");
 colorpicker_head.type = "color";
 colorpicker_head.id = "colorpicker_head";
-//colorpicker_head.value = "#ff5e00";
+//colorpicker_head.value = "#ff00ff";
 let colorpicker_body_label = document.createElement("label");
 colorpicker_body_label.setAttribute("for", "colorpicker_body");
-colorpicker_body_label.innerHTML = "body";
+colorpicker_body_label.innerHTML = "body color";
 let colorpicker_body = document.createElement("input");
 colorpicker_body.type = "color";
 colorpicker_body.id = "colorpicker_body";
@@ -53,13 +53,19 @@ csl_colorpicker_inputurl.placeholder = "Insert custom url here";
 let tooltip_container = document.createElement("div");
 tooltip_container.className = "tooltip-container-csl";
 let tooltip_icon = document.createElement("span");
+tooltip_icon.className = "info-icon-csl";
+tooltip_icon.innerHTML = "i";
 let option_inputfield_description = document.createElement("div");
 option_inputfield_description.className = "option";
 let description_left = document.createElement("div");
 description_left.className = "left";
+description_left.innerHTML = "Skin from Imagebuilder";
 let description_right = document.createElement("div");
 description_right.className = "right";
+description_right.innerHTML = "Skin from your input";
 let tooltip_text = document.createElement("div");
+tooltip_text.className = "tooltip-text-csl";
+tooltip_text.innerText = `Made by SheriffCarry\nRuns on the original BKC custom skin link\n feature (made by infi and boden)`;
 let style = document.createElement("style");
 style.innerHTML = `
 /* Tooltip container */
@@ -151,7 +157,7 @@ option_inputfield_description.appendChild(description_right);
 option_group.appendChild(option_inputfield_description);
 option_group.appendChild(output_container);
 let default_url =
-  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAzklEQVR4Xu3YwQ3EIBAEQUjUwTlRLgPmgU7WiPJ3jbxGTDcwxxhrbJ717Kq5Nt/8zpffnybAChABDPgSQgmR/4YwCF5vgfXsIZiWaHt9mgArQAS2+4D2jKf+MQAEb4dg2gilDLXX41a4/QdT/yZABMKNUFpC7XUREAERuPwwJAIiIAJ33wdgAAZgAAa0H2hO+ncYYgEWYAEWOKFo+1gWYAEWYAEWaCf5Sf8swAIswAIscELR9rEswAIswAIs0E7yk/5ZgAVYgAVY4ISi7WN/BQxq6XEfds4AAAAASUVORK5CYII=";
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAXNSR0IArs4c6QAAANJJREFUeF7t2EEKBDEIBdF4/0M7MAeIi0HmQ15v022LaJWkTp8+l6frenz79HtWXeM7//x/KYAOMAIY8E8ITYTchjAIPm+BPv2b6KceDj8vBdABRgADwjm1mh4IPm+BaRFa7b+A4OMqHJDjagoKYASGG6HV/gsIbgSMgBG4X4oGjOlqChiAARiAAW9fiGAABmAABqyuWuHBbYIswAIswALhoF5NjwVYgAVYgAVWMRsenAVYgAVYgAXCQb2aHguwAAuwAAusYjY8OAuwAAuwwNMW+AByY7e5Jy8jiwAAAABJRU5ErkJggg==";
 let change_event = new Event("change", { bubbles: true });
 const pixelData = [];
 let d_colorpicker_output;
@@ -284,12 +290,12 @@ function startfunction() {
     if (localStorage.csl_head != undefined) {
       d_colorpicker_head.value = localStorage.csl_head;
     } else {
-      d_colorpicker_head.value = "#ff5e00";
+      d_colorpicker_head.value = "#ff00ff";
     }
     if (localStorage.csl_body != undefined) {
       d_colorpicker_body.value = localStorage.csl_body;
     } else {
-      d_colorpicker_body.value = "#000000";
+      d_colorpicker_body.value = "#00ff00";
     }
 
     d_colorpicker_output.addEventListener("change", function (event) {

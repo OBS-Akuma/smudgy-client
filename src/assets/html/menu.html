@@ -17,12 +17,16 @@
       <div class="tab-group">
         <div data-tab="ui" class="juice tab active">
           <i class="fas fa-solid fa-desktop"></i>
-          UI
+          GUI
         </div>
         <div data-tab="game" class="juice tab">
-          <i class="fas fa-window-restore"></i>
-          Game
+          <i class="fa-solid fa-skull-crossbones"></i>
+          In-Game
         </div>
+        <div data-tab="installation" class="juice tab">
+          <i class="fas fa-download"></i>
+          installation
+        </div> 
       </div>
       <div class="sep"></div>
       <div class="tab-group">
@@ -32,18 +36,18 @@
         </div>
         <div data-tab="client" class="juice tab">
           <i class="fas fa-cog"></i>
-          Client
+          Miscellaneous
         </div>
         <div data-tab="scripts" class="juice tab">
           <i class="fas fa-code"></i>
           Plugins
         </div>
         <div data-tab="about" class="juice tab">
-          <i class="fas fa-solid fa-ellipsis-vertical"></i>
-          About
+          <i class="fas fa-solid fa-circle-info"></i>
+          About/links
         </div>
         <div data-tab="tools" class="juice tab">
-          <i class="fas fa-wrench"></i>
+          <i class="fas fa-screwdriver-wrench"></i>
           Tools
         </div>
         <div class="tools-subtabs" id="tools-subtabs" style="display:none;">
@@ -68,7 +72,7 @@
           Assets
         </div>
         <div class="assets-subtabs" id="assets-subtabs" style="display:none;">
-          <div class="assets-subtab active" data-assets-tab="css"><i class="fas fa-pen-fancy"></i> CSS</div>
+          <div class="assets-subtab active" data-assets-tab="css"><i class="fas fa-palette"></i> CSS</div>
           <div class="assets-subtab" data-assets-tab="textures"><i class="fas fa-image"></i> Textures</div>
           <div class="assets-subtab" data-assets-tab="crosshairs"><i class="fas fa-crosshairs"></i> Crosshairs</div>
           <div class="assets-subtab" data-assets-tab="maps"><i class="fas fa-map"></i> Maps</div>
@@ -364,20 +368,6 @@
         </div>
         <div class="option">
           <div class="left">
-            <span>Badges and Gradient Names</span>
-            <div class="description">Display user customizations</div>
-          </div>
-          <div class="checkbox">
-            <input
-              type="checkbox"
-              id="customizations"
-              data-setting="customizations"
-            />
-            <label for="customizations"></label>
-          </div>
-        </div>
-        <div class="option">
-          <div class="left">
             <span>Always Show In-Game Menu</span>
             <div class="description">Keeps the in-game menu permanently visible without holding Tab</div>
           </div>
@@ -634,6 +624,36 @@
         </div>
       </div>
     </div>
+
+    <!-- INSTALLATION TAB - Plugin installation goes here -->
+    <div id="installation-options" class="juice options">
+      <div class="option-group">
+        <div class="option">
+          <div class="left">
+            <span>Plugin installation</span>
+            <span class="description">install a JavaScript plugin Right from your Client menu, Make sure to reload your client After Downloading plugin(s)</span>
+            <span class="description">All of the following plugins Are safe to use, Not all plugins will show in the "plugins" tab of the client menu.</span>
+          </div>
+          <input type="file" id="plugin-file-input" accept=".js" style="display:none;" />
+        </div>
+      </div>
+      
+      <div class="plugins-header">
+        <div class="skins-search-wrap">
+          <i class="fas fa-search"></i>
+          <input type="text" id="plugins-search" placeholder="Search plugins..." />
+        </div>
+      </div>
+      <div id="plugins-loading" class="assets-loading" style="display:none;">
+        <i class="fas fa-spinner fa-spin"></i> Loading plugins...
+      </div>
+      <div id="plugins-empty" class="assets-empty" style="display:none;">
+        <i class="fas fa-puzzle-piece"></i>
+        <span>No plugins found</span>
+      </div>
+      <div id="plugins-grid" class="plugins-grid" style="display:none;"></div>
+    </div>
+
     <div id="scripts-options" class="juice options">
       <div class="option-group">
         <div class="option">
@@ -717,220 +737,243 @@
         </div>
       </div>
     </div>
-<div id="about-client" class="juice options">
-  <div class="option-group">
-    <div class="about-top header">
-      <img src="https://www.smudgy.store/uploads/icon.png" />
-      <div class="about-info">
-        <span class="title">Smudgy Client</span>
-        <div class="about-more">
-          <div>
-            <span class="ver"></span>
-            <span class="author">Froked by Akuma (console.dev)</span>
+
+    <div id="about-client" class="juice options">
+      <div class="option-group">
+        <div class="about-top header">
+          <img src="https://www.smudgy.store/uploads/icon.png" />
+          <div class="about-info">
+            <span class="title">Smudgy Client</span>
+            <div class="about-more">
+              <div>
+                <span class="ver"></span>
+                <span class="author">Froked by Akuma (console.dev)</span>
+              </div>
+              <div class="about-buttons">
+                <a href="https://kirka.io/profile/NUGGET" class="about-kirka">
+                  <img src="https://kirka.io/favicon.ico" />
+                  <div class="custom-border"></div>
+                </a>
+                <a href="https://smudgy.store" class="about-smudgy">
+                  <img src="https://www.smudgy.store/uploads/icon.png" />
+                  <div class="custom-border"></div>
+                </a>
+                <a
+                  href="https://discord.gg/H338BfU4vT"
+                  target="_blank"
+                  class="about-discord"
+                >
+                  <i class="fab fa-discord"></i>
+                  <div class="custom-border"></div>
+                </a>
+                <a
+                  href="https://github.com/OBS-Akuma/smudgy-client"
+                  target="_blank"
+                  class="about-github"
+                >
+                  <i class="fab fa-github"></i>
+                  <div class="custom-border"></div>
+                </a>
+              </div>
+            </div>
           </div>
-          <div class="about-buttons">
-            <a href="https://kirka.io/profile/NUGGET" class="about-kirka">
-              <img src="https://kirka.io/favicon.ico" />
-              <div class="custom-border"></div>
-            </a>
-            <a href="https://smudgy.store" class="about-smudgy">
-              <img src="https://www.smudgy.store/uploads/icon.png" />
-              <div class="custom-border"></div>
-            </a>
-            <a
-              href="https://discord.gg/H338BfU4vT"
-              target="_blank"
-              class="about-discord"
-            >
-              <i class="fab fa-discord"></i>
-              <div class="custom-border"></div>
-            </a>
-            <a
-              href="https://github.com/OBS-Akuma/smudgy-client"
-              target="_blank"
-              class="about-github"
-            >
-              <i class="fab fa-github"></i>
-              <div class="custom-border"></div>
-            </a>
+        </div>
+      </div>
+      <div class="option-group">
+        <div class="credits">
+          <span class="title">A special thanks to these people!</span>
+          <p>- Juice Client (irrvlo) for making the base or framework of the client</p>
+          <p>- Daymian for additional features</p>
+          <p>- Obsidian Client (imnotkoolkid) for additional features</p>
+          <p>- Redline Client (robertpakalns) for this readme format</p>
+          <p>- Xip for sexy kirka</p>
+          <p>- dawn-client same client features as me, some stolen some we both had when forking Juice Client</p>
+          <p>- ulpiano for the SmudgyAssets</p>
+          <p>- AwesomeSam for the .rank Profile backgrounds (note: I didn't ask to use this ;3)</p>
+          <p>- SniperGecko for grammar</p>
+        </div>
+      </div>
+      <div class="option-group">
+        <div class="about-top compact">
+          <img src="https://kirkacommunityhub.pages.dev/assets/icon.png" />
+          <div class="about-info compact">
+            <span class="title">Kirka Community Hub</span>
+            <div class="about-more">
+              <div></div>
+              <div class="about-buttons">
+                <a
+                  href="https://kirkacommunityhub.pages.dev/"
+                  class="about-juice alt"
+                >
+                  <i class="fas fa-arrow-up-right-from-square"></i>
+                  <p>View</p>
+                  <div class="custom-border"></div>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="option-group">
+        <div class="about-top compact">
+          <img src="https://css.daymian.xyz/imgs/icon.png" />
+          <div class="about-info compact">
+            <span class="title">CSS Daymian</span>
+            <div class="about-more">
+              <div></div>
+              <div class="about-buttons">
+                <a href="https://css.daymian.xyz" class="about-juice alt">
+                  <i class="fas fa-arrow-up-right-from-square"></i>
+                  <p>View</p>
+                  <div class="custom-border"></div>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="option-group">
+        <div class="about-top compact">
+          <img src="https://tricko.pro/icon.svg" />
+          <div class="about-info compact">
+            <span class="title">tricko</span>
+            <div class="about-more">
+              <div></div>
+              <div class="about-buttons">
+                <a href="https://tricko.pro" class="about-juice alt">
+                  <i class="fas fa-arrow-up-right-from-square"></i>
+                  <p>View</p>
+                  <div class="custom-border"></div>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="option-group">
+        <div class="about-top compact">
+          <img src="https://ktiers.com/imgs/ktiersIcon.png" />
+          <div class="about-info compact">
+            <span class="title">ktiers [RANKED]</span>
+            <div class="about-more">
+              <div></div>
+              <div class="about-buttons">
+                <a href="https://ktiers.com" class="about-juice alt">
+                  <i class="fas fa-arrow-up-right-from-square"></i>
+                  <p>View</p>
+                  <div class="custom-border"></div>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="option-group">
+        <div class="about-top compact">
+          <img src="https://kirka.lukeskywalk.com/kirkatradeslogo_36x36.png" />
+          <div class="about-info compact">
+            <span class="title">KirkaTrades</span>
+            <div class="about-more">
+              <div></div>
+              <div class="about-buttons">
+                <a
+                  href="https://kirka.lukeskywalk.com/"
+                  class="about-juice alt"
+                >
+                  <i class="fas fa-arrow-up-right-from-square"></i>
+                  <p>View</p>
+                  <div class="custom-border"></div>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="option-group">
+        <div class="about-top compact">
+          <img src="https://www.smudgy.store/uploads/icon.png" />
+          <div class="about-info compact">
+            <span class="title">Smudgy Background Request</span>
+            <div class="about-more">
+              <div></div>
+              <div class="about-buttons">
+                <a href="https://smudgy.store/client/CustomBanner" class="about-juice alt">
+                  <i class="fas fa-arrow-up-right-from-square"></i>
+                  <p>View</p>
+                  <div class="custom-border"></div>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="option-group">
+        <div class="about-top compact">
+          <img src="https://api.kirka.io/public/favicon.ico" />
+          <div class="about-info compact">
+            <span class="title">Kirka API Docs</span>
+            <div class="about-more">
+              <div></div>
+              <div class="about-buttons">
+                <a
+                  href="https://api.kirka.io/api/docs/"
+                  target="_blank"
+                  class="about-juice alt"
+                >
+                  <i class="fas fa-arrow-up-right-from-square"></i>
+                  <p>View</p>
+                  <div class="custom-border"></div>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="option-group">
+        <div class="about-top compact">
+          <img src="https://kirkatrades.lovable.app/assets/kirka-logo-zzypQT4c.jpg" />
+          <div class="about-info compact">
+            <span class="title">Kirka Trades</span>
+            <div class="about-more">
+              <div></div>
+              <div class="about-buttons">
+                <a
+                  href="https://kirkatrades.lovable.app/"
+                  target="_blank"
+                  class="about-juice alt"
+                >
+                  <i class="fas fa-arrow-up-right-from-square"></i>
+                  <p>View</p>
+                  <div class="custom-border"></div>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="option-group">
+        <div class="about-top compact">
+          <img src="https://www.redditstatic.com/shreddit/assets/favicon/192x192.png" />
+          <div class="about-info compact">
+            <span class="title">Kirka Reddit</span>
+            <div class="about-more">
+              <div></div>
+              <div class="about-buttons">
+                <a
+                  href="https://www.reddit.com/r/Kirka/"
+                  target="_blank"
+                  class="about-juice alt"
+                >
+                  <i class="fas fa-arrow-up-right-from-square"></i>
+                  <p>View</p>
+                  <div class="custom-border"></div>
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-  <div class="option-group">
-    <div class="credits">
-      <span class="title">A special thanks to these people!</span>
-      <p>- Juice Client (irrvlo) for making the base or framework of the client</p>
-      <p>- Daymian for additional features</p>
-      <p>- Obsidian Client (imnotkoolkid) for additional features</p>
-      <p>- Redline Client (robertpakalns) for this readme format</p>
-      <p>- Xip for sexy kirka</p>
-      <p>- dawn-client same client features as me, some stolen some we both had when forking Juice Client</p>
-      <p>- ulpiano for the SmudgyAssets</p>
-      <p>- AwesomeSam for the .rank Profile backgrounds (note: I didn't ask to use this ;3)</p>
-      <p>- SniperGecko for grammar</p>
-    </div>
-  </div>
-  <div class="option-group">
-    <div class="about-top compact">
-      <img src="https://kirkacommunityhub.pages.dev/assets/icon.png" />
-      <div class="about-info compact">
-        <span class="title">Kirka Community Hub</span>
-        <div class="about-more">
-          <div></div>
-          <div class="about-buttons">
-            <a
-              href="https://kirkacommunityhub.pages.dev/"
-              class="about-juice alt"
-            >
-              <i class="fas fa-arrow-up-right-from-square"></i>
-              <p>View</p>
-              <div class="custom-border"></div>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="option-group">
-    <div class="about-top compact">
-      <img src="https://css.daymian.xyz/imgs/icon.png" />
-      <div class="about-info compact">
-        <span class="title">CSS Daymian</span>
-        <div class="about-more">
-          <div></div>
-          <div class="about-buttons">
-            <a href="https://css.daymian.xyz" class="about-juice alt">
-              <i class="fas fa-arrow-up-right-from-square"></i>
-              <p>View</p>
-              <div class="custom-border"></div>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="option-group">
-    <div class="about-top compact">
-      <img src="https://tricko.pro/icon.svg" />
-      <div class="about-info compact">
-        <span class="title">tricko</span>
-        <div class="about-more">
-          <div></div>
-          <div class="about-buttons">
-            <a href="https://tricko.pro" class="about-juice alt">
-              <i class="fas fa-arrow-up-right-from-square"></i>
-              <p>View</p>
-              <div class="custom-border"></div>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="option-group">
-    <div class="about-top compact">
-      <img src="https://ktiers.com/imgs/ktiersIcon.png" />
-      <div class="about-info compact">
-        <span class="title">ktiers [RANKED]</span>
-        <div class="about-more">
-          <div></div>
-          <div class="about-buttons">
-            <a href="https://ktiers.com" class="about-juice alt">
-              <i class="fas fa-arrow-up-right-from-square"></i>
-              <p>View</p>
-              <div class="custom-border"></div>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="option-group">
-    <div class="about-top compact">
-      <img src="https://kirka.lukeskywalk.com/kirkatradeslogo_36x36.png" />
-      <div class="about-info compact">
-        <span class="title">KirkaTrades</span>
-        <div class="about-more">
-          <div></div>
-          <div class="about-buttons">
-            <a
-              href="https://kirka.lukeskywalk.com/"
-              class="about-juice alt"
-            >
-              <i class="fas fa-arrow-up-right-from-square"></i>
-              <p>View</p>
-              <div class="custom-border"></div>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="option-group">
-    <div class="about-top compact">
-      <img src="https://www.smudgy.store/uploads/icon.png" />
-      <div class="about-info compact">
-        <span class="title">Smudgy Background Request</span>
-        <div class="about-more">
-          <div></div>
-          <div class="about-buttons">
-            <a href="https://smudgy.store/client/CustomBanner" class="about-juice alt">
-              <i class="fas fa-arrow-up-right-from-square"></i>
-              <p>View</p>
-              <div class="custom-border"></div>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="option-group">
-    <div class="about-top compact">
-      <img src="https://api.kirka.io/public/favicon.ico" />
-      <div class="about-info compact">
-        <span class="title">Kirka API Docs</span>
-        <div class="about-more">
-          <div></div>
-          <div class="about-buttons">
-            <a
-              href="https://api.kirka.io/api/docs/"
-              target="_blank"
-              class="about-juice alt"
-            >
-              <i class="fas fa-arrow-up-right-from-square"></i>
-              <p>View</p>
-              <div class="custom-border"></div>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="option-group">
-    <div class="about-top compact">
-      <img src="https://www.redditstatic.com/shreddit/assets/favicon/192x192.png" />
-      <div class="about-info compact">
-        <span class="title">Kirka Reddit</span>
-        <div class="about-more">
-          <div></div>
-          <div class="about-buttons">
-            <a
-              href="https://www.reddit.com/r/Kirka/"
-              target="_blank"
-              class="about-juice alt"
-            >
-              <i class="fas fa-arrow-up-right-from-square"></i>
-              <p>View</p>
-              <div class="custom-border"></div>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
     <div id="assets-options" class="juice options">
       <div class="option-group assets-grid-group">
         <div id="assets-loading" class="assets-loading" style="display:none;">
@@ -959,7 +1002,6 @@
         </div>
       </div>
     </div>
-
 
     <div id="tools-player-lookup" class="juice options" style="display:none;">
       <div class="option-group">

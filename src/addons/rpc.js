@@ -37,7 +37,7 @@ class DiscordRPC {
       largeImageText: `Smudgy Client v${version}`,
       instance: false,
       buttons: [
-        { label: "Download", url: "https://smudgy.store" },
+        { label: "Download", url: "https://akumaware.one" },
         { label: "Discord", url: "https://discord.gg/H338BfU4vT" },
       ],
     };

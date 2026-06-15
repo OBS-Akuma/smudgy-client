@@ -19,7 +19,7 @@
     "discord_rpc": true,
     "css_link": "",
     "css_enabled": false,
-    "advanced_css": "/* put raw css in here */",
+    "advanced_css": ".button.guest-login-btn,.daily-rewards-btn,.special-message-home {    display: none !important;} /* might want to keep this css, if you want to add css add it to the line below */",
     "in_process_gpu": false,
     "menu_keybind": "ShiftRight",
     "menu_theme": "smudgy",
@@ -46,7 +46,8 @@
     "watermark_text": "Smu.__.dgy",
     "watermark_color": "",
     "client_menu_size": "1",
-    "watermark_size": "6.9"
+    "watermark_size": "6.9",
+    "installed_plugins": []
   },
   "allowed_urls": [
     "https://kirka.io/",

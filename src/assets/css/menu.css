@@ -1628,8 +1628,239 @@
 .menu {
     transition: transform 0.05s ease-out !important;
 }
-.button.guest-login-btn,
-.daily-rewards-btn,
-.special-message-home {
-    display: none !important;
+/* ============================================================
+   PLUGINS GRID & CARDS
+   ============================================================ */
+
+.plugins-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.plugin-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: rgba(var(--hover-light));
+  border: 0.1rem solid rgba(var(--border));
+  border-radius: 0.5rem;
+  padding: 12px;
+  transition: 0.2s;
+}
+
+.plugin-card:hover {
+  border-color: rgba(var(--border-active));
+  background: rgba(var(--dark), 0.15);
+  transform: translateY(-2px);
+}
+
+.plugin-card.installed {
+  border-left: 3px solid rgba(var(--orange), 0.8);
+}
+
+.plugin-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: rgb(var(--light));
+  word-break: break-word;
+}
+
+.plugin-author,
+.plugin-version {
+  font-size: 0.7rem;
+  color: rgba(var(--opacity-half));
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: 12px;
+}
+
+.plugin-author i,
+.plugin-version i {
+  font-size: 0.65rem;
+  color: rgba(var(--opacity-half));
+}
+
+.plugin-desc {
+  font-size: 0.75rem;
+  color: rgba(var(--opacity-half));
+  line-height: 1.4;
+  margin: 4px 0;
+  word-break: break-word;
+}
+
+.plugin-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 4px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.plugin-installed-badge {
+  font-size: 0.7rem;
+  color: rgb(var(--orange));
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: auto;
+}
+
+.plugin-installed-badge i {
+  font-size: 0.7rem;
+  color: rgb(var(--orange));
+}
+
+.plugin-card .juice-button {
+  width: auto;
+  min-width: 85px;
+  height: 2rem;
+  font-size: 0.7rem;
+  padding: 0 12px;
+}
+
+.plugin-card .juice-button .text {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.plugin-card .juice-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Uninstall button specific styling */
+.plugin-uninstall-btn {
+  background: rgba(var(--red), 0.1) !important;
+  border-color: rgba(var(--red), 0.3) !important;
+}
+
+.plugin-uninstall-btn:hover {
+  background: rgba(var(--red), 0.2) !important;
+  border-color: rgba(var(--red), 0.5) !important;
+}
+
+/* ============================================================
+   PLUGINS HEADER & SEARCH
+   ============================================================ */
+
+.plugins-header {
+  margin-bottom: 8px;
+}
+
+.plugins-header .skins-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(var(--hover-light));
+  border: 0.1rem solid rgba(var(--border));
+  border-radius: 0.5rem;
+  padding: 0 10px;
+  transition: border-color 0.2s;
+}
+
+.plugins-header .skins-search-wrap:focus-within {
+  border-color: rgba(var(--orange), 0.5);
+}
+
+.plugins-header .skins-search-wrap i {
+  font-size: 0.75rem;
+  color: rgba(var(--opacity-half));
+}
+
+.plugins-header .skins-search-wrap input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  padding: 8px 0;
+  font-size: 0.8rem;
+  color: rgb(var(--light));
+  font-family: "Satoshi", sans-serif;
+}
+
+.plugins-header .skins-search-wrap input::placeholder {
+  color: rgba(var(--opacity-quarter));
+}
+
+/* ============================================================
+   PLUGINS LOADING & EMPTY STATES
+   ============================================================ */
+
+#plugins-loading.assets-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 40px;
+  color: rgba(var(--opacity-half));
+  font-size: 0.85rem;
+}
+
+#plugins-empty.assets-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 40px;
+  color: rgba(var(--opacity-quarter));
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+#plugins-empty.assets-empty i {
+  font-size: 2rem;
+  color: rgba(var(--opacity-quarter));
+}
+
+/* ============================================================
+   INSTALLATION TAB OPTIONS
+   ============================================================ */
+
+#installation-options .option-group {
+  margin-bottom: 20px;
+}
+
+#installation-options .option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+#installation-options .option .left {
+  display: flex;
+  flex-direction: column;
+}
+
+#installation-options .option .description {
+  font-size: 0.8rem;
+  color: rgba(var(--opacity-half));
+}
+
+#install-plugin-btn {
+  width: auto;
+  min-width: 150px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .plugins-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .plugin-actions {
+    justify-content: flex-start;
+  }
+  
+  .plugin-installed-badge {
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 4px;
+  }
 }

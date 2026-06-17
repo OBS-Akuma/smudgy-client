@@ -658,8 +658,7 @@ async function executeChestScript(customchestlist) {
     elem.classList.add("vue-notification-wrapper");
     elem.style =
       "transition-timing-function: ease; transition-delay: 0s; transition-property: all;";
-    elem.innerHTML = `<div data-v-3462d80a="" data-v-460e7e47="" class="alert-default"><span data-v-3462d80a="" class="text" style="color:#${coloroutput[rarity.toUpperCase()] || coloroutput.DEFAULT
-      }">${text}</span></div>`;
+    elem.innerHTML = `<div data-v-042f7c6a="" data-v-73619dbc="" class="alert-default wMWWnmN" style="color: #${coloroutput[rarity.toUpperCase()] || coloroutput.DEFAULT}"><span data-v-042f7c6a="" class="text">${text}</span></div>`;
     elem.onclick = function () {
       try {
         elem.remove();

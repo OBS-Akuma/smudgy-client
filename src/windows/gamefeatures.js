@@ -21,6 +21,7 @@ const { initGameFeatures } = (() => {
         let badgeMappings = null;
         let allBannersCache = null;
         let currentFetchPromise = null;
+        let scanInterval = null;
 
         const BANNERS_API = "https://opensheet.elk.sh/1FNq0RTv0SOSSRVmGJFtli3Fld86uoAlAjDzHByRiZFI/1";
         const BADGE_JSON_URL = "https://raw.githubusercontent.com/OBS-Akuma/KirkaBadges/refs/heads/main/Json/badge.json";
@@ -113,6 +114,16 @@ const { initGameFeatures } = (() => {
 
         function isFriendsPage() {
           return window.location.pathname === '/friends' || window.location.pathname.startsWith('/friends/');
+        }
+
+        function isPlayerListVisible() {
+          return document.querySelector('.player-list') !== null || 
+                 document.querySelector('.team-players-state') !== null ||
+                 document.querySelector('.player-cont') !== null;
+        }
+
+        function isUserCardVisible() {
+          return document.querySelector('#user-card') !== null;
         }
 
         function getShortIdFromPage() {
@@ -211,7 +222,7 @@ const { initGameFeatures } = (() => {
           if (el.classList && el.classList.contains('map-image')) return true;
           if (el.closest('.progress-line')) return true;
           if (el.closest('.avatar')) return true;
-          if (el.classList && el.classList.contains('nickname')) return true;
+          if (el.classList && el.classList.contains('avatar')) return true;
           if (el.closest('.close')) return true;
           if (el.classList && el.classList.contains('close')) return true;
           if (el.closest('.bottom')) return true;
@@ -255,10 +266,13 @@ const { initGameFeatures } = (() => {
             element.style.backgroundPosition = 'center center';
             element.style.backgroundRepeat = 'no-repeat';
             element.style.backgroundColor = 'transparent';
+            
             element.querySelectorAll('div').forEach(div => {
               if (shouldSkipElement(div) || div === element) return;
+              if (div.closest('.avatar')) return;
               if (!div.classList.contains('bg-overlay')) applyTransparentEffect(div);
             });
+            
             const statsContainers = [
               '.statistics', '.statistic', '.stat-name', '.stat-value',
               '.progress-text-cont', '.progress-level', '.progress-exp',
@@ -270,10 +284,11 @@ const { initGameFeatures } = (() => {
                 applyStatsBlurEffect(el);
               });
             });
+            
             const otherContainers = [
               '.friend-left', '.friend-right', '.friend-desc',
               '.add-delete', '.add', '.delete', '.friend-pin-btn',
-              '.player-cont', '.you', '.content', '.top-medium',
+              '.you', '.content', '.top-medium',
               '.top', '.bottom'
             ];
             otherContainers.forEach(selector => {
@@ -282,6 +297,7 @@ const { initGameFeatures } = (() => {
                 applyTransparentEffect(el);
               });
             });
+            
             preserveProgressBar(element);
             const existingOverlay = element.querySelector('.bg-overlay');
             if (existingOverlay) existingOverlay.remove();
@@ -404,6 +420,296 @@ const { initGameFeatures } = (() => {
           await Promise.allSettled(promises);
         }
 
+        // ── Player List Backgrounds ──────────────────────────────────────────
+        async function handlePlayerList() {
+          const players = document.querySelectorAll('.player-cont');
+          if (players.length === 0) return;
+          
+          for (const player of players) {
+            if (appliedElements.has(player)) continue;
+            
+            const shortIdEl = player.querySelector('.short-id');
+            if (!shortIdEl) continue;
+            
+            const shortId = shortIdEl.textContent.trim();
+            if (!shortId || !shortId.match(/^#?[A-Z0-9]{4,8}$/i)) continue;
+            
+            const cleanId = cleanShortId(shortId);
+            
+            const banner = await fetchSpecificUserBanner(cleanId);
+            let imageUrl = null;
+            
+            if (banner && banner.imageUrl) {
+              imageUrl = banner.imageUrl;
+            } else {
+              const discordId = getDiscordIdFromShortId(cleanId);
+              if (discordId) {
+                const discordBanner = await fetchDiscordFallbackBanner(cleanId);
+                if (discordBanner && discordBanner.imageUrl) {
+                  imageUrl = discordBanner.imageUrl;
+                }
+              }
+            }
+            
+            if (imageUrl) {
+              player.style.backgroundImage = \`url('\${imageUrl}')\`;
+              player.style.backgroundSize = 'cover';
+              player.style.backgroundPosition = 'center center';
+              player.style.backgroundRepeat = 'no-repeat';
+              player.style.backgroundColor = 'rgba(0,0,0,0.2)';
+              player.style.backgroundBlendMode = 'overlay';
+              player.style.borderRadius = '4px';
+              player.setAttribute('data-bg-applied', cleanId);
+              appliedElements.set(player, { identifier: cleanId, imageUrl });
+              
+              const avatar = player.querySelector('.avatar');
+              if (avatar) {
+                const originalBg = avatar.style.backgroundImage;
+                avatar.style.position = 'relative';
+                avatar.style.zIndex = '10';
+                avatar.style.isolation = 'isolate';
+                avatar.style.mixBlendMode = 'normal';
+                if (originalBg && !avatar.style.backgroundImage) {
+                  avatar.style.backgroundImage = originalBg;
+                }
+                avatar.style.width = avatar.style.width || '45px';
+                avatar.style.height = avatar.style.height || '45px';
+                avatar.style.flexShrink = '0';
+                avatar.style.flexGrow = '0';
+              }
+              
+              const playerName = player.querySelector('.player-name');
+              if (playerName) {
+                playerName.style.position = 'relative';
+                playerName.style.zIndex = '5';
+                playerName.style.isolation = 'isolate';
+                playerName.style.mixBlendMode = 'normal';
+              }
+              
+              const playerRight = player.querySelector('.player-right');
+              if (playerRight) {
+                playerRight.style.position = 'relative';
+                playerRight.style.zIndex = '5';
+                playerRight.style.isolation = 'isolate';
+                playerRight.style.mixBlendMode = 'normal';
+              }
+              
+              const playerLeft = player.querySelector('.player-left');
+              if (playerLeft) {
+                playerLeft.style.isolation = 'isolate';
+                playerLeft.style.mixBlendMode = 'normal';
+              }
+            }
+          }
+        }
+
+        // ── User Card (Kill Card) Background ──────────────────────────────────
+        async function handleUserCard() {
+          const userCard = document.querySelector('#user-card');
+          if (!userCard) return;
+          
+          if (appliedElements.has(userCard)) return;
+          
+          const shortIdEl = userCard.querySelector('.short-id');
+          if (!shortIdEl) return;
+          
+          const shortId = shortIdEl.textContent.trim();
+          if (!shortId || !shortId.match(/^#?[A-Z0-9]{4,8}$/i)) return;
+          
+          const cleanId = cleanShortId(shortId);
+          
+          // Get banner
+          const banner = await fetchSpecificUserBanner(cleanId);
+          let imageUrl = null;
+          
+          if (banner && banner.imageUrl) {
+            imageUrl = banner.imageUrl;
+          } else {
+            const discordId = getDiscordIdFromShortId(cleanId);
+            if (discordId) {
+              const discordBanner = await fetchDiscordFallbackBanner(cleanId);
+              if (discordBanner && discordBanner.imageUrl) {
+                imageUrl = discordBanner.imageUrl;
+              }
+            }
+          }
+          
+          if (imageUrl) {
+            // Apply background to the user card
+            userCard.style.backgroundImage = \`url('\${imageUrl}')\`;
+            userCard.style.backgroundSize = 'cover';
+            userCard.style.backgroundPosition = 'center center';
+            userCard.style.backgroundRepeat = 'no-repeat';
+            userCard.style.backgroundColor = 'rgba(0,0,0,0.3)';
+            userCard.style.backgroundBlendMode = 'overlay';
+            userCard.style.borderRadius = '8px';
+            userCard.setAttribute('data-bg-applied', cleanId);
+            appliedElements.set(userCard, { identifier: cleanId, imageUrl });
+            
+            // ISOLATE the avatar from the parent's blend mode
+            const avatar = userCard.querySelector('.avatar');
+            if (avatar) {
+              const originalBg = avatar.style.backgroundImage;
+              avatar.style.position = 'relative';
+              avatar.style.zIndex = '10';
+              avatar.style.isolation = 'isolate';
+              avatar.style.mixBlendMode = 'normal';
+              if (originalBg && !avatar.style.backgroundImage) {
+                avatar.style.backgroundImage = originalBg;
+              }
+              avatar.style.flexShrink = '0';
+              avatar.style.flexGrow = '0';
+              avatar.style.overflow = 'hidden';
+            }
+            
+            // Isolate the top section
+            const top = userCard.querySelector('.top');
+            if (top) {
+              top.style.position = 'relative';
+              top.style.zIndex = '5';
+              top.style.isolation = 'isolate';
+              top.style.mixBlendMode = 'normal';
+            }
+            
+            // Isolate the bottom section
+            const bottom = userCard.querySelector('.bottom');
+            if (bottom) {
+              bottom.style.position = 'relative';
+              bottom.style.zIndex = '5';
+              bottom.style.isolation = 'isolate';
+              bottom.style.mixBlendMode = 'normal';
+            }
+            
+            // ── Apply Smudgy Badges & Gradient to User Card ──────────────────
+            const nicknameEl = userCard.querySelector('.nickname');
+            if (nicknameEl) {
+              // Get customizations for this user
+              const customs = getCustomsForId(cleanId);
+              
+              // Make nickname a flex container to keep badges inline
+              nicknameEl.style.display = 'inline-flex';
+              nicknameEl.style.alignItems = 'center';
+              nicknameEl.style.gap = '0.25rem';
+              nicknameEl.style.flexWrap = 'wrap';
+              
+              if (customs) {
+                // Apply gradient to nickname text only
+                if (customs.gradient) {
+                  // Wrap the text in a span for gradient
+                  const textSpan = document.createElement('span');
+                  textSpan.className = 'kirka-nickname-text';
+                  textSpan.textContent = nicknameEl.textContent.trim();
+                  textSpan.style.background = \`linear-gradient(\${customs.gradient.rot}, \${customs.gradient.stops.join(', ')})\`;
+                  textSpan.style.backgroundClip = 'text';
+                  textSpan.style.webkitBackgroundClip = 'text';
+                  textSpan.style.color = 'transparent';
+                  textSpan.style.webkitTextFillColor = 'transparent';
+                  textSpan.style.fontWeight = '700';
+                  textSpan.style.textShadow = customs.gradient.shadow || '0 0 0 transparent';
+                  if (customs.animated) {
+                    textSpan.style.backgroundSize = '200% 200%';
+                    textSpan.style.animation = 'kirka-badges-gradient 3s linear infinite';
+                  }
+                  // Clear and add the text span
+                  nicknameEl.innerHTML = '';
+                  nicknameEl.appendChild(textSpan);
+                }
+                
+                // Add badges - APPENDED DIRECTLY TO nicknameEl
+                if (customs.discord || customs.booster || (customs.badges && customs.badges.length)) {
+                  const badgesContainer = document.createElement('div');
+                  badgesContainer.className = 'kirka-badges';
+                  badgesContainer.style.cssText = 'display: inline-flex; gap: 0.25rem; align-items: center; flex-shrink: 0;';
+                  
+                  if (customs.discord) {
+                    const img = document.createElement('img');
+                    img.src = 'https://raw.githubusercontent.com/OBS-Akuma/KirkaSkins/refs/heads/main/img/linked.webp';
+                    img.style.cssText = 'height: 22px; width: auto;';
+                    badgesContainer.appendChild(img);
+                  }
+                  if (customs.booster) {
+                    const img = document.createElement('img');
+                    img.src = 'https://raw.githubusercontent.com/OBS-Akuma/KirkaSkins/refs/heads/main/img/booster.webp';
+                    img.style.cssText = 'height: 22px; width: auto;';
+                    badgesContainer.appendChild(img);
+                  }
+                  if (customs.badges && customs.badges.length) {
+                    customs.badges.forEach(badge => {
+                      const img = document.createElement('img');
+                      if (badge.startsWith('/') || /^[A-Za-z]:[\\\\/]/.test(badge)) {
+                        const fp = badge.replace(/\\\\/g, '/');
+                        img.src = \`file://\${fp.startsWith('/') ? '' : '/'}\${fp}\`;
+                      } else {
+                        img.src = badge;
+                      }
+                      img.style.cssText = 'height: 22px; width: auto;';
+                      badgesContainer.appendChild(img);
+                    });
+                  }
+                  
+                  // Append badges DIRECTLY to nicknameEl (inline with text)
+                  nicknameEl.appendChild(badgesContainer);
+                }
+              }
+              
+              // Add text shadow for readability if no gradient
+              if (!customs || !customs.gradient) {
+                const textSpan = nicknameEl.querySelector('.kirka-nickname-text');
+                if (textSpan) {
+                  textSpan.style.textShadow = '0 0 10px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.7)';
+                  textSpan.style.color = '#fff';
+                } else {
+                  nicknameEl.style.textShadow = '0 0 10px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.7)';
+                  nicknameEl.style.color = '#fff';
+                }
+              }
+            }
+            
+            // Style other elements for readability
+            const killerName = userCard.querySelector('.killer-name');
+            if (killerName) {
+              killerName.style.textShadow = '0 0 10px rgba(0,0,0,0.9)';
+            }
+            
+            const killerClan = userCard.querySelector('.killer-clan');
+            if (killerClan) {
+              killerClan.style.textShadow = '0 0 10px rgba(0,0,0,0.9)';
+            }
+            
+            const killerLevel = userCard.querySelector('.killer-level');
+            if (killerLevel) {
+              killerLevel.style.textShadow = '0 0 10px rgba(0,0,0,0.9)';
+            }
+            
+            const labelKilled = userCard.querySelector('.label-killed');
+            if (labelKilled) {
+              labelKilled.style.textShadow = '0 0 10px rgba(0,0,0,0.9)';
+            }
+            
+            const nameGun = userCard.querySelector('.name-gun');
+            if (nameGun) {
+              nameGun.style.textShadow = '0 0 10px rgba(0,0,0,0.9)';
+            }
+            
+            const damageValue = userCard.querySelector('.damage-value');
+            if (damageValue) {
+              damageValue.style.textShadow = '0 0 10px rgba(0,0,0,0.9)';
+            }
+            
+            console.log('[UserCard] Applied background and badges to:', cleanId);
+          }
+        }
+
+        // ── Helper to get customizations ──────────────────────────────────────
+        function getCustomsForId(shortId) {
+          try {
+            const customizations = JSON.parse(localStorage.getItem('juice-customizations') || '[]');
+            return customizations.find(c => c.shortId === shortId) || null;
+          } catch {
+            return null;
+          }
+        }
+
         async function scanAndApplyBackgrounds() {
           if (bgIsProcessing) return;
           bgIsProcessing = true;
@@ -413,6 +719,12 @@ const { initGameFeatures } = (() => {
               if (urlInfo) await handleProfilePage(urlInfo.identifier, urlInfo.isLongId);
             } else if (isFriendsPage()) {
               await handleFriendsPage();
+            } else if (isPlayerListVisible()) {
+              await handlePlayerList();
+            }
+            
+            if (isUserCardVisible()) {
+              await handleUserCard();
             }
           } finally { bgIsProcessing = false; }
         }
@@ -433,6 +745,7 @@ const { initGameFeatures } = (() => {
               preserveProgressBar(friend);
             }
           });
+          
           const profileContainer = document.querySelector('.profile-cont, .profile-holder, .profile-container, .user-profile');
           if (profileContainer && appliedElements.has(profileContainer)) {
             profileContainer.querySelectorAll('div').forEach(div => {
@@ -449,6 +762,32 @@ const { initGameFeatures } = (() => {
             });
             preserveProgressBar(profileContainer);
           }
+          
+          const userCard = document.querySelector('#user-card');
+          if (userCard && appliedElements.has(userCard)) {
+            const avatar = userCard.querySelector('.avatar');
+            if (avatar) {
+              avatar.style.position = 'relative';
+              avatar.style.zIndex = '10';
+              avatar.style.isolation = 'isolate';
+              avatar.style.mixBlendMode = 'normal';
+            }
+            const top = userCard.querySelector('.top');
+            if (top) {
+              top.style.position = 'relative';
+              top.style.zIndex = '5';
+              top.style.isolation = 'isolate';
+              top.style.mixBlendMode = 'normal';
+            }
+            const bottom = userCard.querySelector('.bottom');
+            if (bottom) {
+              bottom.style.position = 'relative';
+              bottom.style.zIndex = '5';
+              bottom.style.isolation = 'isolate';
+              bottom.style.mixBlendMode = 'normal';
+            }
+          }
+          
           const topBar = document.querySelector('.top-bar');
           if (topBar && appliedElements.has(topBar)) {
             const leftSection = topBar.querySelector('.left');
@@ -469,6 +808,14 @@ const { initGameFeatures } = (() => {
           await new Promise(resolve => setTimeout(resolve, 500));
           await scanAndApplyBackgrounds();
           maintainBackgroundEffects();
+          
+          if (scanInterval) clearInterval(scanInterval);
+          scanInterval = setInterval(() => {
+            if (isPlayerListVisible() || isUserCardVisible()) {
+              scanAndApplyBackgrounds();
+            }
+          }, 2000);
+          
           setInterval(() => { maintainBackgroundEffects(); }, 2000);
         }
         // ── End Background Script ─────────────────────────────────────────────
@@ -681,7 +1028,9 @@ const { initGameFeatures } = (() => {
         });
         
         const domObserver = new MutationObserver(() => {
-          if (isProfilePage() || isFriendsPage()) scanAndApplyBackgrounds();
+          if (isProfilePage() || isFriendsPage() || isPlayerListVisible() || isUserCardVisible()) {
+            scanAndApplyBackgrounds();
+          }
         });
         domObserver.observe(document.body, { childList: true, subtree: true });
 
@@ -695,181 +1044,17 @@ const { initGameFeatures } = (() => {
         setTimeout(() => {
           checkAndRedirectCustomId();
           injectAllSubnames();
+          if (isPlayerListVisible() || isUserCardVisible()) scanAndApplyBackgrounds();
         }, 500);
         
         startSubnamePersistence();
         
-        console.log('[GameFeatures] All systems initialized (Custom ID, Subname, Backgrounds, Profile Lookup)');
+        console.log('[GameFeatures] All systems initialized (Custom ID, Subname, Backgrounds, Profile Lookup, Player List, User Card)');
       })();
     `;
   };
 
-  const friendTrackerScript = () => {
-    return `
-      (function() {
-        if (window.__friendTrackerInstalled) return;
-        window.__friendTrackerInstalled = true;
-
-        let previousFriends = [];
-        let previousIncoming = [];
-        let currentInterval = null;
-        let notifiedScammers = new Set();
-
-        const token = localStorage.getItem('token');
-        if (!token) {
-            console.error('[FriendTracker] No token found in localStorage');
-            return;
-        }
-
-        try {
-            const savedFriends = localStorage.getItem('Friends_list_0.0.2');
-            if (savedFriends) previousFriends = JSON.parse(savedFriends);
-            const savedIncoming = localStorage.getItem('Incoming_list_0.0.2');
-            if (savedIncoming) previousIncoming = JSON.parse(savedIncoming);
-            const savedNotified = localStorage.getItem('Notified_scammers_0.0.2');
-            if (savedNotified) notifiedScammers = new Set(JSON.parse(savedNotified));
-        } catch (e) {
-            console.error('[FriendTracker] Failed to load saved lists:', e);
-        }
-
-        function ensureNotificationContainer() {
-            let container = document.getElementsByClassName("vue-notification-group")[0];
-            if (!container) {
-                container = document.createElement("div");
-                container.className = "vue-notification-group";
-                container.style.cssText = "position: fixed; bottom: 0; left: 0; right: auto; top: auto; z-index: 9999;";
-                const innerDiv = document.createElement("div");
-                innerDiv.style.cssText = "position: relative; display: flex; flex-direction: column;";
-                container.appendChild(innerDiv);
-                document.body.appendChild(container);
-            }
-            return container;
-        }
-
-        const customNotification = (data) => {
-            const container = ensureNotificationContainer();
-            const notificationGroup = container.children[0];
-            const notifElement = document.createElement("div");
-            notifElement.classList.add("vue-notification-wrapper");
-            notifElement.style = "transition-timing-function: ease; transition-delay: 0s; transition-property: all;";
-            notifElement.innerHTML = \`
-            <div style="display: flex; align-items: center; padding: .9rem 1.1rem; margin-bottom: .5rem; color: var(--white); cursor: pointer; box-shadow: 0 0 0.7rem rgba(0,0,0,.25); border-radius: .2rem; background: linear-gradient(262.54deg,#202639 9.46%,#223163 100.16%); margin-left: 1rem; border: solid .15rem #ffb914; font-family: Exo\\ 2;" class="alert-default">
-                \${data.icon ? \`<img src="\${data.icon}" style="min-width: 2rem; height: 2rem; margin-right: .9rem;" />\` : ""}
-                <span style="font-size: 1rem; font-weight: 600; text-align: left;" class="text">\${data.message}</span>
-            </div>\`;
-            if (data.onClick) {
-                notifElement.querySelector('.alert-default').addEventListener('click', data.onClick);
-            }
-            notificationGroup.appendChild(notifElement);
-            setTimeout(() => { try { notifElement.remove(); } catch {} }, 10000);
-        };
-
-        function extractFriendList(data) {
-            if (data && data.wMWWmwn && Array.isArray(data.wMWWmwn)) {
-                return data.wMWWmwn.map(friend => ({ wMWWm: friend.wMWWm, wNmnw: friend.wNmnw, shortId: friend.wMWWm }));
-            }
-            return [];
-        }
-
-        function extractIncomingRequests(data) {
-            if (data && data.wWnNmWM && Array.isArray(data.wWnNmWM)) {
-                return data.wWnNmWM.map(request => ({ wMWWm: request.wMWWm, wNmnw: request.wNmnw, shortId: request.wMWWm }));
-            }
-            return [];
-        }
-
-        async function checkScammers(users) {
-            try {
-                const response = await fetch('https://opensheet.elk.sh/1FNq0RTv0SOSSRVmGJFtli3Fld86uoAlAjDzHByRiZFI/2');
-                if (!response.ok) return;
-                const data = await response.json();
-                if (!Array.isArray(data)) return;
-                const scammerMap = new Map();
-                data.forEach(scammer => {
-                    const shortId = scammer.shortId ? scammer.shortId.replace(/^#/, '') : '';
-                    if (shortId) scammerMap.set(shortId, scammer);
-                });
-                users.forEach(user => {
-                    const shortId = user.shortId;
-                    if (scammerMap.has(shortId) && !notifiedScammers.has(shortId)) {
-                        const scammer = scammerMap.get(shortId);
-                        customNotification({
-                            icon: \`https://www.smudgy.store/api/list/profile.png?meow=\${shortId}\`,
-                            message: \`\${user.wNmnw} (\${shortId}) has been marked Unsafe\`,
-                            onClick: () => {
-                                alert(\`Reason: \${scammer.reason}\\nReported by: \${scammer.reportedBy}\\nDate: \${scammer.dateTime}\`);
-                            }
-                        });
-                        notifiedScammers.add(shortId);
-                    }
-                });
-                localStorage.setItem('Notified_scammers_0.0.2', JSON.stringify(Array.from(notifiedScammers)));
-            } catch (error) {
-                console.error('[FriendTracker] Failed to fetch scammers:', error);
-            }
-        }
-
-        function compareFriendLists(oldList, newList) {
-            const newIds = new Set(newList.map(f => f.shortId));
-            oldList.filter(friend => !newIds.has(friend.shortId)).forEach(friend => {
-                customNotification({
-                    icon: \`https://www.smudgy.store/api/list/profile.png?meow=\${friend.shortId}\`,
-                    message: \`User \${friend.wNmnw} (\${friend.shortId}) isn't your friend anymore\`
-                });
-            });
-        }
-
-        function compareIncomingRequests(oldIncoming, newIncoming, currentFriends) {
-            const newIncomingIds = new Set(newIncoming.map(r => r.shortId));
-            const friendIds = new Set(currentFriends.map(f => f.shortId));
-            oldIncoming.filter(request => !newIncomingIds.has(request.shortId)).forEach(request => {
-                customNotification({
-                    icon: \`https://www.smudgy.store/api/list/profile.png?meow=\${request.shortId}\`,
-                    message: friendIds.has(request.shortId)
-                        ? \`You accepted \${request.wNmnw} (\${request.shortId})\`
-                        : \`You declined \${request.wNmnw} (\${request.shortId})\`
-                });
-            });
-        }
-
-        function watchForButtons() {
-            document.querySelectorAll('button:not([data-ft-watched])').forEach(button => {
-                button.setAttribute('data-ft-watched', 'true');
-                button.addEventListener('click', () => setTimeout(fetchData, 500));
-            });
-        }
-
-        async function fetchData() {
-            try {
-                const response = await fetch('https://api2.kirka.io/api/wNmwWMWn', {
-                    headers: { 'Authorization': \`Bearer \${token}\` }
-                });
-                if (!response.ok) throw new Error(\`HTTP \${response.status}\`);
-                const data = await response.json();
-                const currentFriends = extractFriendList(data);
-                const currentIncoming = extractIncomingRequests(data);
-                await checkScammers([...currentFriends, ...currentIncoming]);
-                if (previousFriends.length > 0) compareFriendLists(previousFriends, currentFriends);
-                if (previousIncoming.length > 0) compareIncomingRequests(previousIncoming, currentIncoming, currentFriends);
-                previousFriends = currentFriends;
-                previousIncoming = currentIncoming;
-                localStorage.setItem('Friends_list_0.0.2', JSON.stringify(previousFriends));
-                localStorage.setItem('Incoming_list_0.0.2', JSON.stringify(previousIncoming));
-            } catch (error) {
-                console.error('[FriendTracker] Failed to fetch data:', error);
-            }
-        }
-
-        fetchData();
-        setInterval(watchForButtons, 2000);
-        if (currentInterval) clearInterval(currentInterval);
-        currentInterval = setInterval(fetchData, 60000);
-
-        console.log('[FriendTracker] Initialized');
-      })();
-    `;
-  };
-
+  // ── Lobby Badges Script ──────────────────────────────────────────────────────
   const lobbyBadgesScript = () => {
     return `
       (function() {
@@ -1048,10 +1233,6 @@ const { initGameFeatures } = (() => {
       .catch((err) => {
         console.error('[GameFeatures] Injection failed:', err);
       });
-
-    gameWindowRef.webContents.executeJavaScript(friendTrackerScript())
-      .then(() => console.log('[FriendTracker] Injected successfully'))
-      .catch((err) => console.error('[FriendTracker] Injection failed:', err));
 
     gameWindowRef.webContents.executeJavaScript(lobbyBadgesScript())
       .then(() => console.log('[LobbyBadges] Injected successfully'))

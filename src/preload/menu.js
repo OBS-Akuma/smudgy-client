@@ -649,7 +649,6 @@ initInstallation() {
 
           markInstalled(fileName);
           
-          // i'm guessing a lot (2))
           renderPlugins(allPlugins);
 
         } catch (err) {

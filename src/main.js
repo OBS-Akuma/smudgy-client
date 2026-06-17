@@ -98,7 +98,6 @@ ipcMain.handle("install-plugin", async (event, { fileName, content }) => {
   }
 });
 
-// How much? (1)
 ipcMain.handle("uninstall-plugin", async (event, fileName) => {
   console.log("[Main] ===== UNINSTALL CALLED =====");
   console.log("[Main] Uninstalling plugin:", fileName);

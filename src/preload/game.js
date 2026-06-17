@@ -374,28 +374,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         );
       if (settings.perm_tablist)
         styles.push(
-          ".tab-info, .tab-team-info { display: flex !important; border-radius: 0.5rem !important; max-width: 30rem !important; top: 0 !important; right: 0 !important; position: absolute; margin: 0.5rem !important; padding: 0.15rem !important; width: 35rem !important; }",
-          ".tab-team-info .players-cont { flex-direction: column !important; }",
-          ".tab-info .player-list, .tab-team-info .player-list { margin: unset !important; gap: 0.25rem; }",
-          ".tab-info > .head, .tab-team-info > .head { display: none; }",
-          '.tab-team-info .player-list:nth-child(1)::before { content: "RED"; width: 100%; text-align: left; padding: 0.25rem 0.5rem; font-size: 1.25rem; background-color: #ff4d42; border-radius: 0.25rem; box-sizing: border-box; }',
-          '.tab-team-info .player-list:nth-child(2)::before { content: "BLUE"; width: 100%; text-align: left; padding: 0.25rem 0.5rem; font-size: 1.25rem; background-color: #0d6dc6; border-radius: 0.25rem; box-sizing: border-box; margin-top: 0.5rem; }',
-          ".players-wrap .list { display: none !important; }",
-          ".tab-info .list, .tab-team-info .player-list > .list { order: 999; }",
-          ".tab-info .players-wrap, .tab-team-info .players-wrap { padding: 0.25rem; }",
-          ".tab-info .player-cont, .tab-team-info .player-cont { margin: unset; }",
-          ".kill-bar-cont { right: 37.5rem !important; }",
-          ".tab-info { background: #141414a3 !important; border-radius: 0.25rem !important; max-width: 35rem !important; }",
-          ".tab-info .head { background: linear-gradient(90deg, #ff932d, transparent) !important; border: unset; font-style: normal; border-top-left-radius: 0.25rem; }",
-          ".tab-info .head .server-id { display: none; }",
-          ".tab-info .list-value { color: #acfa70; }",
-          ".tab-team-info { background: #141414a3 !important; border-radius: 0.25rem !important; max-width: 60rem !important; }",
-          ".tab-team-info .head { background: transparent !important; }",
-          ".tab-team-info .label.red { border-top-left-radius: 0.25rem; background: linear-gradient(90deg, #ff4c4c, #141414a3); justify-content: flex-start; padding-left: 0.75rem; }",
-          ".tab-team-info .label.blue { border-top-right-radius: 0.25rem; background: linear-gradient(-90deg, #4476ff, #141414a3); justify-content: flex-end; padding-right: 0.75rem; }",
-          ".player-list .list-value { color: #acfa70; }",
-          ".player-list .player-cont { background: #141414a3 !important; border-radius: 0.25rem; padding: 0.25rem; }",
-          ".player-cont .nickname.bolder { color: #edb846; }"
+          ".tab-info,.tab-team-info {    display: flex !important;    box-shadow: unset !important;    border-radius: 0.5rem !important;    max-width: 30rem !important;    top: 0 !important;    right: 0 !important;    position: fixed;    margin: 0.5rem !important;    padding: 0.15rem !important;}.tab-team-info .players-cont {    flex-direction: column !important;    gap: 0.25rem;}.tab-info .player-list,.tab-team-info .player-list {    margin: unset !important;    gap: 0.25rem;}.tab-info > .head,.tab-team-info > .head,.tab-team-info .player-left-cont > .list {    display: none;}.tab-info .list,.tab-team-info .player-list > .list {    order: 999;}.tab-info .players-wrap,.tab-team-info .players-wrap {    padding: 0.25rem;}.tab-info .player-cont,.tab-team-info .player-cont {    margin: unset;    border-radius: 0.25rem;}.player-left-cont > .player-cont {    border-left: solid 0.5rem #ff4d42;}.player-right-cont > .player-cont {    border-left: solid 0.5rem #0d6dc6;}.kill-bar-cont {    right: 31.5rem !important;    top: 0.5rem !important;}",
         );
       if (settings.hide_chat)
         styles.push(

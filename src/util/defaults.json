@@ -47,7 +47,13 @@
     "watermark_color": "",
     "client_menu_size": "1",
     "watermark_size": "6.9",
-    "installed_plugins": []
+    "installed_plugins": [],
+    "weapon_wireframe": false,
+    "weapon_rainbow": false,
+    "weapon_scale": 1.0,
+    "weapon_offset_x": 0,
+    "weapon_offset_y": 0,
+    "weapon_offset_z": 0
   },
   "allowed_urls": [
     "https://kirka.io/",

@@ -420,88 +420,9 @@ const { initGameFeatures } = (() => {
           await Promise.allSettled(promises);
         }
 
-        // ── Player List Backgrounds ──────────────────────────────────────────
-        async function handlePlayerList() {
-          const players = document.querySelectorAll('.player-cont');
-          if (players.length === 0) return;
-          
-          for (const player of players) {
-            if (appliedElements.has(player)) continue;
-            
-            const shortIdEl = player.querySelector('.short-id');
-            if (!shortIdEl) continue;
-            
-            const shortId = shortIdEl.textContent.trim();
-            if (!shortId || !shortId.match(/^#?[A-Z0-9]{4,8}$/i)) continue;
-            
-            const cleanId = cleanShortId(shortId);
-            
-            const banner = await fetchSpecificUserBanner(cleanId);
-            let imageUrl = null;
-            
-            if (banner && banner.imageUrl) {
-              imageUrl = banner.imageUrl;
-            } else {
-              const discordId = getDiscordIdFromShortId(cleanId);
-              if (discordId) {
-                const discordBanner = await fetchDiscordFallbackBanner(cleanId);
-                if (discordBanner && discordBanner.imageUrl) {
-                  imageUrl = discordBanner.imageUrl;
-                }
-              }
-            }
-            
-            if (imageUrl) {
-              player.style.backgroundImage = \`url('\${imageUrl}')\`;
-              player.style.backgroundSize = 'cover';
-              player.style.backgroundPosition = 'center center';
-              player.style.backgroundRepeat = 'no-repeat';
-              player.style.backgroundColor = 'rgba(0,0,0,0.2)';
-              player.style.backgroundBlendMode = 'overlay';
-              player.style.borderRadius = '4px';
-              player.setAttribute('data-bg-applied', cleanId);
-              appliedElements.set(player, { identifier: cleanId, imageUrl });
-              
-              const avatar = player.querySelector('.avatar');
-              if (avatar) {
-                const originalBg = avatar.style.backgroundImage;
-                avatar.style.position = 'relative';
-                avatar.style.zIndex = '10';
-                avatar.style.isolation = 'isolate';
-                avatar.style.mixBlendMode = 'normal';
-                if (originalBg && !avatar.style.backgroundImage) {
-                  avatar.style.backgroundImage = originalBg;
-                }
-                avatar.style.width = avatar.style.width || '45px';
-                avatar.style.height = avatar.style.height || '45px';
-                avatar.style.flexShrink = '0';
-                avatar.style.flexGrow = '0';
-              }
-              
-              const playerName = player.querySelector('.player-name');
-              if (playerName) {
-                playerName.style.position = 'relative';
-                playerName.style.zIndex = '5';
-                playerName.style.isolation = 'isolate';
-                playerName.style.mixBlendMode = 'normal';
-              }
-              
-              const playerRight = player.querySelector('.player-right');
-              if (playerRight) {
-                playerRight.style.position = 'relative';
-                playerRight.style.zIndex = '5';
-                playerRight.style.isolation = 'isolate';
-                playerRight.style.mixBlendMode = 'normal';
-              }
-              
-              const playerLeft = player.querySelector('.player-left');
-              if (playerLeft) {
-                playerLeft.style.isolation = 'isolate';
-                playerLeft.style.mixBlendMode = 'normal';
-              }
-            }
-          }
-        }
+        // ── Player List Backgrounds (REMOVED) ──────────────────────────────────
+        // The handlePlayerList function has been removed to prevent backgrounds
+        // from being applied to player-cont elements.
 
         // ── User Card (Kill Card) Background ──────────────────────────────────
         async function handleUserCard() {
@@ -719,9 +640,8 @@ const { initGameFeatures } = (() => {
               if (urlInfo) await handleProfilePage(urlInfo.identifier, urlInfo.isLongId);
             } else if (isFriendsPage()) {
               await handleFriendsPage();
-            } else if (isPlayerListVisible()) {
-              await handlePlayerList();
             }
+            // Player list backgrounds have been removed
             
             if (isUserCardVisible()) {
               await handleUserCard();
@@ -811,7 +731,7 @@ const { initGameFeatures } = (() => {
           
           if (scanInterval) clearInterval(scanInterval);
           scanInterval = setInterval(() => {
-            if (isPlayerListVisible() || isUserCardVisible()) {
+            if (isUserCardVisible()) {
               scanAndApplyBackgrounds();
             }
           }, 2000);
@@ -1028,7 +948,7 @@ const { initGameFeatures } = (() => {
         });
         
         const domObserver = new MutationObserver(() => {
-          if (isProfilePage() || isFriendsPage() || isPlayerListVisible() || isUserCardVisible()) {
+          if (isProfilePage() || isFriendsPage() || isUserCardVisible()) {
             scanAndApplyBackgrounds();
           }
         });
@@ -1044,12 +964,12 @@ const { initGameFeatures } = (() => {
         setTimeout(() => {
           checkAndRedirectCustomId();
           injectAllSubnames();
-          if (isPlayerListVisible() || isUserCardVisible()) scanAndApplyBackgrounds();
+          if (isUserCardVisible()) scanAndApplyBackgrounds();
         }, 500);
         
         startSubnamePersistence();
         
-        console.log('[GameFeatures] All systems initialized (Custom ID, Subname, Backgrounds, Profile Lookup, Player List, User Card)');
+        console.log('[GameFeatures] All systems initialized (Custom ID, Subname, Backgrounds, Profile Lookup, User Card)');
       })();
     `;
   };

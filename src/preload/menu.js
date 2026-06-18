@@ -21,6 +21,7 @@ class Menu {
       ui: this.menu.querySelector("#ui-options"),
       game: this.menu.querySelector("#game-options"),
       performance: this.menu.querySelector("#performance-options"),
+      swapper: this.menu.querySelector("#swapper-options"),
       client: this.menu.querySelector("#client-options"),
       scripts: this.menu.querySelector("#scripts-options"),
       about: this.menu.querySelector("#about-client"),
@@ -941,31 +942,78 @@ escapeHtml(str) {
     });
   }
 
-  handleTabChange(tab) {
-    if (!tab) return;
-    const tabs = this.menu.querySelectorAll(".juice.tab");
-    const tabName = tab.dataset.tab;
+handleTabChange(tab) {
+  if (!tab) return;
+  const tabs = this.menu.querySelectorAll(".juice.tab");
+  const tabName = tab.dataset.tab;
 
-    this.localStorage.setItem("juice-menu-tab", tabName);
+  this.localStorage.setItem("juice-menu-tab", tabName);
 
-    const contents = this.menu.querySelectorAll(".juice.options");
-    tabs.forEach((t) => t.classList.remove("active"));
-    contents.forEach((c) => c.classList.remove("active"));
-    tab.classList.add("active");
+  const contents = this.menu.querySelectorAll(".juice.options");
+  tabs.forEach((t) => t.classList.remove("active"));
+  contents.forEach((c) => c.classList.remove("active"));
+  tab.classList.add("active");
 
-    const targetContent = this.tabToContentMap[tabName];
-    if (targetContent) targetContent.classList.add("active");
-
-    const assetsSubtabs = this.menu.querySelector("#assets-subtabs");
-    if (assetsSubtabs) {
-      assetsSubtabs.style.display = tabName === "assets" ? "flex" : "none";
+  // Special handling for swapper tab - show the default swapper panel
+  if (tabName === "swapper") {
+    // Show the main swapper options (default panel)
+    const swapperOptions = this.menu.querySelector("#swapper-options");
+    if (swapperOptions) {
+      swapperOptions.classList.add("active");
+      swapperOptions.style.display = "";
     }
-
-    const toolsSubtabs = this.menu.querySelector("#tools-subtabs");
-    if (toolsSubtabs) {
-      toolsSubtabs.style.display = tabName === "tools" ? "flex" : "none";
+    
+    // Hide guns and sounds panels initially
+    const gunsPanel = this.menu.querySelector("#swapper-guns");
+    const soundsPanel = this.menu.querySelector("#swapper-sounds");
+    if (gunsPanel) {
+      gunsPanel.classList.remove("active");
+      gunsPanel.style.display = "none";
+    }
+    if (soundsPanel) {
+      soundsPanel.classList.remove("active");
+      soundsPanel.style.display = "none";
+    }
+    
+    // Show subtabs
+    const swapperSubtabs = this.menu.querySelector("#swapper-subtabs");
+    if (swapperSubtabs) {
+      swapperSubtabs.style.display = "flex";
+    }
+    
+    // Initialize swapper if not already
+    if (!this._swapperInitialized) {
+      this._swapperInitialized = true;
+      this.initSwapper();
+    }
+  } else {
+    // Normal tab handling
+    const targetContent = this.tabToContentMap[tabName];
+    if (targetContent) {
+      targetContent.classList.add("active");
+      targetContent.style.display = "";
+    }
+    
+    // Hide swapper subtabs when not on swapper tab
+    const swapperSubtabs = this.menu.querySelector("#swapper-subtabs");
+    if (swapperSubtabs) {
+      swapperSubtabs.style.display = "none";
     }
   }
+
+  // Handle assets subtabs
+  const assetsSubtabs = this.menu.querySelector("#assets-subtabs");
+  if (assetsSubtabs) {
+    assetsSubtabs.style.display = tabName === "assets" ? "flex" : "none";
+  }
+
+  // Handle tools subtabs
+  const toolsSubtabs = this.menu.querySelector("#tools-subtabs");
+  if (toolsSubtabs) {
+    toolsSubtabs.style.display = tabName === "tools" ? "flex" : "none";
+  }
+}
+  
 
   handleDropdowns() {
     const dropdowns = this.menu.querySelectorAll(".dropdown");
@@ -1171,6 +1219,30 @@ escapeHtml(str) {
         this.initMenu();
       }
     });
+
+    const weaponResetOffsets = this.menu.querySelector("#weapon-reset-offsets");
+    if (weaponResetOffsets) {
+      weaponResetOffsets.addEventListener("click", () => {
+        const defaults = {
+          weapon_wireframe: false,
+          weapon_rainbow:   false,
+          weapon_scale:     1.0,
+          weapon_offset_x:  0,
+          weapon_offset_y:  0,
+          weapon_offset_z:  0,
+        };
+        for (const [key, val] of Object.entries(defaults)) {
+          this.settings[key] = val;
+          ipcRenderer.send("update-setting", key, val);
+          const el = this.menu.querySelector(`[data-setting="${key}"]`);
+          if (el) {
+            if (el.type === "checkbox") el.checked = val;
+            else el.value = val;
+          }
+          document.dispatchEvent(new CustomEvent("juice-settings-changed", { detail: { setting: key, value: val } }));
+        }
+      });
+    }
   }
 
   removeSimpleInviteBtns() {
@@ -1369,6 +1441,542 @@ escapeHtml(str) {
     }
   }
 
+// ── Swapper Tab ───────────────────────────────────────────────────────────
+
+initSwapper() {
+  const SWAPPER_API = "https://raw.githubusercontent.com/OBS-Akuma/KirkaSkins/refs/heads/main/CleanAllrendersAndTextures.json";
+
+  const WEAPON_FILE_MAP = {
+    "scar":     { texture: "texture.b3fc7981.webp", render: "render.b3fc7981.webp" },
+    "ar-9":     { texture: "texture.1794de31.webp", render: "render.1794de31.webp" },
+    "mac-10":   { texture: "texture.36d894bd.webp", render: "render.36d894bd.webp" },
+    "m60":      { texture: "texture.b658c822.webp", render: "render.b658c822.webp" },
+    "tomahawk": { texture: "texture.397a3f05.webp", render: "render.397a3f05.webp" },
+    "vita":     { texture: "texture.b2a49027.webp", render: "render.b2a49027.webp" },
+    "shark":    { texture: "texture.6c8a6582.webp", render: "render.6c8a6582.webp" },
+    "revolver": { texture: "texture.0bed9187.webp", render: "render.0bed9187.webp" },
+    "bayonet":  { texture: "texture.76c24e59.webp", render: "render-mini.f3df9462.webp" },
+    "lar":      { texture: "texture.d97db214.webp", render: "render.d97db214.webp" },
+    "weatie":   { texture: "texture.212a85fe.webp", render: "render.212a85fe.webp" },
+    "characters": { texture: "texture.df509d7b.png", render: "render.df509d7b.png" },
+  };
+
+  const os   = require("os");
+  const path = require("path");
+  const fs   = require("fs");
+
+  const SWAPPER_DIR = path.join(os.homedir(), "Documents", "SmudgyClient", "swapper", "assets", "img");
+
+  let allSkins = [];
+  let loaded   = false;
+  let pendingTextureUrl  = null;
+  let pendingRenderUrl   = null;
+  let pendingSkinId      = null;
+
+  const grid      = this.menu.querySelector("#swapper-grid");
+  const loading   = this.menu.querySelector("#swapper-loading");
+  const emptyEl   = this.menu.querySelector("#swapper-empty");
+  const searchEl  = this.menu.querySelector("#swapper-search");
+  const weaponFilter = this.menu.querySelector("#swapper-weapon-filter");
+
+  const modal       = this.menu.querySelector("#swapper-weapon-modal");
+  const modalRender = this.menu.querySelector("#swapper-modal-render");
+  const modalStatus = this.menu.querySelector("#swapper-modal-status");
+  const modalClose  = this.menu.querySelector("#swapper-modal-close");
+
+  if (!grid) return;
+
+  // ── File detection helpers ─────────────────────────────────────────────
+
+  const getInstalledMap = () => {
+    const installed = {};
+    
+    try {
+      if (this.settings && this.settings.swapper_installed) {
+        const map = JSON.parse(this.settings.swapper_installed) || {};
+        // Only include entries where the files actually exist
+        for (const [skinId, weapon] of Object.entries(map)) {
+          const files = WEAPON_FILE_MAP[weapon];
+          if (files) {
+            const texturePath = path.join(SWAPPER_DIR, files.texture);
+            const renderPath = path.join(SWAPPER_DIR, files.render);
+            if (fs.existsSync(texturePath) && fs.existsSync(renderPath)) {
+              installed[skinId] = weapon;
+            } else {
+              // Files don't exist, remove from settings
+              delete map[skinId];
+              saveInstalledMap(map);
+            }
+          }
+        }
+      }
+    } catch {}
+    
+    return installed;
+  };
+
+  const saveInstalledMap = (map) => {
+    const mapString = JSON.stringify(map);
+    if (this.settings) {
+      this.settings.swapper_installed = mapString;
+      ipcRenderer.send("update-setting", "swapper_installed", mapString);
+    }
+    this.localStorage.setItem("swapper-installed", mapString);
+
+    const event = new CustomEvent("juice-settings-changed", {
+      detail: { setting: "swapper_installed", value: mapString },
+    });
+    document.dispatchEvent(event);
+  };
+
+  const markSkinInstalled = (skinId, weapon) => {
+    const map = {};
+    try {
+      if (this.settings && this.settings.swapper_installed) {
+        const existing = JSON.parse(this.settings.swapper_installed) || {};
+        Object.assign(map, existing);
+      }
+    } catch {}
+    
+    // Remove any entry that uses this weapon
+    for (const [key, value] of Object.entries(map)) {
+      if (value === weapon) delete map[key];
+    }
+    
+    map[skinId] = weapon;
+    saveInstalledMap(map);
+  };
+
+  const unmarkSkin = (skinId) => {
+    const map = {};
+    try {
+      if (this.settings && this.settings.swapper_installed) {
+        const existing = JSON.parse(this.settings.swapper_installed) || {};
+        Object.assign(map, existing);
+      }
+    } catch {}
+    delete map[skinId];
+    saveInstalledMap(map);
+  };
+
+  // ── File operations ──────────────────────────────────────────────────────
+
+  const ensureSwapperDir = () => {
+    if (!fs.existsSync(SWAPPER_DIR)) {
+      fs.mkdirSync(SWAPPER_DIR, { recursive: true });
+    }
+  };
+
+  const writeTexture = async (textureUrl, renderUrl, weapon) => {
+    ensureSwapperDir();
+    const files = WEAPON_FILE_MAP[weapon];
+    if (!files) throw new Error(`Unknown weapon: ${weapon}`);
+
+    // Write texture file
+    const texturePath = path.join(SWAPPER_DIR, files.texture);
+    if (textureUrl.startsWith("data:")) {
+      const base64 = textureUrl.split(",")[1];
+      if (!base64) throw new Error("Invalid base64 data URI");
+      const buf = Buffer.from(base64, "base64");
+      fs.writeFileSync(texturePath, buf);
+    } else {
+      const res = await fetch(textureUrl);
+      if (!res.ok) throw new Error(`Fetch failed for texture: ${res.status}`);
+      const arrayBuf = await res.arrayBuffer();
+      fs.writeFileSync(texturePath, Buffer.from(arrayBuf));
+    }
+
+    // Write render file
+    const renderPath = path.join(SWAPPER_DIR, files.render);
+    if (renderUrl.startsWith("data:")) {
+      const base64 = renderUrl.split(",")[1];
+      if (!base64) throw new Error("Invalid base64 data URI");
+      const buf = Buffer.from(base64, "base64");
+      fs.writeFileSync(renderPath, buf);
+    } else {
+      const res = await fetch(renderUrl);
+      if (!res.ok) throw new Error(`Fetch failed for render: ${res.status}`);
+      const arrayBuf = await res.arrayBuffer();
+      fs.writeFileSync(renderPath, Buffer.from(arrayBuf));
+    }
+
+    return { texturePath, renderPath };
+  };
+
+  const removeTexture = (weapon) => {
+    const files = WEAPON_FILE_MAP[weapon];
+    if (!files) return false;
+
+    const texturePath = path.join(SWAPPER_DIR, files.texture);
+    const renderPath = path.join(SWAPPER_DIR, files.render);
+    
+    let removed = false;
+    if (fs.existsSync(texturePath)) {
+      fs.unlinkSync(texturePath);
+      removed = true;
+    }
+    if (fs.existsSync(renderPath)) {
+      fs.unlinkSync(renderPath);
+      removed = true;
+    }
+    return removed;
+  };
+
+  // ── Modal ────────────────────────────────────────────────────────────────
+
+  const openModal = (renderUrl, textureUrl, skinId) => {
+    pendingRenderUrl  = renderUrl;
+    pendingTextureUrl = textureUrl;
+    pendingSkinId     = skinId;
+
+    modalRender.src = renderUrl;
+    modalStatus.style.display = "none";
+    modalStatus.className = "swapper-modal-status";
+    modalStatus.innerText = "";
+
+    modal.querySelectorAll(".swapper-weapon-btn").forEach((btn) => {
+      btn.disabled = false;
+      btn.querySelector(".text").innerHTML =
+        btn.dataset.weapon.charAt(0).toUpperCase() + btn.dataset.weapon.slice(1);
+    });
+
+    modal.style.display = "flex";
+  };
+
+  const closeModal = () => {
+    modal.style.display = "none";
+    pendingRenderUrl  = null;
+    pendingTextureUrl = null;
+    pendingSkinId     = null;
+  };
+
+  if (modalClose) {
+    modalClose.addEventListener("click", closeModal);
+  }
+
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  // ── Create Skin Card ────────────────────────────────────────────────────
+
+  const createSkinCard = (skin, installed) => {
+  let installedWeapon = installed[skin._id] || null;
+  
+  // Double check if files actually exist
+  if (installedWeapon) {
+    const files = WEAPON_FILE_MAP[installedWeapon];
+    if (files) {
+      const texturePath = path.join(SWAPPER_DIR, files.texture);
+      const renderPath = path.join(SWAPPER_DIR, files.render);
+      if (!fs.existsSync(texturePath) || !fs.existsSync(renderPath)) {
+        installedWeapon = null;
+        unmarkSkin(skin._id);
+      }
+    }
+  }
+  
+  const weaponLabel = installedWeapon
+    ? installedWeapon.charAt(0).toUpperCase() + installedWeapon.slice(1)
+    : null;
+
+  const card = document.createElement("div");
+  // Only add 'installed' class if a weapon is actually installed
+  card.className = installedWeapon ? "skin-card installed" : "skin-card";
+
+  // Build the HTML - remove button is ALWAYS in the HTML
+  card.innerHTML = `
+    <div class="skin-img-wrap">
+      <img src="${skin.renderurl}" alt="${skin._id}" loading="lazy"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+      <div class="skin-no-img" style="display:none;"><i class="fas fa-image"></i></div>
+      ${installedWeapon
+        ? `<span class="skin-rarity-badge" style="background:rgba(var(--green), 0.8); color:#fff; padding:2px 8px; border-radius:4px; font-size:0.65rem; font-weight:600;">${weaponLabel} ✓</span>`
+        : ""}
+    </div>
+    <div class="skin-info">
+      <span class="skin-name" title="${this.escapeHtml(skin._id)}">${this.escapeHtml(
+    skin._id.length > 18 ? skin._id.slice(0, 18) + "…" : skin._id
+  )}</span>
+    </div>
+    <div class="plugin-actions" style="flex-direction:column; gap:0.3rem; width:100%;">
+      <button class="juice-button swapper-apply-btn" style="width:100%;">
+        <span class="text"><i class="fas fa-repeat"></i> ${installedWeapon ? "Re-apply" : "Apply"}</span>
+        <div class="custom-border"></div>
+      </button>
+      <!-- Remove button is always in HTML, hidden by CSS unless installed -->
+      <button class="juice-button swapper-remove-btn" style="width:100%; margin-top:2px; border-color: rgba(var(--red), 0.5);">
+        <span class="text" style="color: rgba(var(--red), 1);"><i class="fas fa-trash"></i> Remove</span>
+        <div class="custom-border"></div>
+      </button>
+    </div>
+  `;
+
+  // Apply button
+  card.querySelector(".swapper-apply-btn").addEventListener("click", () => {
+    openModal(skin.renderurl, skin.textureurl, skin._id);
+  });
+
+  // Remove button
+  const removeBtn = card.querySelector(".swapper-remove-btn");
+  removeBtn.addEventListener("click", async (e) => {
+    e.stopPropagation();
+    if (!installedWeapon) {
+      console.log("No installed weapon to remove");
+      return;
+    }
+    
+    const weapon = installedWeapon;
+    const textEl = removeBtn.querySelector(".text");
+
+    textEl.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Removing...`;
+    removeBtn.disabled = true;
+
+    try {
+      // Delete both files
+      const files = WEAPON_FILE_MAP[weapon];
+      if (files) {
+        const texturePath = path.join(SWAPPER_DIR, files.texture);
+        const renderPath = path.join(SWAPPER_DIR, files.render);
+        if (fs.existsSync(texturePath)) fs.unlinkSync(texturePath);
+        if (fs.existsSync(renderPath)) fs.unlinkSync(renderPath);
+      }
+      
+      // Remove from settings
+      unmarkSkin(skin._id);
+      
+      // Refresh the grid
+      renderSkins();
+    } catch (err) {
+      console.error("[Swapper] Remove failed:", err);
+      textEl.innerHTML = `<i class="fas fa-xmark"></i> Failed`;
+      setTimeout(() => {
+        textEl.innerHTML = `<i class="fas fa-trash"></i> Remove`;
+        removeBtn.disabled = false;
+      }, 2000);
+    }
+  });
+
+  return card;
+};
+  // ── Render grid ──────────────────────────────────────────────────────────
+
+  const renderSkins = () => {
+    const query = (searchEl ? searchEl.value : "").toLowerCase().trim();
+    const weaponOnly = weaponFilter ? weaponFilter.value : "";
+    const installed = getInstalledMap();
+
+    let filtered = [...allSkins];
+
+    if (query) {
+      filtered = filtered.filter((s) =>
+        s._id.toLowerCase().includes(query)
+      );
+    }
+
+    if (weaponOnly) {
+      filtered = filtered.filter((s) => {
+        return installed[s._id] === weaponOnly;
+      });
+      
+      if (!filtered.length && !query) {
+        filtered = allSkins;
+      }
+    }
+
+    grid.innerHTML = "";
+
+    if (!filtered.length) {
+      grid.style.display = "none";
+      emptyEl.style.display = "flex";
+      return;
+    }
+
+    emptyEl.style.display = "none";
+    grid.style.display = "grid";
+
+    filtered.sort((a, b) => {
+      const aHas = !!installed[a._id] ? 1 : 0;
+      const bHas = !!installed[b._id] ? 1 : 0;
+      return bHas - aHas;
+    });
+
+    filtered.forEach((skin) => {
+      const card = createSkinCard(skin, installed);
+      grid.appendChild(card);
+    });
+  };
+
+  // ── Modal button wiring ─────────────────────────────────────────────────
+
+  modal.querySelectorAll(".swapper-weapon-btn").forEach((btn) => {
+    const fresh = btn.cloneNode(true);
+    btn.parentNode.replaceChild(fresh, btn);
+
+    fresh.addEventListener("click", async () => {
+      if (!pendingTextureUrl || !pendingRenderUrl) return;
+
+      const weapon = fresh.dataset.weapon;
+      if (!WEAPON_FILE_MAP[weapon]) return;
+
+      const textEl = fresh.querySelector(".text");
+      const originalHTML = textEl.innerHTML;
+
+      fresh.disabled = true;
+      textEl.innerHTML = `<i class="fas fa-spinner fa-spin"></i>`;
+      modalStatus.style.display = "none";
+
+      try {
+        // Write both texture and render files
+        await writeTexture(pendingTextureUrl, pendingRenderUrl, weapon);
+
+        if (pendingSkinId) markSkinInstalled(pendingSkinId, weapon);
+
+        textEl.innerHTML = `<i class="fas fa-check"></i> Done`;
+        modalStatus.className = "swapper-modal-status success";
+        modalStatus.innerText = `Applied ${weapon.toUpperCase()}! Restart client to see changes.`;
+        modalStatus.style.display = "block";
+
+        setTimeout(() => {
+          closeModal();
+          renderSkins();
+        }, 1800);
+
+      } catch (err) {
+        console.error("[Swapper] Write failed:", err);
+        textEl.innerHTML = `<i class="fas fa-xmark"></i> Failed`;
+        fresh.disabled = false;
+        modalStatus.className = "swapper-modal-status error";
+        modalStatus.innerText = `Error: ${err.message}`;
+        modalStatus.style.display = "block";
+        setTimeout(() => {
+          textEl.innerHTML = originalHTML;
+          modalStatus.style.display = "none";
+        }, 2500);
+      }
+    });
+  });
+
+  // ── Fetch & init ─────────────────────────────────────────────────────────
+
+  const loadSwapper = async () => {
+    loading.style.display = "flex";
+    grid.style.display = "none";
+    emptyEl.style.display = "none";
+
+    try {
+      const raw = await fetch(SWAPPER_API).then((r) => r.json());
+      
+      allSkins = Object.entries(raw).map(([id, data]) => ({
+        _id: id,
+        renderurl: data.renderurl || "",
+        textureurl: data.textureurl || "",
+      })).filter((s) => s.renderurl && s.textureurl);
+
+      if (allSkins.length === 0) {
+        throw new Error("No skins found in the API response");
+      }
+
+    } catch (err) {
+      loading.style.display = "none";
+      grid.style.display = "grid";
+      grid.innerHTML = `<div class="assets-empty"><i class="fas fa-triangle-exclamation"></i><span>Failed to load textures: ${err.message}</span></div>`;
+      console.error("[Swapper] load failed:", err);
+      return;
+    }
+
+    loading.style.display = "none";
+    renderSkins();
+  };
+
+  // Search & filter live update
+  if (searchEl) searchEl.addEventListener("input", () => renderSkins());
+  if (weaponFilter) weaponFilter.addEventListener("change", () => renderSkins());
+
+  // ── Subtab wiring ─────────────────────────────────────────────────────────
+
+  const gunsPanel = this.menu.querySelector("#swapper-guns");
+  const soundsPanel = this.menu.querySelector("#swapper-sounds");
+  const defaultPanel = this.menu.querySelector("#swapper-options");
+
+  if (gunsPanel) {
+    gunsPanel.style.display = "none";
+    gunsPanel.classList.remove("active");
+  }
+  if (soundsPanel) {
+    soundsPanel.style.display = "none";
+    soundsPanel.classList.remove("active");
+  }
+  if (defaultPanel) {
+    defaultPanel.style.display = "";
+    defaultPanel.classList.add("active");
+  }
+
+  const showSwapperPanel = (tabName) => {
+    if (defaultPanel) {
+      defaultPanel.style.display = "none";
+      defaultPanel.classList.remove("active");
+    }
+    if (gunsPanel) {
+      gunsPanel.style.display = "none";
+      gunsPanel.classList.remove("active");
+    }
+    if (soundsPanel) {
+      soundsPanel.style.display = "none";
+      soundsPanel.classList.remove("active");
+    }
+
+    if (tabName === "guns") {
+      if (gunsPanel) {
+        gunsPanel.style.display = "";
+        gunsPanel.classList.add("active");
+      }
+    } else if (tabName === "sounds") {
+      if (soundsPanel) {
+        soundsPanel.style.display = "";
+        soundsPanel.classList.add("active");
+      }
+    } else {
+      if (defaultPanel) {
+        defaultPanel.style.display = "";
+        defaultPanel.classList.add("active");
+      }
+    }
+  };
+
+  const subtabContainer = this.menu.querySelector("#swapper-subtabs");
+  if (subtabContainer) {
+    subtabContainer.addEventListener("click", (e) => {
+      const tab = e.target.closest(".swapper-subtab");
+      if (!tab || tab.classList.contains("locked")) return;
+
+      subtabContainer.querySelectorAll(".swapper-subtab").forEach((t) =>
+        t.classList.remove("active")
+      );
+      tab.classList.add("active");
+
+      const tabName = tab.dataset.swapperTab;
+      showSwapperPanel(tabName);
+
+      if (tabName === "guns" && !loaded) {
+        loaded = true;
+        loadSwapper();
+      }
+    });
+  }
+
+  const mainTab = this.menu.querySelector(`[data-tab="swapper"]`);
+  if (mainTab) {
+    mainTab.addEventListener("click", () => {
+      showSwapperPanel(null);
+      if (subtabContainer) {
+        subtabContainer.querySelectorAll(".swapper-subtab").forEach((t) =>
+          t.classList.remove("active")
+        );
+      }
+    });
+  }
+}
   // ── Skins Browser ─────────────────────────────────────────────────────────
 
   initSkins() {
@@ -1416,9 +2024,9 @@ escapeHtml(str) {
       filtered.forEach((skin) => {
         const name   = skin["Skin Name"]     || "Unknown";
         const rarity = skin["Skin Rarity"]   || "";
-        const value  = skin["Base Value"]    || "—";
-        const obtain = skin["Obtainable By"] || "—";
-        const type   = skin["Type"]          || "—";
+        const value  = skin["Base Value"]    || "";
+        const obtain = skin["Obtainable By"] || "";
+        const type   = skin["Type"]          || "";
         const imgSrc = renders[name]         || "";
 
         const rarityLower = rarity.toLowerCase();

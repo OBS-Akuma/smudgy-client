@@ -31,7 +31,6 @@ if (!window.location.href.startsWith(base_url)) {
   });
 }
 
-// Add the missing observeForElement function
 const observeForElement = (selector, functionToRun, target = document.body) => {
   const observer = new MutationObserver((mutations, obs) => {
     for (const mutation of mutations) {
@@ -56,6 +55,201 @@ const originalConsole = {
   info: console.info.bind(console),
   trace: console.trace.bind(console),
 };
+
+{
+  const weaponState = {
+    wireframe:  settings.weapon_wireframe  ?? false,
+    rainbow:    settings.weapon_rainbow    ?? false,
+    scale:      parseFloat(settings.weapon_scale     ?? 1.0),
+    offsetX:    parseFloat(settings.weapon_offset_x  ?? 0.0),
+    offsetY:    parseFloat(settings.weapon_offset_y  ?? 0.0),
+    offsetZ:    parseFloat(settings.weapon_offset_z  ?? 0.0),
+  };
+
+  document.addEventListener("juice-settings-changed", ({ detail }) => {
+    const { setting, value } = detail;
+    if (setting === "weapon_wireframe")  weaponState.wireframe = value;
+    if (setting === "weapon_rainbow")    weaponState.rainbow   = value;
+    if (setting === "weapon_scale")      weaponState.scale     = parseFloat(value);
+    if (setting === "weapon_offset_x")   weaponState.offsetX   = parseFloat(value);
+    if (setting === "weapon_offset_y")   weaponState.offsetY   = parseFloat(value);
+    if (setting === "weapon_offset_z")   weaponState.offsetZ   = parseFloat(value);
+  });
+
+  const hookedWeaponCtx = new WeakSet();
+  const weaponScratch   = new Float32Array(16);
+
+  const len3 = (x, y, z) => Math.sqrt(x * x + y * y + z * z);
+
+  const classify = m => {
+    if (!m || m.length < 16) return null;
+    if (Math.abs(m[3]) > 0.001 || Math.abs(m[7]) > 0.001 || Math.abs(m[11]) > 0.001 || Math.abs(m[15] - 1) > 0.001) return null;
+
+    const s0 = len3(m[0], m[1], m[2]);
+    if (s0 < 0.001 || s0 > 15) return null;
+    const s1 = len3(m[4], m[5], m[6]);
+    if (s1 < 0.001 || s1 > 15) return null;
+    const s2 = len3(m[8], m[9], m[10]);
+    if (s2 < 0.001 || s2 > 15) return null;
+
+    const avg = (s0 + s1 + s2) / 3;
+    if (Math.abs(avg - 0.4) < 0.05 || Math.abs(avg - 2.4) < 0.1) return null;
+
+    const dist = len3(m[12], m[13], m[14]);
+    if (dist < 0.001 || dist > 0.6) return null;
+
+    const maxS = Math.max(s0, s1, s2);
+    return (maxS < 1.7 || maxS / Math.min(s0, s1, s2) < 1.05) ? "weapon" : "arms";
+  };
+
+  function updateRainbowPixel(px, h) {
+    const h6 = (h * 6) % 6;
+    const x = (1 - Math.abs(h6 % 2 - 1)) * 255 | 0;
+    if      (h6 < 1) { px[0] = 255; px[1] = x;   px[2] = 0;   }
+    else if (h6 < 2) { px[0] = x;   px[1] = 255; px[2] = 0;   }
+    else if (h6 < 3) { px[0] = 0;   px[1] = 255; px[2] = x;   }
+    else if (h6 < 4) { px[0] = 0;   px[1] = x;   px[2] = 255; }
+    else if (h6 < 5) { px[0] = x;   px[1] = 0;   px[2] = 255; }
+    else             { px[0] = 255; px[1] = 0;   px[2] = x;   }
+    px[3] = 255;
+  }
+
+  const isSpectating = () => !!document.querySelector(".infos .fps");
+
+  const origGetCtx = HTMLCanvasElement.prototype.getContext;
+  HTMLCanvasElement.prototype.getContext = function (type, attrs) {
+    const gl = origGetCtx.call(this, type, attrs);
+    if (!gl || (type !== "webgl" && type !== "webgl2") || hookedWeaponCtx.has(gl)) return gl;
+    hookedWeaponCtx.add(gl);
+
+    const colorTex   = gl.createTexture();
+    const colorPixel  = new Uint8Array([255, 255, 255, 255]);
+    gl.bindTexture(gl.TEXTURE_2D, colorTex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, colorPixel);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+    let activeThisFrame   = false;
+    let lastBoundTexture  = null;
+    let lastRainbowUpdate = 0;
+
+    const origUniform      = gl.uniformMatrix4fv;
+    const origBindTexture  = gl.bindTexture;
+    const origTexImage2D   = gl.texImage2D;
+    const origDrawArrays   = gl.drawArrays;
+    const origDrawElements = gl.drawElements;
+
+    const matrixCache = new Float32Array(48);
+    let   cacheCount  = 0;
+    const weaponTrans = new Float32Array(24);
+    let   weaponCount = 0;
+
+    const checkAndCache = s => {
+      const s0 = s[0], s5 = s[5], s10 = s[10], s12 = s[12], s13 = s[13], s14 = s[14];
+      for (let i = 0; i < cacheCount; i++) {
+        const o = i * 6;
+        if (Math.abs(matrixCache[o]   - s0)  < 0.001 &&
+            Math.abs(matrixCache[o+1] - s5)  < 0.001 &&
+            Math.abs(matrixCache[o+2] - s10) < 0.001 &&
+            Math.abs(matrixCache[o+3] - s12) < 0.001 &&
+            Math.abs(matrixCache[o+4] - s13) < 0.001 &&
+            Math.abs(matrixCache[o+5] - s14) < 0.001) return true;
+      }
+      if (cacheCount < 8) {
+        const o = cacheCount * 6;
+        matrixCache[o] = s0; matrixCache[o+1] = s5;  matrixCache[o+2] = s10;
+        matrixCache[o+3] = s12; matrixCache[o+4] = s13; matrixCache[o+5] = s14;
+        cacheCount++;
+      }
+      return false;
+    };
+
+    const isNearWeapon = (tx, ty, tz) => {
+      for (let i = 0; i < weaponCount; i++) {
+        const o = i * 3;
+        const dx = tx - weaponTrans[o], dy = ty - weaponTrans[o+1], dz = tz - weaponTrans[o+2];
+        if (dx * dx + dy * dy + dz * dz < 0.0144) return true;
+      }
+      return false;
+    };
+
+    gl.bindTexture = function (target, texture) {
+      if (target === gl.TEXTURE_2D) lastBoundTexture = texture;
+      return origBindTexture.call(gl, target, texture);
+    };
+
+    gl.uniformMatrix4fv = function (loc, transpose, val, srcOffset, srcLength) {
+      activeThisFrame = false;
+
+      if (!isSpectating() && val && val.length >= 16) {
+        const offset = srcOffset ?? 0;
+        const slice  = (offset === 0 && val.length === 16)
+          ? val
+          : (val.subarray ? val.subarray(offset, offset + 16) : val.slice(offset, offset + 16));
+
+        const kind = classify(slice);
+
+        if (kind === "weapon" || kind === "arms") {
+          if (checkAndCache(slice)) return origUniform.call(gl, loc, transpose, val, srcOffset, srcLength);
+          if (kind === "arms" && isNearWeapon(slice[12], slice[13], slice[14])) return origUniform.call(gl, loc, transpose, val, srcOffset, srcLength);
+
+          activeThisFrame = true;
+
+          if (weaponState.rainbow && lastBoundTexture !== null) {
+            const now = performance.now();
+            if (now - lastRainbowUpdate > 16) {
+              updateRainbowPixel(colorPixel, (now / 3000) % 1);
+              origBindTexture.call(gl, gl.TEXTURE_2D, colorTex);
+              origTexImage2D.call(gl, gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, colorPixel);
+              lastRainbowUpdate = now;
+            } else {
+              origBindTexture.call(gl, gl.TEXTURE_2D, colorTex);
+            }
+          } else if (lastBoundTexture !== null) {
+            origBindTexture.call(gl, gl.TEXTURE_2D, lastBoundTexture);
+          }
+
+          if (kind === "weapon" && weaponCount < 8) {
+            const o = weaponCount * 3;
+            weaponTrans[o] = slice[12]; weaponTrans[o+1] = slice[13]; weaponTrans[o+2] = slice[14];
+            weaponCount++;
+          }
+
+          const s = weaponState.scale;
+          weaponScratch.set(slice);
+          weaponScratch[0]  *= s; weaponScratch[1]  *= s; weaponScratch[2]  *= s;
+          weaponScratch[4]  *= s; weaponScratch[5]  *= s; weaponScratch[6]  *= s;
+          weaponScratch[8]  *= s; weaponScratch[9]  *= s; weaponScratch[10] *= s;
+          weaponScratch[12] += weaponState.offsetX;
+          weaponScratch[13] += weaponState.offsetY;
+          weaponScratch[14] += weaponState.offsetZ;
+
+          return origUniform.call(gl, loc, transpose, weaponScratch, 0, 16);
+        }
+      }
+      return origUniform.call(gl, loc, transpose, val, srcOffset, srcLength);
+    };
+
+    const toWireframe = mode =>
+      (mode === gl.TRIANGLES || mode === gl.TRIANGLE_FAN || mode === gl.TRIANGLE_STRIP) ? gl.LINES : mode;
+
+    const resetFrame = () => { activeThisFrame = false; cacheCount = 0; weaponCount = 0; };
+
+    gl.drawArrays = function (mode, first, count) {
+      if (weaponState.wireframe && activeThisFrame) mode = toWireframe(mode);
+      resetFrame();
+      return origDrawArrays.call(gl, mode, first, count);
+    };
+
+    gl.drawElements = function (mode, count, type, offset) {
+      if (weaponState.wireframe && activeThisFrame) mode = toWireframe(mode);
+      resetFrame();
+      return origDrawElements.call(gl, mode, count, type, offset);
+    };
+
+    return gl;
+  };
+}
 
 document.addEventListener("DOMContentLoaded", async () => {
   console.log = originalConsole.log;
@@ -430,6 +624,22 @@ document.addEventListener("DOMContentLoaded", async () => {
             settings.lobby_logo_link
           )}) !important; }`
         );
+        if (settings.chest_icon_link !== "")
+        styles.push(
+          `.chest[data-v-ab1167a2]  { content: url(${formatLink(
+            settings.chest_icon_link
+          )}) !important; }`
+        );
+        if (settings.pack_icon_link !== "")
+        styles.push(
+          `.question-img[data-v-9b37344c]  { content: url(${formatLink(
+            settings.pack_icon_link
+          )}) !important; }`
+        );
+        if (settings.menu_logo_link !== "")
+        styles.push(
+          `.menu[data-theme="custom"]:before {    content: "";    position: absolute;    border-radius: 0.75rem;    top: 0;    left: 0;    right: 0;    bottom: 0;    background: url(${formatLink(            settings.menu_logo_link          )});    background-size: cover;    background-position: center;    mix-blend-mode: color-dodge;    opacity: var(--menu-bg-alpha, 0.5);    pointer-events: none;} !important; }`
+        );
       if (settings.rave_mode)
         styles.push(
           "canvas { animation: rotateHue 1s linear infinite !important; }"
@@ -459,8 +669,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         "ui_animations",
         "rave_mode",
         "spectate_button",
-        "show_trade_buttons",
-        "accept_on_click",
         "lobby_keybind_reminder",
       ];
       if (relevantSettings.includes(e.detail.setting)) updateUIFeatures();

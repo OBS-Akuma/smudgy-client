@@ -9,6 +9,7 @@
     --green: 26, 142, 80;
     --blue: 26, 142, 80;
     --red: 220, 53, 69;
+    --purple: 138, 43, 226;
     --hover-dark: 31, 31, 31;
     --hover-light: 255, 255, 255, 0.05;
     --border: 255, 255, 255, 0.15;
@@ -24,6 +25,7 @@
     --green: 201, 143, 67;
     --blue: 255, 173, 96;
     --red: 220, 85, 47;
+    --purple: 138, 43, 226;
     --hover-dark: 48, 30, 15;
     --hover-light: 255, 245, 230, 0.05;
     --border: 255, 245, 230, 0.15;
@@ -39,6 +41,7 @@
     --green: 172, 250, 112;
     --blue: 88, 101, 242;
     --red: 255, 0, 0;
+     --purple: 138, 43, 226;
     --hover-dark: 31, 31, 31;
     --hover-light: 255, 255, 255, 0.05;
     --border: 255, 255, 255, 0.15;
@@ -55,6 +58,7 @@
     --green: 172, 250, 112;
     --blue: 88, 101, 242;
     --red: 255, 0, 0;
+    --purple: 138, 43, 226;
     --hover-dark: 202, 253, 211;
     --hover-light: 0, 0, 0, 0.05;
     --border: 0, 0, 0, 0.15;
@@ -71,6 +75,7 @@
     --green: 255, 147, 45;
     --blue: 88, 101, 242;
     --red: 255, 0, 0;
+    --purple: 138, 43, 226;
     --hover-dark: 255, 239, 224;
     --hover-light: 0, 0, 0, 0.1;
     --border: 255, 239, 224, 0.15;
@@ -87,6 +92,7 @@
     --green: 44, 37, 164;
     --blue: 18, 71, 185;
     --red: 255, 0, 0;
+    --purple: 138, 43, 226;
     --hover-dark: 226, 189, 255;
     --hover-light: 0, 0, 0, 0.1;
     --border: 226, 189, 255, 0.15;
@@ -103,12 +109,16 @@
 .menu[data-theme="nameless"] {
     font-family: "Forza", sans-serif;
     font-weight: 400;
+     background: linear-gradient(to bottom left,
+    rgba(0, 0, 0, calc(var(--menu-bg-alpha, 1) * 0)),
+    rgba(0, 0, 0, calc(var(--menu-bg-alpha, 1) * 0)));
     --dark: 28, 27, 34;
     --light: 255, 255, 255;
     --orange: 245, 200, 97;
     --green: 180, 236, 121;
     --blue: 97, 141, 245;
     --red: 244, 91, 91;
+    --purple: 138, 43, 226;
     --hover-dark: 34, 34, 43;
     --hover-light: 255, 255, 255, 0.05;
     --border: 255, 255, 255, 0.15;
@@ -134,6 +144,7 @@
     --green: 172, 250, 112;
     --blue: 88, 101, 242;
     --red: 255, 0, 0;
+    --purple: 138, 43, 226;
     --hover-dark: 0, 129, 0;
     --hover-light: 0, 0, 0, 0.2;
     --border: 255, 255, 255, 0.15;
@@ -158,6 +169,21 @@
     opacity: 0.5;
     pointer-events: none;
 }
+.menu[data-theme="nameless"]:before {
+    content: "";
+    position: absolute;
+    border-radius: 0.75rem;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url(https://i.imgur.com/fKya0IZ.png);
+    background-size: cover;
+    background-position: center;
+    mix-blend-mode: color-dodge;
+    opacity: var(--menu-bg-alpha, 0.5);
+    pointer-events: none;
+}
 
 .menu[data-theme="kirka"] {
     font-family: "Exo 2", sans-serif;
@@ -172,6 +198,7 @@
     --green: 28, 206, 108;
     --blue: 47, 128, 237;
     --red: 255, 102, 102;
+    --purple: 138, 43, 226;
     --hover-dark: 34, 34, 43;
     --hover-light: 255, 255, 255, 0.05;
     --border: 255, 255, 255, 0.15;
@@ -188,6 +215,7 @@
     --green: 166, 227, 161;
     --blue: 137, 180, 250;
     --red: 243, 139, 168;
+    --purple: 138, 43, 226;
     --hover-dark: 24, 24, 37;
     --hover-light: 205, 214, 244, 0.05;
     --border: 205, 214, 244, 0.15;
@@ -204,6 +232,7 @@
     --green: 135, 154, 57;
     --blue: 67, 133, 190;
     --red: 209, 77, 65;
+    --purple: 138, 43, 226;
     --hover-dark: 31, 31, 31;
     --hover-light: 206, 205, 195, 0.05;
     --border: 206, 205, 195, 0.15;
@@ -224,6 +253,7 @@
     --green: 172, 250, 112;
     --blue: 88, 101, 242;
     --red: 255, 0, 0;
+    --purple: 138, 43, 226;
     --hover-dark: 255, 255, 255;
     --hover-light: 0, 0, 0, 0.05;
     --border: 255, 255, 255, 0.15;
@@ -244,6 +274,7 @@
     --green: 26, 142, 80;
     --blue: 26, 142, 80;
     --red: 220, 53, 69;
+    --purple: 138, 43, 226;
     --hover-dark: 31, 31, 31;
     --hover-light: 255, 255, 255, 0.05;
     --border: 255, 255, 255, 0.15;
@@ -594,10 +625,20 @@
 }
 
 .menu .requries-restart,
+.menu .experimental,
 .menu .requires-refresh {
     position: relative;
 }
 
+.menu .experimental>span:not(.description):after {
+    content: "Experimental";
+    color: rgba(var(--purple));
+    font-size: 0.75rem;
+    padding: 0.15rem 0.3rem;
+    background: rgba(var(--purple), 0.1);
+    border-radius: 0.25rem;
+    margin-left: 0.25rem;
+}
 .menu .requires-restart>span:not(.description):after {
     content: "Requires Restart";
     color: rgba(var(--red));
@@ -607,6 +648,7 @@
     border-radius: 0.25rem;
     margin-left: 0.25rem;
 }
+
 
 .menu .requires-refresh>span:not(.description):after {
     content: "Requires Refresh";
@@ -1863,4 +1905,103 @@
     margin-right: 0;
     margin-bottom: 4px;
   }
+}
+.swapper-subtabs {
+  display: flex;
+  flex-direction: column;
+  padding-left: 1rem;
+  gap: 0.1rem;
+  margin-bottom: 0.25rem;
+}
+
+.swapper-subtab {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  color: rgba(var(--light), 0.6);
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+  border-radius: 0 4px 4px 0;
+}
+
+.swapper-subtab:hover {
+  color: rgba(var(--light), 1);
+  border-left-color: rgba(var(--orange), 0.5);
+}
+
+.swapper-subtab.active {
+  color: rgba(var(--orange), 1);
+  border-left-color: rgba(var(--orange), 1);
+  font-weight: 600;
+}
+
+#swapper-weapon-modal .swapper-modal-inner {
+  background: var(--dark) !important;
+  border-radius: 12px !important;
+  padding: 24px !important;
+  max-width: 700px !important;
+  width: 90% !important;
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+  position: relative !important;
+  border: 2px solid rgba(var(--border), 0.3) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8) !important;
+}
+
+#s/* Fix for swapper card - ensure buttons are visible */
+.skin-card {
+  min-height: 280px !important; /* Increased height to fit both buttons */
+  padding-bottom: 8px !important;
+}
+
+.skin-card .plugin-actions {
+  margin-top: auto !important;
+  padding-top: 4px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  width: 100% !important;
+}
+
+.skin-card .plugin-actions .juice-button {
+  min-height: 32px !important;
+  height: auto !important;
+  padding: 4px 8px !important;
+  font-size: 0.75rem !important;
+}
+
+/* Make sure the remove button is visible */
+.skin-card.installed .swapper-remove-btn {
+  display: flex !important;
+}
+
+/* Ensure the card expands to fit content */
+.skin-card {
+  display: flex !important;
+  flex-direction: column !important;
+  height: auto !important;
+  min-height: 280px !important;
+}
+
+.swapper-remove-btn {
+  display: none !important;
+}
+
+.skin-card.installed .swapper-remove-btn {
+  display: flex !important;
+}
+.swapper-remove-btn {
+  background: rgba(var(--red), 0.1) !important;
+  border-color: rgba(var(--red), 0.3) !important;
+  color: rgba(var(--red), 1) !important;
+}
+.swapper-remove-btn:hover {
+  background: rgba(var(--red), 0.2) !important;
+  border-color: rgba(var(--red), 0.5) !important;
+  color: rgba(var(--red), 1) !important;
+}
+.swapper-subtab.locked {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
 }

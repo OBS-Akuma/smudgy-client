@@ -78,7 +78,24 @@
           <div class="assets-subtab" data-assets-tab="maps"><i class="fas fa-map"></i> Maps</div>
           <div class="assets-subtab" data-assets-tab="favorites"><i class="fas fa-star"></i> Favorites</div>
         </div>
+        
+        <div data-tab="swapper" class="juice tab">
+          <i class="fas fa-repeat"></i>
+          Swapper
+        </div>
+        <div class="swapper-subtabs" id="swapper-subtabs" style="display:none;">
+          <div class="swapper-subtab active" data-swapper-tab="guns">
+            <i class="fas fa-gun"></i>
+            Guns
+          </div>
+          <div class="swapper-subtab locked" data-swapper-tab="sounds">
+            <i class="fas fa-volume-high"></i>
+            Sounds
+            <i class="fas fa-lock tools-lock-icon"></i>
+          </div>
+        </div>
     </div>
+    
     <div class="footer">
       <span class="keybind"></span>
       <span class="sep"></span>
@@ -333,119 +350,253 @@
       </div>
     </div>
     <div id="game-options" class="juice options">
-      <div class="option-group">
-        <div class="option">
-          <span>Permanent Crosshair</span>
-          <div class="checkbox">
-            <input
-              type="checkbox"
-              id="perm_crosshair"
-              data-setting="perm_crosshair"
-            />
-            <label for="perm_crosshair"></label>
-          </div>
-        </div>
-        <div class="option">
-          <span>Hitmarker Link</span>
-          <input
-            type="text"
-            placeholder="https://.../.png"
-            data-setting="hitmarker_link"
-          />
-        </div>
-        <div class="option">
-          <span>Kill Icon Link</span>
-          <input
-            type="text"
-            placeholder="https://.../.png"
-            data-setting="killicon_link"
-          />
-        </div>
-        <div class="option">
-          <span>lobby logo Link</span>
-          <input
-            type="text"
-            placeholder="https://.../.png"
-            data-setting="lobby_logo_link"
-          />
-        </div>
-      </div>
-      <div class="option-group">
-        <div class="option">
-          <span>Hide Chat</span>
-          <div class="checkbox">
-            <input type="checkbox" id="hide_chat" data-setting="hide_chat" />
-            <label for="hide_chat"></label>
-          </div>
-        </div>
-        <div class="option">
-          <span>Hide Interface</span>
-          <div class="checkbox">
-            <input
-              type="checkbox"
-              id="hide_interface"
-              data-setting="hide_interface"
-            />
-            <label for="hide_interface"></label>
-          </div>
-        </div>
-        <div class="option">
-          <span>UI Animations</span>
-          <div class="checkbox">
-            <input
-              type="checkbox"
-              id="ui_animations"
-              data-setting="ui_animations"
-            />
-            <label for="ui_animations"></label>
-          </div>
-        </div>
-      </div>
-      <div class="option-group">
-        <div class="option">
-          <span>Interface Opacity</span>
-          <input
-            type="range"
-            min="0"
-            max="100"
-            class="range"
-            data-setting="interface_opacity"
-          />
-        </div>
-        <div class="option">
-          <span>Interface Bounds</span>
-          <input
-            type="range"
-            min="0"
-            max="2"
-            class="range"
-            data-setting="interface_bounds"
-          />
-        </div>
-        </div>
-        <div class="option-group">
-      <div class="option">
-          <span>Skip Loading Screen</span>
-          <div class="checkbox">
-            <input
-              type="checkbox"
-              id="skip_loading"
-              data-setting="skip_loading"
-            />
-            <label for="skip_loading"></label>
-          </div>
-        </div>
-      </div>
-      <div class="option-group">
-        <div class="option">
-          <span>Rave Mode</span>
-          <div class="checkbox">
-            <input type="checkbox" id="rave_mode" data-setting="rave_mode" />
-            <label for="rave_mode"></label>
-          </div>
-        </div>
+  <div class="option-group">
+    <div class="option">
+      <span>Permanent Crosshair</span>
+      <div class="checkbox">
+        <input
+          type="checkbox"
+          id="perm_crosshair"
+          data-setting="perm_crosshair"
+        />
+        <label for="perm_crosshair"></label>
       </div>
     </div>
+    <div class="option">
+      <div class="left requires-refresh">
+        <span>Hittmarker Icon Link</span>
+        <span class="description">Change the icon hitmarker image</span>
+      </div>
+      <input
+        type="text"
+        placeholder="https://.../.png"
+        data-setting="hitmarker_link"
+      />
+    </div>
+    <div class="option">
+      <div class="left requires-refresh">
+        <span>Kill Icon Link</span>
+        <span class="description">Change the icon Kill image</span>
+      </div>
+      <input
+        type="text"
+        placeholder="https://.../.png"
+        data-setting="killicon_link"
+      />
+    </div>
+    <div class="option">
+      <div class="left requires-refresh">
+        <span>lobby Icon Link</span>
+        <span class="description">Change the icon for the lobby image "Kirka"</span>
+      </div>
+      <input
+        type="text"
+        placeholder="https://.../.png"
+        data-setting="lobby_logo_link"
+      />
+    </div>
+    <div class="option">
+      <div class="left requires-refresh">
+        <span>Chest Icon Link</span>
+        <span class="description">Change the icon for the chest item in inventory</span>
+      </div>
+      <input
+        type="text"
+        placeholder="https://.../.png"
+        data-setting="chest_icon_link"
+      />
+    </div>
+    <div class="option">
+      <div class="left requires-refresh">
+        <span>Pack Icon Link</span>
+        <span class="description">Change the icon for the pack item in inventory</span>
+      </div>
+      <input
+        type="text"
+        placeholder="https://.../.png"
+        data-setting="pack_icon_link"
+      />
+    </div>
+    <div class="option">
+      <div class="left requires-refresh">
+        <span>Menu background Link</span>
+        <span class="description">Change the background image of the menu (Only works if the menu theme is set to custom)</span>
+      </div>
+      <input
+        type="text"
+        placeholder="https://.../.png"
+        data-setting="menu_logo_link"
+      />
+    </div>
+  </div>
+
+  <div class="option-group">
+    <div class="option">
+      <span>Hide Chat</span>
+      <div class="checkbox">
+        <input type="checkbox" id="hide_chat" data-setting="hide_chat" />
+        <label for="hide_chat"></label>
+      </div>
+    </div>
+    <div class="option">
+      <span>Hide Interface</span>
+      <div class="checkbox">
+        <input
+          type="checkbox"
+          id="hide_interface"
+          data-setting="hide_interface"
+        />
+        <label for="hide_interface"></label>
+      </div>
+    </div>
+    <div class="option">
+      <span>UI Animations</span>
+      <div class="checkbox">
+        <input
+          type="checkbox"
+          id="ui_animations"
+          data-setting="ui_animations"
+        />
+        <label for="ui_animations"></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="option-group">
+    <div class="option">
+      <span>Interface Opacity</span>
+      <input
+        type="range"
+        min="0"
+        max="100"
+        class="range"
+        data-setting="interface_opacity"
+      />
+    </div>
+    <div class="option">
+      <span>Interface Bounds</span>
+      <input
+        type="range"
+        min="0"
+        max="2"
+        class="range"
+        data-setting="interface_bounds"
+      />
+    </div>
+  </div>
+
+  <div class="option-group">
+    <div class="option">
+      <span>Skip Loading Screen</span>
+      <div class="checkbox">
+        <input
+          type="checkbox"
+          id="skip_loading"
+          data-setting="skip_loading"
+        />
+        <label for="skip_loading"></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="option-group">
+    <div class="option">
+      <span>Rave Mode</span>
+      <div class="checkbox">
+        <input type="checkbox" id="rave_mode" data-setting="rave_mode" />
+        <label for="rave_mode"></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="option-group">
+<div class="option">
+      <div class="left experimental">
+        <span>Weapon Customization</span>
+        <span class="description">Customize the position, scale, and appearance of your weapon</span>
+      </div>
+    </div>
+    <div class="option">
+      <span>Wireframe</span>
+      <div class="checkbox">
+        <input type="checkbox" id="weapon_wireframe" data-setting="weapon_wireframe" />
+        <label for="weapon_wireframe"></label>
+      </div>
+    </div>
+    <div class="option">
+      <span>Rainbow RGB</span>
+      <div class="checkbox">
+        <input type="checkbox" id="weapon_rainbow" data-setting="weapon_rainbow" />
+        <label for="weapon_rainbow"></label>
+      </div>
+    </div>
+    <div class="option">
+      <div class="left">
+        <span>Gun Scale</span>
+      </div>
+      <input
+        type="range"
+        min="0.1"
+        max="3.0"
+        step="0.05"
+        class="range"
+        id="weapon_scale"
+        data-setting="weapon_scale"
+      />
+    </div>
+    <div class="option">
+      <div class="left">
+        <span>X Offset (Left / Right)</span>
+      </div>
+      <input
+        type="range"
+        min="-0.5"
+        max="0.5"
+        step="0.005"
+        class="range"
+        id="weapon_offset_x"
+        data-setting="weapon_offset_x"
+      />
+    </div>
+    <div class="option">
+      <div class="left">
+        <span>Y Offset (Up / Down)</span>
+      </div>
+      <input
+        type="range"
+        min="-0.5"
+        max="0.5"
+        step="0.005"
+        class="range"
+        id="weapon_offset_y"
+        data-setting="weapon_offset_y"
+      />
+    </div>
+    <div class="option">
+      <div class="left">
+        <span>Z Offset (Near / Far)</span>
+      </div>
+      <input
+        type="range"
+        min="-0.5"
+        max="0.5"
+        step="0.005"
+        class="range"
+        id="weapon_offset_z"
+        data-setting="weapon_offset_z"
+      />
+    </div>
+    <div class="option">
+      <div class="left">
+        <span>Reset Offsets</span>
+      </div>
+      <button id="weapon-reset-offsets" class="juice-button">
+        <span class="text">Reset</span>
+        <div class="custom-border"></div>
+      </button>
+    </div>
+  </div>
+</div>  
     <div id="performance-options" class="juice options">
       <div class="option-group">
         <div class="option requires-restart">
@@ -1014,6 +1165,127 @@
           <i class="fas fa-spinner fa-spinner"></i> Loading...
         </div>
         <div id="news-feed" style="display:none;"></div>
+      </div>
+    </div>
+ <!-- Swapper default panel -->
+    <div id="swapper-options" class="juice options">
+      <div class="option-group">
+        <div class="option">
+      <div class="left experimental">
+            <span>Texture Swapper</span>
+            <span class="description">Apply custom weapon textures to your local Kirka client files. Select a weapon subtab to get started.</span>
+            <span class="description">Some skins are missing due to blehhhhhhh so like mb</span>
+          </div>
+        </div>
+      </div>
+      <div class="option-group">
+        <div class="option">
+      <div class="left experimental">
+            <span>Sounds Swapper</span>
+            <span class="description">Apply custom sound effects to your local client files, this Featue Isn't out yet But will be soon ;3</span>
+          </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- Swapper Guns panel -->
+    <div id="swapper-guns" class="juice options" style="display:none;">
+      <div class="skins-header">
+        <div class="skins-search-wrap">
+          <i class="fas fa-search"></i>
+          <input type="text" id="swapper-search" placeholder="Search textures..." />
+        </div>
+      </div>
+
+      <div id="swapper-loading" class="assets-loading" style="display:none;">
+        <i class="fas fa-spinner fa-spin"></i> Loading textures...
+      </div>
+      <div id="swapper-empty" class="assets-empty" style="display:none;">
+        <i class="fas fa-repeat"></i>
+        <span>No textures found</span>
+      </div>
+      <div id="swapper-grid" class="skins-grid" style="display:none;"></div>
+
+      <!-- Weapon picker modal -->
+      <div id="swapper-weapon-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:100000; align-items:center; justify-content:center;">
+        <div class="swapper-modal-inner" style="background:var(--dark); border-radius:12px; padding:24px; max-width:700px; width:90%; max-height:90vh; overflow-y:auto; position:relative; border:2px solid var(--border);">
+          <div class="swapper-modal-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <span class="swapper-modal-title" style="font-size:1.3rem; font-weight:600; color:var(--light);">Choose a weapon slot</span>
+            <button id="swapper-modal-close" class="swapper-modal-close" style="background:none; border:none; color:var(--light); font-size:1.5rem; cursor:pointer; padding:4px 8px; border-radius:4px;">
+              <i class="fas fa-xmark"></i>
+            </button>
+          </div>
+          <div class="swapper-modal-preview" style="display:flex; justify-content:center; margin-bottom:16px; background:rgba(0,0,0,0.3); border-radius:8px; padding:12px; max-height:200px; overflow:hidden;">
+            <img id="swapper-modal-render" src="" alt="Texture preview" style="max-height:180px; max-width:100%; object-fit:contain;" />
+          </div>
+          <div class="swapper-modal-grid" style="display:grid; grid-template-columns:repeat(6, 1fr); gap:8px;">
+            <button class="swapper-weapon-btn juice-button" data-weapon="vita" style="padding:8px 4px; font-size:0.8rem;">
+              <span class="text">Vita</span><div class="custom-border"></div>
+            </button>
+            <button class="swapper-weapon-btn juice-button" data-weapon="m60" style="padding:8px 4px; font-size:0.8rem;">
+              <span class="text">M60</span><div class="custom-border"></div>
+            </button>
+            <button class="swapper-weapon-btn juice-button" data-weapon="mac-10" style="padding:8px 4px; font-size:0.8rem;">
+              <span class="text">MAC-10</span><div class="custom-border"></div>
+            </button>
+            <button class="swapper-weapon-btn juice-button" data-weapon="lar" style="padding:8px 4px; font-size:0.8rem;">
+              <span class="text">LAR</span><div class="custom-border"></div>
+            </button>
+            <button class="swapper-weapon-btn juice-button" data-weapon="revolver" style="padding:8px 4px; font-size:0.8rem;">
+              <span class="text">Revolver</span><div class="custom-border"></div>
+            </button>
+            <button class="swapper-weapon-btn juice-button" data-weapon="ar-9" style="padding:8px 4px; font-size:0.8rem;">
+              <span class="text">AR-9</span><div class="custom-border"></div>
+            </button>
+            <button class="swapper-weapon-btn juice-button" data-weapon="bayonet" style="padding:8px 4px; font-size:0.8rem;">
+              <span class="text">Bayonet</span><div class="custom-border"></div>
+            </button>
+            <button class="swapper-weapon-btn juice-button" data-weapon="shark" style="padding:8px 4px; font-size:0.8rem;">
+              <span class="text">Shark</span><div class="custom-border"></div>
+            </button>
+            <button class="swapper-weapon-btn juice-button" data-weapon="weatie" style="padding:8px 4px; font-size:0.8rem;">
+              <span class="text">Weatie</span><div class="custom-border"></div>
+            </button>
+            <button class="swapper-weapon-btn juice-button" data-weapon="scar" style="padding:8px 4px; font-size:0.8rem;">
+              <span class="text">SCAR</span><div class="custom-border"></div>
+            </button>
+            <button class="swapper-weapon-btn juice-button" data-weapon="tomahawk" style="padding:8px 4px; font-size:0.8rem;">
+              <span class="text">Tomahawk</span><div class="custom-border"></div>
+            </button>
+            <button class="swapper-weapon-btn juice-button" data-weapon="characters" style="padding:8px 4px; font-size:0.8rem;">
+              <span class="text">Characters</span><div class="custom-border"></div>
+            </button>
+          </div>
+          <div id="swapper-modal-status" class="swapper-modal-status" style="display:none; margin-top:12px; padding:8px 12px; border-radius:6px; text-align:center; font-size:0.9rem;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Swapper Sounds panel -->
+    <div id="swapper-sounds" class="juice options" style="display:none;">
+      <div class="option-group">
+        <div class="option">
+          <div class="left">
+            <span>Sound Swapper</span>
+            <span class="description tools-wip-badge"><i class="fas fa-flask"></i> In Development, coming soon</span>
+          </div>
+        </div>
+      </div>
+      <div class="option-group tools-locked-content">
+        <div class="tools-locked-overlay">
+          <i class="fas fa-lock"></i>
+          <span>Sound swapping is currently in development and not yet available.</span>
+        </div>
+        <div class="option tools-locked-placeholder">
+          <span>Sound Pack</span>
+          <input type="text" placeholder="Browse sound packs..." disabled />
+        </div>
+        <div class="option tools-locked-placeholder">
+          <button class="juice-button" disabled>
+            <span class="text">Apply Sound Pack</span>
+            <div class="custom-border"></div>
+          </button>
+        </div>
       </div>
     </div>
 

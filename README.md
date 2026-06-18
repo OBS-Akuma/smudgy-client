@@ -118,7 +118,7 @@
 
 [Daymian](https://daymian.xyz/) for additional features
 
-[Obsidian Client](https://github.com/imnotkoolkid/OBSIDIAN-CLIENT-preview) ([imnotkoolkid](https://github.com/imnotkoolkid)) for additional features
+[celeste client](https://github.com/imnotkoolkid/celeste-client) ([imnotkoolkid](https://github.com/imnotkoolkid)) for the Weapon Customization feature and additional things.
 
 [Redline Client](https://github.com/robertpakalns/redline-client/) ([robertpakalns](https://github.com/robertpakalns)) for this readme format
 

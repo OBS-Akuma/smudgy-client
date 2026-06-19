@@ -31,6 +31,7 @@ if (!window.location.href.startsWith(base_url)) {
   });
 }
 
+// Add the missing observeForElement function
 const observeForElement = (selector, functionToRun, target = document.body) => {
   const observer = new MutationObserver((mutations, obs) => {
     for (const mutation of mutations) {
@@ -624,22 +625,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             settings.lobby_logo_link
           )}) !important; }`
         );
-        if (settings.chest_icon_link !== "")
-        styles.push(
-          `.chest[data-v-ab1167a2]  { content: url(${formatLink(
-            settings.chest_icon_link
-          )}) !important; }`
-        );
-        if (settings.pack_icon_link !== "")
-        styles.push(
-          `.question-img[data-v-9b37344c]  { content: url(${formatLink(
-            settings.pack_icon_link
-          )}) !important; }`
-        );
-        if (settings.menu_logo_link !== "")
-        styles.push(
-          `.menu[data-theme="custom"]:before {    content: "";    position: absolute;    border-radius: 0.75rem;    top: 0;    left: 0;    right: 0;    bottom: 0;    background: url(${formatLink(            settings.menu_logo_link          )});    background-size: cover;    background-position: center;    mix-blend-mode: color-dodge;    opacity: var(--menu-bg-alpha, 0.5);    pointer-events: none;} !important; }`
-        );
       if (settings.rave_mode)
         styles.push(
           "canvas { animation: rotateHue 1s linear infinite !important; }"
@@ -669,6 +654,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         "ui_animations",
         "rave_mode",
         "spectate_button",
+        "show_trade_buttons",
+        "accept_on_click",
         "lobby_keybind_reminder",
       ];
       if (relevantSettings.includes(e.detail.setting)) updateUIFeatures();

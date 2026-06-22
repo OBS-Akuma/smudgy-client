@@ -194,6 +194,7 @@
             <option value="light">Light</option>
             <option value="juice">Juice</option>
             <option value="smudgy">Smudgy</option>
+            <option value="trans">trans</option>
             <option value="dawn">Dawn</option>
             <option value="inverted-juice">Inverted Juice</option>
             <option value="nameless">Nameless</option>
@@ -255,6 +256,17 @@
           </div>
           <input type="color" data-setting="custom_theme_danger" />
         </div>
+        <div class="option">
+      <div class="left requires-refresh">
+        <span>background image</span>
+        <span class="description">Change the background image of the menu</span>
+      </div>
+      <input
+        type="text"
+        placeholder="https://.../.png"
+        data-setting="menu_logo_link"
+      />
+    </div>
         <div class="option">
           <span>Font</span>
           <select data-setting="custom_theme_font">
@@ -417,18 +429,95 @@
         data-setting="pack_icon_link"
       />
     </div>
-    <div class="option">
-      <div class="left requires-refresh">
-        <span>Menu background Link</span>
-        <span class="description">Change the background image of the menu (Only works if the menu theme is set to custom)</span>
-      </div>
-      <input
-        type="text"
-        placeholder="https://.../.png"
-        data-setting="menu_logo_link"
+  </div>
+  
+
+<div class="option-group">
+  <div class="option">
+    <div class="left experimental">
+      <span>Friends profiles</span>
+      <span class="description">Adds Skin heads to your friends' profiles.</span>
+    </div>
+
+    <div class="checkbox">
+      <input  
+        type="checkbox"
+        id="friends_profiles"
+        data-setting="friends_profiles"
       />
+      <label for="friends_profiles"></label>
     </div>
   </div>
+</div>
+
+<div class="option-group">
+  <div class="option">
+    <div class="left experimental">
+      <span>Subnames</span>
+      <span class="description">Shows subnames in parentheses next to usernames.</span>
+    </div>
+
+    <div class="checkbox">
+      <input
+        type="checkbox"
+        id="subnames_enabled"
+        data-setting="subnames_enabled"
+      />
+      <label for="subnames_enabled"></label>
+    </div>
+  </div>
+</div>
+
+<!-- Kirka Badges Setting -->
+<div class="option-group">
+  <div class="option">
+    <div class="left experimental">
+      <span>Kirka Chat Badges</span>
+      <span class="description">Show custom badges and gradients in chat messages.</span>
+      <span class="description" style="font-size: 0.7rem; opacity: 0.7;">Connects to Kirka chat WebSocket for live badge updates</span>
+    </div>
+
+    <div class="checkbox">
+      <input
+        type="checkbox"
+        id="kirka_badges_enabled"
+        data-setting="kirka_badges_enabled"
+      />
+      <label for="kirka_badges_enabled"></label>
+    </div>
+  </div>
+</div>
+
+<!-- Kirka Badges Sub-options -->
+<div class="option-group" id="kirka-badges-suboptions">
+  <div class="option">
+    <div class="left">
+      <span>Badge Size</span>
+      <span class="description">Size of badge icons in chat messages</span>
+    </div>
+    <select data-setting="kirka_badges_size" style="width: 100px;">
+      <option value="14">14</option>
+      <option value="16" selected>16</option>
+      <option value="20">20</option>
+      <option value="24">24</option>
+    </select>
+  </div>
+  <div class="option">
+    <div class="left">
+      <span>Show Brackets</span>
+      <span class="description">Display [ ] around badge icons</span>
+    </div>
+    <div class="checkbox">
+      <input
+        type="checkbox"
+        id="kirka_badges_brackets"
+        data-setting="kirka_badges_brackets"
+        checked
+      />
+      <label for="kirka_badges_brackets"></label>
+    </div>
+  </div>
+</div>
 
   <div class="option-group">
     <div class="option">
@@ -499,15 +588,17 @@
     </div>
   </div>
 
-  <div class="option-group">
-    <div class="option">
-      <span>Rave Mode</span>
-      <div class="checkbox">
-        <input type="checkbox" id="rave_mode" data-setting="rave_mode" />
-        <label for="rave_mode"></label>
-      </div>
+<div class="option-group">
+  <div class="option">
+    <span>Rave Mode</span>
+    <div class="checkbox">
+      <input type="checkbox" id="rave_mode" data-setting="rave_mode" />
+      <label for="rave_mode"></label>
     </div>
   </div>
+</div>
+
+
 
   <div class="option-group">
 <div class="option">

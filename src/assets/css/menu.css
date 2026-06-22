@@ -18,6 +18,22 @@
     --opacity-half: 255, 255, 255, 0.5;
     --opacity-quarter: 255, 255, 255, 0.25;
 }
+.menu[data-theme="trans"] {
+    --dark: 245, 169, 184;       /* pink */
+    --light: 0, 0, 0;       /* blue */
+    --orange: 91, 206, 250;      /* blue */
+    --green: 245, 169, 184;      /* pink */
+    --blue: 91, 206, 250;        /* blue */
+    --red: 245, 169, 184;        /* pink */
+    --purple: 138, 43, 226;      /* kept purple as accent */
+    --hover-dark: 245, 169, 184, 0.3;
+    --hover-light: 91, 206, 250, 0.3;
+    --border: 0, 0, 0, 0.15;
+    --border-active: 0, 0, 0, 0.25;
+    --shadow: 0, 0, 0, 0.5;
+    --opacity-half: 0, 0, 0, 0.5;
+    --opacity-quarter: 0, 0, 0, 0.25;
+}
 .menu[data-theme="dawn"] {
     --dark: 32, 20, 10;
     --light: 255, 245, 230;

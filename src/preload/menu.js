@@ -44,38 +44,61 @@ class Menu {
     document.body.appendChild(menu);
     return menu;
   }
-
-  init() {
-    this.setVersion();
-    this.setUser();
-    this.setKeybind();
-    this.setTheme();
-    this.applyWatermark();
-    this.handleKeyEvents();
-    this.initMenu();
-    this.handleMenuKeybindChange();
-    this.handleMenuInputChanges();
-    this.handleMenuSelectChanges();
-    this.handleTabChanges();
-    this.handleDropdowns();
-    this.handleSearch();
-    this.handleButtons();
-    this.handleCustomTheme();
-    this.handleDragAndPosition();
-    this.handleAboutLinks();
-    this.initAssets();
-    this.initNews();
-    this.initInstallation();
-    this.initTools();
-    this.initSkins();
-    this.localStorage.getItem("juice-menu-tab")
-      ? this.handleTabChange(
-          this.menu.querySelector(
-            `[data-tab="${this.localStorage.getItem("juice-menu-tab")}"]`
-          )
-        )
-      : this.handleTabChange(this.menu.querySelector(".juice.tab"));
+init() {
+  this.setVersion();
+  this.setUser();
+  this.setKeybind();
+  this.setTheme();
+  this.applyWatermark();
+  this.handleKeyEvents();
+  this.initMenu();
+  this.handleMenuKeybindChange();
+  this.handleMenuInputChanges();
+  this.handleMenuSelectChanges();
+  this.handleTabChanges();
+  this.handleDropdowns();
+  this.handleSearch();
+  this.handleButtons();
+  this.handleCustomTheme();
+  this.handleDragAndPosition();
+  this.handleAboutLinks();
+  this.initAssets();
+  this.initNews();
+  this.initInstallation();
+  this.initTools();
+  this.initSkins();
+  
+  // Initialize friends profiles if enabled
+  if (this.settings["friends_profiles"]) {
+    this.initFriendsProfiles();
   }
+  
+  // Initialize subnames if enabled
+  if (this.settings["subnames_enabled"]) {
+    this.initSubnames();
+  }
+  
+  // Initialize Kirka Badges if enabled
+  if (this.settings["kirka_badges_enabled"]) {
+    this.initKirkaBadges();
+  }
+  
+  // Add cleanup on page unload
+  window.addEventListener('beforeunload', () => {
+    this.stopFriendProfileChecking();
+    this.removeFriendProfileStyles();
+    this.stopSubnames();
+    this.stopKirkaBadges();
+  });
+  
+  this.localStorage.getItem("juice-menu-tab")
+    ? this.handleTabChange(
+        this.menu.querySelector(
+          `[data-tab="${this.localStorage.getItem("juice-menu-tab")}"]`
+        )
+      )
+    : this.handleTabChange(this.menu.querySelector(".juice.tab"));
+}
 
   setVersion() {
     this.menu.querySelectorAll(".ver").forEach((element) => {
@@ -419,6 +442,11 @@ class Menu {
       endgame_message_text: "Good Game",
       simple_invite_btns: false,
       always_show_ingame_menu: false,
+      friends_profiles: false,
+      subnames_enabled: false,
+      kirka_badges_enabled: false,
+      kirka_badges_size: 16,
+      kirka_badges_brackets: true
     };
 
     inputs.forEach((input) => {
@@ -834,59 +862,99 @@ escapeHtml(str) {
     });
   }
 
-  handleMenuInputChange(input) {
-    const setting = input.dataset.setting;
-    const type = input.type;
-    const value = type === "checkbox" ? input.checked : input.value;
-    this.settings[setting] = value;
-    ipcRenderer.send("update-setting", setting, value);
+ handleMenuInputChange(input) {
+  const setting = input.dataset.setting;
+  const type = input.type;
+  const value = type === "checkbox" ? input.checked : input.value;
+  this.settings[setting] = value;
+  ipcRenderer.send("update-setting", setting, value);
 
-    const event = new CustomEvent("juice-settings-changed", {
-      detail: { setting: setting, value: value },
-    });
-    document.dispatchEvent(event);
+  const event = new CustomEvent("juice-settings-changed", {
+    detail: { setting: setting, value: value },
+  });
+  document.dispatchEvent(event);
 
-    if (setting === "server_zoom") {
-      this.applyServerZoom(value);
-    }
-    if (setting === "client_menu_size") {
-      this.applyClientZoom(value);
-    }
+  if (setting === "server_zoom") {
+    this.applyServerZoom(value);
+  }
+  if (setting === "client_menu_size") {
+    this.applyClientZoom(value);
+  }
 
-    if (setting === "always_show_ingame_menu") {
-      if (value) {
-        this.injectAlwaysShowIngameMenu();
-      } else {
-        this.removeAlwaysShowIngameMenu();
-      }
-    }
-
-    if (setting === "endgame_message_enabled") {
-      if (value) {
-        this.injectEndGameMessageScript();
-      } else {
-        const existing = document.getElementById("juice-endgame-script");
-        if (existing) existing.remove();
-      }
-    }
-
-    if (
-      setting === "hide_smudgy_watermark" ||
-      setting === "watermark_text" ||
-      setting === "watermark_color" ||
-      setting === "watermark_size"
-    ) {
-      this.applyWatermark();
-    }
-
-    if (setting === "menu_opacity") {
-      this.applyMenuOpacity();
-    }
-
-    if (setting && setting.startsWith("custom_theme_")) {
-      this.applyCustomTheme();
+  if (setting === "always_show_ingame_menu") {
+    if (value) {
+      this.injectAlwaysShowIngameMenu();
+    } else {
+      this.removeAlwaysShowIngameMenu();
     }
   }
+
+  if (setting === "endgame_message_enabled") {
+    if (value) {
+      this.injectEndGameMessageScript();
+    } else {
+      const existing = document.getElementById("juice-endgame-script");
+      if (existing) existing.remove();
+    }
+  }
+
+  if (setting === "friends_profiles") {
+    if (value) {
+      this.initFriendsProfiles();
+    } else {
+      this.stopFriendProfileChecking();
+      this.removeFriendProfileStyles();
+    }
+  }
+
+  if (setting === "subnames_enabled") {
+  if (value) {
+    this.initSubnames();
+  } else {
+    this.stopSubnames();
+  }
+}
+
+if (setting === "subnames_enabled") {
+  if (value) {
+    this.initSubnames();
+  } else {
+    this.stopSubnames();
+  }
+}
+
+if (setting === "kirka_badges_enabled") {
+  if (value) {
+    this.initKirkaBadges();
+  } else {
+    this.stopKirkaBadges();
+  }
+}
+
+if (setting === "kirka_badges_size" || setting === "kirka_badges_brackets") {
+  if (this.settings["kirka_badges_enabled"]) {
+    this.stopKirkaBadges();
+    this.initKirkaBadges();
+  }
+}
+
+  if (
+    setting === "hide_smudgy_watermark" ||
+    setting === "watermark_text" ||
+    setting === "watermark_color" ||
+    setting === "watermark_size"
+  ) {
+    this.applyWatermark();
+  }
+
+  if (setting === "menu_opacity") {
+    this.applyMenuOpacity();
+  }
+
+  if (setting && setting.startsWith("custom_theme_")) {
+    this.applyCustomTheme();
+  }
+}
 
   handleMenuInputChanges() {
     const inputs = this.menu.querySelectorAll("input[data-setting]");
@@ -1440,6 +1508,700 @@ handleTabChange(tab) {
       });
     }
   }
+// ── Friends Profiles Skin Heads ────────────────────────────────────────────
+
+initFriendsProfiles() {
+  // Check if the setting is enabled
+  const enabled = this.settings["friends_profiles"] ?? false;
+  if (!enabled) {
+    // Remove any existing observers/intervals
+    this.stopFriendProfileChecking();
+    this.removeFriendProfileStyles();
+    return;
+  }
+
+  // Remove any existing style to prevent duplicates
+  this.removeFriendProfileStyles();
+  
+  // Add the style for friend profile images
+  const style = document.createElement('style');
+  style.id = 'juice-friend-profiles-style';
+  style.textContent = `
+    .friend .level-cont:has(img[data-level-cont="true"]) {
+      width: 50px;
+      height: 50px;
+      flex-shrink: 0;
+    }
+    .friend img[data-level-cont="true"] {
+      width: 50px !important;
+      height: 50px !important;
+      border-radius: 4px !important;
+      object-fit: cover !important;
+      display: block !important;
+      flex-shrink: 0 !important;
+      image-rendering: pixelated !important;
+      image-rendering: -moz-crisp-edges !important;
+      image-rendering: -webkit-optimize-contrast !important;
+      image-rendering: crisp-edges !important;
+    }
+    .friend img[data-level-cont="true"][data-loaded="failed"] {
+      opacity: 0.4;
+    }
+  `;
+  document.head.appendChild(style);
+
+  // Run the friend profile processor
+  this.runFriendProfileProcessor();
+}
+
+removeFriendProfileStyles() {
+  const style = document.getElementById('juice-friend-profiles-style');
+  if (style) style.remove();
+}
+
+stopFriendProfileChecking() {
+  if (this._friendProfileInterval) {
+    clearInterval(this._friendProfileInterval);
+    this._friendProfileInterval = null;
+  }
+  if (this._friendProfileObserver) {
+    this._friendProfileObserver.disconnect();
+    this._friendProfileObserver = null;
+  }
+  this._isFriendProcessing = false;
+}
+
+runFriendProfileProcessor() {
+  // Don't run if setting is disabled
+  if (!(this.settings["friends_profiles"] ?? false)) return;
+  
+  // Don't run multiple times
+  if (this._isFriendProcessing) return;
+  this._isFriendProcessing = true;
+
+  // Run the processor
+  this.processFriendProfiles();
+
+  // Set up observer for DOM changes (new friends loaded)
+  if (this._friendProfileObserver) {
+    this._friendProfileObserver.disconnect();
+  }
+  
+  this._friendProfileObserver = new MutationObserver(() => {
+    // Don't run if setting is disabled
+    if (!(this.settings["friends_profiles"] ?? false)) {
+      this.stopFriendProfileChecking();
+      return;
+    }
+    this.processFriendProfiles();
+  });
+  
+  this._friendProfileObserver.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+
+  // Set up interval for background checks (every 2 minutes)
+  if (this._friendProfileInterval) {
+    clearInterval(this._friendProfileInterval);
+  }
+  this._friendProfileInterval = setInterval(() => {
+    if (!(this.settings["friends_profiles"] ?? false)) {
+      this.stopFriendProfileChecking();
+      return;
+    }
+    this.backgroundFriendSkinCheck();
+  }, 120000);
+}
+
+async processFriendProfiles(initialLoad = true) {
+  if (this._friendProfileRunning) return;
+  this._friendProfileRunning = true;
+
+  try {
+    await this.loadDefaultSkinForFriends();
+    
+    const friendElements = document.querySelectorAll('.friend');
+    const friendArray = Array.from(friendElements);
+    
+    if (friendArray.length === 0) {
+      this._friendProfileRunning = false;
+      return;
+    }
+    
+    // Apply default skins
+    friendArray.forEach(friend => this.applyDefaultSkinToFriend(friend));
+    
+    // Only fetch for friends that aren't cached yet
+    const friendsToFetch = friendArray.filter(friend => {
+      const img = friend.querySelector('img[data-level-cont="true"]');
+      if (!img) return false;
+      const friendId = img.dataset.friendId;
+      return !this.isFriendProcessed(friendId) || !this.loadFriendSkinFromCache(friendId);
+    });
+    
+    if (friendsToFetch.length === 0) {
+      this._friendProfileRunning = false;
+      return;
+    }
+    
+    // Process initial fetch in batches
+    for (let i = 0; i < friendsToFetch.length; i += 5) {
+      const batch = friendsToFetch.slice(i, i + 5);
+      await Promise.all(batch.map(friend => this.processFriendRealSkin(friend)));
+      
+      if (i + 5 < friendsToFetch.length) {
+        await new Promise(resolve => setTimeout(resolve, 1500));
+      }
+    }
+  } finally {
+    this._friendProfileRunning = false;
+  }
+}
+
+async loadDefaultSkinForFriends() {
+  if (this._defaultSkinDataUrl) return;
+  
+  const DEFAULT_SKIN_ID = '6be53225-952a-45d7-a862-d69290e4348e';
+  
+  // Try loading from cache first
+  const cachedDefaultSkin = this.loadFromFriendCache('juice_default_skin_data');
+  if (cachedDefaultSkin) {
+    this._defaultSkinDataUrl = cachedDefaultSkin;
+    return;
+  }
+  
+  try {
+    const textureUrl = await this.getSkinTextureUrl(DEFAULT_SKIN_ID);
+    if (textureUrl) {
+      this._defaultSkinDataUrl = await this.extractHeadClean(textureUrl);
+      if (this._defaultSkinDataUrl) {
+        this.saveToFriendCache('juice_default_skin_data', this._defaultSkinDataUrl);
+      }
+    } else {
+      this._defaultSkinDataUrl = this.createFallbackHead('?');
+    }
+  } catch (error) {
+    this._defaultSkinDataUrl = this.createFallbackHead('?');
+  }
+}
+
+saveToFriendCache(key, data) {
+  try {
+    const cacheData = {
+      data: data,
+      timestamp: Date.now()
+    };
+    localStorage.setItem(key, JSON.stringify(cacheData));
+  } catch (error) {
+    console.error('Save to cache error:', error);
+  }
+}
+
+loadFromFriendCache(key) {
+  try {
+    const cached = localStorage.getItem(key);
+    if (!cached) return null;
+    
+    const cacheData = JSON.parse(cached);
+    
+    // Check if cache is still valid (7 days)
+    if (Date.now() - cacheData.timestamp > 7 * 24 * 60 * 60 * 1000) {
+      localStorage.removeItem(key);
+      return null;
+    }
+    
+    return cacheData.data;
+  } catch (error) {
+    return null;
+  }
+}
+
+saveFriendSkinToCache(friendId, skinDataUrl, skinId) {
+  try {
+    const friendSkins = this.loadFromFriendCache('juice_friend_skins_data') || {};
+    friendSkins[friendId] = {
+      dataUrl: skinDataUrl,
+      timestamp: Date.now()
+    };
+    this.saveToFriendCache('juice_friend_skins_data', friendSkins);
+    
+    const friendSkinIds = this.loadFromFriendCache('juice_friend_skin_ids') || {};
+    friendSkinIds[friendId] = {
+      skinId: skinId,
+      timestamp: Date.now()
+    };
+    this.saveToFriendCache('juice_friend_skin_ids', friendSkinIds);
+    
+    this.saveProcessedFriend(friendId);
+  } catch (error) {}
+}
+
+loadFriendSkinFromCache(friendId) {
+  try {
+    const friendSkins = this.loadFromFriendCache('juice_friend_skins_data');
+    if (!friendSkins) return null;
+    
+    const friendData = friendSkins[friendId];
+    if (!friendData) return null;
+    
+    if (Date.now() - friendData.timestamp > 7 * 24 * 60 * 60 * 1000) {
+      delete friendSkins[friendId];
+      this.saveToFriendCache('juice_friend_skins_data', friendSkins);
+      return null;
+    }
+    
+    return friendData.dataUrl;
+  } catch (error) {
+    return null;
+  }
+}
+
+getCachedSkinId(friendId) {
+  try {
+    const friendSkinIds = this.loadFromFriendCache('juice_friend_skin_ids');
+    if (!friendSkinIds) return null;
+    
+    const friendData = friendSkinIds[friendId];
+    if (!friendData) return null;
+    
+    return friendData.skinId;
+  } catch (error) {
+    return null;
+  }
+}
+
+saveProcessedFriend(friendId) {
+  try {
+    const processed = this.loadFromFriendCache('juice_processed_friends') || [];
+    if (!processed.includes(friendId)) {
+      processed.push(friendId);
+      this.saveToFriendCache('juice_processed_friends', processed);
+    }
+  } catch (error) {}
+}
+
+isFriendProcessed(friendId) {
+  try {
+    const processed = this.loadFromFriendCache('juice_processed_friends') || [];
+    return processed.includes(friendId);
+  } catch (error) {
+    return false;
+  }
+}
+
+async getSkinTextureUrl(skinId, retryCount = 0) {
+  try {
+    const response = await fetch('https://raw.githubusercontent.com/OBS-Akuma/KirkaSkins/refs/heads/main/AllItemData.json');
+    
+    if (response.status === 503 || response.status === 429) {
+      const waitTime = Math.min(1000 * Math.pow(2, retryCount), 8000);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+      return this.getSkinTextureUrl(skinId, retryCount + 1);
+    }
+    
+    if (!response.ok) {
+      throw new Error(`Skins API returned ${response.status}`);
+    }
+    const skins = await response.json();
+    const skin = skins.find(s => s.id === skinId);
+    
+    if (!skin) {
+      throw new Error(`Skin ${skinId} not found`);
+    }
+    
+    return skin.textureUrl || skin.renderUrl;
+  } catch (error) {
+    return null;
+  }
+}
+
+async extractHeadClean(textureUrl, retryCount = 0) {
+  try {
+    if (!textureUrl) {
+      return null;
+    }
+    
+    const response = await fetch(textureUrl);
+    
+    if (response.status === 503 || response.status === 429) {
+      const waitTime = Math.min(1000 * Math.pow(2, retryCount), 8000);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+      return this.extractHeadClean(textureUrl, retryCount + 1);
+    }
+    
+    if (!response.ok) {
+      throw new Error(`Texture fetch failed: ${response.status}`);
+    }
+    
+    const blob = await response.blob();
+    const img = await createImageBitmap(blob);
+    
+    const TARGET_SIZE = 128;
+    const canvas = document.createElement('canvas');
+    canvas.width = TARGET_SIZE;
+    canvas.height = TARGET_SIZE;
+    const ctx = canvas.getContext('2d');
+    
+    ctx.imageSmoothingEnabled = false;
+    
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, TARGET_SIZE, TARGET_SIZE);
+    
+    const scale = img.width / 64;
+    
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = 8;
+    tempCanvas.height = 8;
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCtx.imageSmoothingEnabled = false;
+    
+    tempCtx.drawImage(img, 8*scale, 8*scale, 8*scale, 8*scale, 0, 0, 8, 8);
+    tempCtx.drawImage(img, 40*scale, 8*scale, 8*scale, 8*scale, 0, 0, 8, 8);
+    
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(tempCanvas, 0, 0, TARGET_SIZE, TARGET_SIZE);
+    
+    return canvas.toDataURL('image/png');
+  } catch (error) {
+    return null;
+  }
+}
+
+createFallbackHead(text = '?') {
+  const TARGET_SIZE = 128;
+  const canvas = document.createElement('canvas');
+  canvas.width = TARGET_SIZE;
+  canvas.height = TARGET_SIZE;
+  const ctx = canvas.getContext('2d');
+  
+  ctx.imageSmoothingEnabled = false;
+  
+  ctx.fillStyle = '#2a2a2a';
+  ctx.fillRect(0, 0, TARGET_SIZE, TARGET_SIZE);
+  
+  ctx.strokeStyle = '#444';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(0, 0, TARGET_SIZE, TARGET_SIZE);
+  
+  ctx.fillStyle = '#888';
+  ctx.font = '20px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, TARGET_SIZE/2, TARGET_SIZE/2);
+  
+  return canvas.toDataURL('image/png');
+}
+
+applyDefaultSkinToFriend(friendElement) {
+  const levelCont = friendElement.querySelector('.level-cont');
+  const friendIdElement = friendElement.querySelector('.friend-id');
+  
+  if (!levelCont || !friendIdElement) return;
+  
+  const friendId = friendIdElement.textContent.trim();
+  
+  const cachedSkin = this.loadFriendSkinFromCache(friendId);
+  
+  let img = friendElement.querySelector('img[data-level-cont="true"]');
+  
+  if (!img) {
+    img = document.createElement('img');
+    img.dataset.levelCont = 'true';
+    img.dataset.friendId = friendId;
+    
+    img.style.width = '50px';
+    img.style.height = '50px';
+    img.style.borderRadius = '4px';
+    img.style.objectFit = 'cover';
+    img.style.display = 'block';
+    img.style.flexShrink = '0';
+    img.style.imageRendering = 'pixelated';
+    img.style.imageRendering = '-moz-crisp-edges';
+    img.style.imageRendering = '-webkit-optimize-contrast';
+    img.style.imageRendering = 'crisp-edges';
+    
+    levelCont.parentNode.replaceChild(img, levelCont);
+  }
+  
+  img.src = cachedSkin || this._defaultSkinDataUrl || this.createFallbackHead('?');
+  img.alt = cachedSkin ? `Profile ${friendId}` : 'Loading...';
+  
+  if (cachedSkin) {
+    img.dataset.loaded = 'cached';
+  }
+}
+
+async processFriendRealSkin(friendElement, forceUpdate = false) {
+  try {
+    const img = friendElement.querySelector('img[data-level-cont="true"]');
+    if (!img) return;
+    
+    const friendId = img.dataset.friendId;
+    if (!friendId) return;
+    
+    if (!forceUpdate && this.isFriendProcessed(friendId) && this.loadFriendSkinFromCache(friendId)) {
+      img.dataset.loaded = 'cached';
+      return;
+    }
+    
+    const cachedSkin = this.loadFriendSkinFromCache(friendId);
+    if (!forceUpdate && cachedSkin) {
+      img.src = cachedSkin;
+      img.alt = `Profile ${friendId}`;
+      img.dataset.loaded = 'cached';
+      this.saveProcessedFriend(friendId);
+      return;
+    }
+    
+    const profileData = await this.getProfileData(friendId);
+    if (!profileData) {
+      img.dataset.loaded = 'failed';
+      return;
+    }
+    
+    let skinId = profileData.wWnNmWMw?.WwmMWw;
+    if (!skinId) {
+      img.dataset.loaded = 'no-skin';
+      return;
+    }
+    
+    const cachedSkinId = this.getCachedSkinId(friendId);
+    if (cachedSkinId === skinId && cachedSkin) {
+      this.saveFriendSkinToCache(friendId, cachedSkin, skinId);
+      img.dataset.loaded = 'cached';
+      return;
+    }
+    
+    const textureUrl = await this.getSkinTextureUrl(skinId);
+    if (!textureUrl) {
+      img.dataset.loaded = 'no-texture';
+      return;
+    }
+    
+    const headDataUrl = await this.extractHeadClean(textureUrl);
+    if (!headDataUrl) {
+      img.dataset.loaded = 'extract-failed';
+      return;
+    }
+    
+    img.src = headDataUrl;
+    img.alt = `Profile ${friendId}`;
+    img.dataset.loaded = 'updated';
+    
+    this.saveFriendSkinToCache(friendId, headDataUrl, skinId);
+    
+  } catch (error) {}
+}
+
+async getProfileData(friendId, retryCount = 0) {
+  try {
+    const response = await fetch('https://api2.kirka.io/api/wNmwWMWn/wWWnwmNM', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        WwmMWw: friendId,
+        wmWW: true
+      })
+    });
+    
+    if (response.status === 503 || response.status === 429) {
+      const waitTime = Math.min(1000 * Math.pow(2, retryCount), 8000);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+      return this.getProfileData(friendId, retryCount + 1);
+    }
+    
+    if (!response.ok) {
+      throw new Error(`API returned ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    if (retryCount < 3) {
+      const waitTime = Math.min(1000 * Math.pow(2, retryCount), 5000);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+      return this.getProfileData(friendId, retryCount + 1);
+    }
+    return null;
+  }
+}
+
+async backgroundFriendSkinCheck() {
+  if (this._isBackgroundChecking || !(this.settings["friends_profiles"] ?? false)) return;
+  this._isBackgroundChecking = true;
+  
+  try {
+    const friendElements = document.querySelectorAll('.friend');
+    const friendArray = Array.from(friendElements);
+    
+    if (friendArray.length === 0) {
+      return;
+    }
+    
+    const processedFriends = friendArray.filter(friend => {
+      const img = friend.querySelector('img[data-level-cont="true"]');
+      if (!img) return false;
+      const friendId = img.dataset.friendId;
+      return this.isFriendProcessed(friendId);
+    });
+    
+    if (processedFriends.length === 0) return;
+    
+    for (let i = 0; i < processedFriends.length; i += 2) {
+      const batch = processedFriends.slice(i, i + 2);
+      await Promise.all(batch.map(friend => this.processFriendRealSkin(friend, true)));
+      
+      if (i + 2 < processedFriends.length) {
+        await new Promise(resolve => setTimeout(resolve, 3000));
+      }
+    }
+  } finally {
+    this._isBackgroundChecking = false;
+  }
+}
+
+// ── Subnames Feature ──────────────────────────────────────────────────────
+
+initSubnames() {
+  // Check if the setting is enabled
+  const enabled = this.settings["subnames_enabled"] ?? false;
+  if (!enabled) {
+    this.stopSubnames();
+    return;
+  }
+
+  // Inject the subnames script
+  this.injectSubnamesScript();
+}
+
+injectSubnamesScript() {
+  if (document.getElementById("juice-subnames-script")) return;
+
+  const script = document.createElement("script");
+  script.id = "juice-subnames-script";
+  script.textContent = `
+    (function() {
+      if (window.__subnamesInstalled) return;
+      window.__subnamesInstalled = true;
+
+      let subnamesData = null;
+      let subnameInterval = null;
+
+      async function fetchSubnamesData() {
+        try {
+          const r = await fetch("https://raw.githubusercontent.com/OBS-Akuma/KirkaBadges/refs/heads/main/Json/subnames.json");
+          if (!r.ok) throw new Error();
+          subnamesData = await r.json();
+          console.log('[Subnames] Loaded data');
+          return true;
+        } catch { 
+          console.error('[Subnames] Failed to load data');
+          return false; 
+        }
+      }
+
+      function injectProfileSubname() {
+        const valueElement = document.querySelector(".card-profile .copy-cont .value");
+        if (!valueElement) return;
+        const text = valueElement.textContent.trim();
+        const currentId = text.startsWith("#") ? text.substring(1) : text;
+        if (!currentId) return;
+        const subname = subnamesData?.find(item => item.id === currentId)?.subname;
+        if (!subname) return;
+        const existing = valueElement.parentNode.querySelector(".kirka-subname-profile");
+        if (existing && existing.textContent === \` (\${subname})\`) return;
+        if (existing) existing.remove();
+        const span = document.createElement("span");
+        span.className = "kirka-subname-profile";
+        span.textContent = \` (\${subname})\`;
+        span.style.cssText = "color: #888888 !important; font-size: 0.9rem !important; font-weight: normal !important; display: inline-block !important; margin-left: 4px !important;";
+        valueElement.insertAdjacentElement("afterend", span);
+      }
+
+      function injectFriendSubnames() {
+        for (const friend of document.querySelectorAll(".friend")) {
+          const friendIdEl = friend.querySelector(".friend-desc .friend-id");
+          if (!friendIdEl) continue;
+          const shortId = friendIdEl.textContent.trim();
+          if (!shortId) continue;
+          const subname = subnamesData?.find(item => item.id === shortId)?.subname;
+          if (!subname) continue;
+          const parent = friendIdEl.parentNode;
+          const existing = parent.querySelector(".kirka-subname-friend");
+          if (existing && existing.textContent === \` (\${subname})\`) continue;
+          if (existing) existing.remove();
+          const span = document.createElement("span");
+          span.className = "kirka-subname-friend";
+          span.textContent = \` (\${subname})\`;
+          span.style.cssText = "color: #888888 !important; font-size: 0.8rem !important; font-weight: normal !important; display: inline-block !important; margin-left: 4px !important;";
+          friendIdEl.insertAdjacentElement("afterend", span);
+        }
+      }
+
+      function injectAllSubnames() {
+        if (!subnamesData) return;
+        
+        const path = window.location.pathname;
+        
+        // Profile page
+        if (path.includes("/profile/")) {
+          injectProfileSubname();
+        }
+        
+        // Friends page
+        if (path.includes("/friends")) {
+          injectFriendSubnames();
+        }
+      }
+
+      function startSubnamePersistence() {
+        if (subnameInterval) clearInterval(subnameInterval);
+        subnameInterval = setInterval(() => {
+          if (location.href.includes("/profile/") || location.href.includes("/friends")) {
+            injectAllSubnames();
+          }
+        }, 500);
+      }
+
+      // Initialize
+      fetchSubnamesData().then(() => {
+        injectAllSubnames();
+        startSubnamePersistence();
+        
+        // Watch for DOM changes
+        const observer = new MutationObserver(() => {
+          injectAllSubnames();
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+        
+        // Watch for URL changes
+        let lastUrl = window.location.href;
+        setInterval(() => {
+          if (window.location.href !== lastUrl) {
+            lastUrl = window.location.href;
+            setTimeout(() => injectAllSubnames(), 100);
+          }
+        }, 500);
+        
+        console.log('[Subnames] Initialized');
+      });
+    })();
+  `;
+  document.head.appendChild(script);
+}
+
+stopSubnames() {
+  const script = document.getElementById("juice-subnames-script");
+  if (script) script.remove();
+  
+  // Remove any existing subname elements from DOM
+  document.querySelectorAll('.kirka-subname-profile, .kirka-subname-friend, .kirka-subname-lobby').forEach(el => {
+    el.remove();
+  });
+}
 
 // ── Swapper Tab ───────────────────────────────────────────────────────────
 
@@ -1977,6 +2739,319 @@ initSwapper() {
     });
   }
 }
+
+// ── Kirka Badges Feature ──────────────────────────────────────────────────────
+
+initKirkaBadges() {
+  // Check if the setting is enabled
+  const enabled = this.settings["kirka_badges_enabled"] ?? false;
+  if (!enabled) {
+    this.stopKirkaBadges();
+    return;
+  }
+
+  // Inject the Kirka Badges script
+  this.injectKirkaBadgesScript();
+}
+
+injectKirkaBadgesScript() {
+  if (document.getElementById("juice-kirka-badges-script")) return;
+
+  const script = document.createElement("script");
+  script.id = "juice-kirka-badges-script";
+  
+  const badgeSize = this.settings["kirka_badges_size"] || 16;
+  const showBrackets = this.settings["kirka_badges_brackets"] !== false;
+  
+  script.textContent = `
+    (function() {
+      if (window.__kirkaBadgesInstalled) return;
+      window.__kirkaBadgesInstalled = true;
+
+      const BADGE_API = 'https://raw.githubusercontent.com/OBS-Akuma/KirkaBadges/refs/heads/main/Json/badge.json';
+      const PROFILE_API = 'https://api2.kirka.io/api/wNmwWMWn/wWWnwmNM';
+
+      const defaultColor = '#FFE881';
+      const BADGE_SIZE = ${badgeSize};
+      const SHOW_BRACKETS = ${showBrackets};
+
+      const badgeMap = {};
+      const verifiedUsers = {};
+      const processedIds = new Set();
+
+      let ws = null;
+      let observer = null;
+
+      async function loadBadges() {
+        try {
+          const res = await fetch(BADGE_API);
+          const data = await res.json();
+          data.forEach(entry => {
+            if (entry.shortId) {
+              badgeMap[entry.shortId] = {
+                gradient: entry.gradient ? buildGradient(entry.gradient) : null,
+                badges: Array.isArray(entry.badges) && entry.badges.length > 0
+                  ? entry.badges
+                  : null,
+                font: entry.font || null,
+              };
+            }
+          });
+          console.log('[KirkaBadges] Loaded badge data');
+        } catch(e) {
+          console.error('[KirkaBadges] Failed to load badges, retrying...');
+          setTimeout(loadBadges, 5000);
+        }
+      }
+
+      function buildGradient(gradient) {
+        return \`linear-gradient(\${gradient.rot}, \${gradient.stops.join(', ')})\`;
+      }
+
+      async function fetchProfile(shortId) {
+        try {
+          const res = await fetch(PROFILE_API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ WwmMWw: shortId, wmWW: true })
+          });
+          const data = await res.json();
+          return { username: data.wNmnw, level: data.wnNwWmMW };
+        } catch(e) {
+          processedIds.delete(shortId);
+          return {};
+        }
+      }
+
+      function applyGradient(el, gradientStyle) {
+        el.style.color = 'transparent';
+        el.style.background = gradientStyle;
+        el.style.webkitBackgroundClip = 'text';
+        el.style.backgroundClip = 'text';
+        el.style.webkitTextFillColor = 'transparent';
+      }
+
+      function applyDefault(el) {
+        el.style.color = defaultColor;
+        el.style.background = '';
+        el.style.webkitBackgroundClip = '';
+        el.style.backgroundClip = '';
+        el.style.webkitTextFillColor = '';
+      }
+
+      function getUserKey(name, level) {
+        return \`\${name}:\${level}\`;
+      }
+
+      function injectFont(fontUrl) {
+        if (!fontUrl) return;
+        try {
+          const existing = document.head.querySelector(\`link[data-kirka-font="\${CSS.escape(fontUrl)}"]\`);
+          if (existing) return;
+          const link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = fontUrl;
+          link.setAttribute('data-kirka-font', fontUrl);
+          document.head.appendChild(link);
+        } catch(e) {}
+      }
+
+      function colorMessage(msg) {
+        try {
+          const authorEl = msg.querySelector('.author-name');
+          if (!authorEl) return;
+
+          const name = authorEl.textContent.trim().replace(':', '');
+          
+          const lvlEl = msg.querySelector('.lvl .value');
+          const level = lvlEl ? parseInt(lvlEl.textContent.trim()) : null;
+
+          const lvlSpan = msg.querySelector('.lvl');
+          if (lvlSpan) {
+            lvlSpan.style.color = '';
+            lvlSpan.style.background = '';
+            lvlSpan.style.webkitTextFillColor = '';
+          }
+
+          const key = getUserKey(name, level);
+          const userInfo = verifiedUsers[key];
+
+          if (userInfo && userInfo.gradient) {
+            applyGradient(authorEl, userInfo.gradient);
+          } else {
+            applyDefault(authorEl);
+          }
+
+          const hasBadges = userInfo && userInfo.badges && userInfo.badges.length > 0;
+          const badgeUrls = hasBadges ? userInfo.badges : [];
+
+          let container = msg.querySelector('.kirka-badges-container');
+
+          if (hasBadges) {
+            if (!container) {
+              const textSpan = msg.querySelector('.text');
+              if (textSpan) {
+                container = document.createElement('span');
+                container.className = 'kirka-badges-container';
+                container.style.cssText = 'display:inline-flex;align-items:center;gap:2px;margin-left:4px;margin-right:6px;vertical-align:middle;';
+
+                if (SHOW_BRACKETS) {
+                  const leftBracket = document.createElement('span');
+                  leftBracket.textContent = '[';
+                  leftBracket.style.cssText = 'color:#FFE881;font-weight:bold;font-size:14px;';
+                  container.appendChild(leftBracket);
+                }
+
+                badgeUrls.forEach(url => {
+                  const img = document.createElement('img');
+                  img.src = url;
+                  img.style.cssText = \`width:\${BADGE_SIZE}px;height:\${BADGE_SIZE}px;object-fit:contain;vertical-align:middle;pointer-events:none;\`;
+                  container.appendChild(img);
+                });
+
+                if (SHOW_BRACKETS) {
+                  const rightBracket = document.createElement('span');
+                  rightBracket.textContent = ']';
+                  rightBracket.style.cssText = 'color:#FFE881;font-weight:bold;font-size:14px;';
+                  container.appendChild(rightBracket);
+                }
+
+                textSpan.parentNode.insertBefore(container, textSpan);
+              }
+            } else {
+              const imgs = container.querySelectorAll('img');
+              badgeUrls.forEach((url, i) => {
+                if (imgs[i]) {
+                  if (imgs[i].src !== url) imgs[i].src = url;
+                } else {
+                  const img = document.createElement('img');
+                  img.src = url;
+                  img.style.cssText = \`width:\${BADGE_SIZE}px;height:\${BADGE_SIZE}px;object-fit:contain;vertical-align:middle;pointer-events:none;\`;
+                  container.appendChild(img);
+                }
+              });
+              for (let i = badgeUrls.length; i < imgs.length; i++) {
+                imgs[i].remove();
+              }
+              container.style.display = 'inline-flex';
+            }
+          } else {
+            if (container) {
+              container.remove();
+            }
+          }
+        } catch(e) {}
+      }
+
+      function updateMessages() {
+        document.querySelectorAll('.message').forEach(colorMessage);
+      }
+
+      async function handleShortId(shortId) {
+        if (processedIds.has(shortId)) return;
+        if (!badgeMap[shortId]) return;
+        processedIds.add(shortId);
+
+        const entry = badgeMap[shortId];
+        if (entry.font) injectFont(entry.font);
+
+        const profile = await fetchProfile(shortId);
+        if (profile.username && profile.level !== undefined) {
+          const key = getUserKey(profile.username, profile.level);
+          verifiedUsers[key] = {
+            gradient: entry.gradient,
+            badges: entry.badges,
+          };
+          updateMessages();
+        }
+      }
+
+      function connectToChat() {
+        if (ws) {
+          try { ws.close(); } catch(e) {}
+        }
+
+        ws = new WebSocket('wss://chat.kirka.io/');
+
+        ws.addEventListener('open', () => {
+          console.log('[KirkaBadges] Connected to chat');
+          const ping = setInterval(() => {
+            if (ws.readyState === WebSocket.OPEN) {
+              ws.send(JSON.stringify({ type: 0 }));
+            } else {
+              clearInterval(ping);
+            }
+          }, 30000);
+        });
+
+        ws.addEventListener('message', (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.type === 2 && data.user) {
+              const { shortId } = data.user;
+              handleShortId(shortId);
+            }
+          } catch(e) {}
+        });
+
+        ws.addEventListener('close', () => {
+          console.log('[KirkaBadges] Chat disconnected, reconnecting...');
+          setTimeout(connectToChat, 3000);
+        });
+
+        ws.addEventListener('error', () => {
+          console.log('[KirkaBadges] Chat error, reconnecting...');
+          setTimeout(connectToChat, 3000);
+        });
+      }
+
+      function startObserver() {
+        if (observer) observer.disconnect();
+        observer = new MutationObserver((mutations) => {
+          mutations.forEach(mutation => {
+            mutation.addedNodes.forEach(node => {
+              if (node.nodeType !== 1) return;
+              if (node.classList?.contains('message')) {
+                colorMessage(node);
+              }
+              node.querySelectorAll?.('.message').forEach(colorMessage);
+            });
+          });
+          updateMessages();
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+      }
+
+      // Update messages periodically
+      setInterval(updateMessages, 1000);
+
+      // Re-start observer periodically to ensure it's always running
+      setInterval(() => {
+        startObserver();
+      }, 30000);
+
+      // Initialize
+      loadBadges().then(() => {
+        updateMessages();
+        startObserver();
+        connectToChat();
+        console.log('[KirkaBadges] Initialized');
+      });
+    })();
+  `;
+  document.head.appendChild(script);
+}
+
+stopKirkaBadges() {
+  const script = document.getElementById("juice-kirka-badges-script");
+  if (script) script.remove();
+  
+  // Clean up any Kirka badges elements
+  document.querySelectorAll('.kirka-badges-container').forEach(el => {
+    el.remove();
+  });
+}
+
   // ── Skins Browser ─────────────────────────────────────────────────────────
 
   initSkins() {

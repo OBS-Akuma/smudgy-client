@@ -9,12 +9,6 @@ const { initGameFeatures } = (() => {
         window.__fullFeaturesInstalled = true;
         
         let customIdMapping = {};
-        let subnamesData = null;
-        let subnameIsProcessing = false;
-        let subnameInterval = null;
-        
-        // ── Background Script (Smooth transitions, no flashing) ──────────────
-        let appliedElements = new Map();
         let bgIsProcessing = false;
         let currentProfileIdentifier = null;
         let hasFetchedForCurrentPage = false;
@@ -119,7 +113,8 @@ const { initGameFeatures } = (() => {
         function isPlayerListVisible() {
           return document.querySelector('.player-list') !== null || 
                  document.querySelector('.team-players-state') !== null ||
-                 document.querySelector('.player-cont') !== null;
+                 document.querySelector('.player-cont') !== null ||
+                 document.querySelector('.teammate') !== null;
         }
 
         function isUserCardVisible() {
@@ -252,6 +247,8 @@ const { initGameFeatures } = (() => {
             img.src = url;
           });
         }
+
+        let appliedElements = new Map();
 
         async function applyBackground(element, identifier, imageUrl) {
           if (!imageUrl) return false;
@@ -420,9 +417,76 @@ const { initGameFeatures } = (() => {
           await Promise.allSettled(promises);
         }
 
-        // ── Player List Backgrounds (REMOVED) ──────────────────────────────────
-        // The handlePlayerList function has been removed to prevent backgrounds
-        // from being applied to player-cont elements.
+        // ── Player List Backgrounds (ALL teammates - both blue and red) ──────
+        async function handlePlayerList() {
+          const playerList = document.querySelector('.player-list') || document.querySelector('.team-players-state');
+          if (!playerList) return;
+          
+          // Find ALL player containers - both team-blue and team-red
+          const playerContainers = playerList.querySelectorAll('.player-cont, .teammate');
+          if (playerContainers.length === 0) return;
+          
+          for (const player of playerContainers) {
+            if (appliedElements.has(player)) continue;
+            
+            // Try multiple ways to find the short ID
+            let shortId = null;
+            
+            // Method 1: Look for .teammate-short-id directly
+            const shortIdEl = player.querySelector('.teammate-short-id');
+            if (shortIdEl) {
+              shortId = shortIdEl.textContent.trim().replace('#', '');
+            }
+            
+            // Method 2: Look for .short-id
+            if (!shortId) {
+              const altEl = player.querySelector('.short-id');
+              if (altEl) {
+                shortId = altEl.textContent.trim().replace('#', '');
+              }
+            }
+            
+            // Method 3: Look for any element containing a short ID pattern
+            if (!shortId) {
+              const allElements = player.querySelectorAll('*');
+              for (const el of allElements) {
+                const text = el.textContent?.trim();
+                if (text && text.match(/^#?[A-Z0-9]{4,8}$/i)) {
+                  shortId = text.replace('#', '');
+                  break;
+                }
+              }
+            }
+            
+            if (!shortId || !shortId.match(/^[A-Z0-9]{4,8}$/i)) continue;
+            
+            const cleanId = cleanShortId(shortId);
+            console.log('[PlayerList] Found short ID:', cleanId, 'for player:', player.className);
+            
+            // Get banner
+            const banner = await fetchSpecificUserBanner(cleanId);
+            let imageUrl = null;
+            
+            if (banner && banner.imageUrl) {
+              imageUrl = banner.imageUrl;
+            } else {
+              const discordId = getDiscordIdFromShortId(cleanId);
+              if (discordId) {
+                const discordBanner = await fetchDiscordFallbackBanner(cleanId);
+                if (discordBanner && discordBanner.imageUrl) {
+                  imageUrl = discordBanner.imageUrl;
+                }
+              }
+            }
+            
+            if (imageUrl) {
+              await applyBackground(player, cleanId, imageUrl);
+              console.log('[PlayerList] ✅ Applied background to:', cleanId, '(', player.className, ')');
+            } else {
+              console.log('[PlayerList] ❌ No banner found for:', cleanId);
+            }
+          }
+        }
 
         // ── User Card (Kill Card) Background ──────────────────────────────────
         async function handleUserCard() {
@@ -641,7 +705,10 @@ const { initGameFeatures } = (() => {
             } else if (isFriendsPage()) {
               await handleFriendsPage();
             }
-            // Player list backgrounds have been removed
+            
+            if (isPlayerListVisible()) {
+              await handlePlayerList();
+            }
             
             if (isUserCardVisible()) {
               await handleUserCard();
@@ -713,6 +780,19 @@ const { initGameFeatures } = (() => {
             const leftSection = topBar.querySelector('.left');
             if (leftSection && !shouldSkipElement(leftSection)) applyTransparentEffect(leftSection);
           }
+
+          // Maintain player list backgrounds (ALL teammates)
+          const playerList = document.querySelector('.player-list') || document.querySelector('.team-players-state');
+          if (playerList) {
+            playerList.querySelectorAll('.player-cont, .teammate').forEach(player => {
+              if (appliedElements.has(player)) {
+                player.querySelectorAll('div').forEach(div => {
+                  if (shouldSkipElement(div) || div === player) return;
+                  if (!div.classList.contains('bg-overlay')) applyTransparentEffect(div);
+                });
+              }
+            });
+          }
         }
 
         function resetBgPageState() {
@@ -731,7 +811,7 @@ const { initGameFeatures } = (() => {
           
           if (scanInterval) clearInterval(scanInterval);
           scanInterval = setInterval(() => {
-            if (isUserCardVisible()) {
+            if (isUserCardVisible() || isPlayerListVisible()) {
               scanAndApplyBackgrounds();
             }
           }, 2000);
@@ -741,7 +821,7 @@ const { initGameFeatures } = (() => {
         // ── End Background Script ─────────────────────────────────────────────
 
 
-        // ── Custom ID & Subnames ──────────────────────────────────────────────
+        // ── Custom ID ──────────────────────────────────────────────────────────
         async function fetchCustomIdMappings() {
           try {
             const r = await fetch("https://raw.githubusercontent.com/OBS-Akuma/KirkaBadges/refs/heads/main/Json/customids.json");
@@ -758,19 +838,6 @@ const { initGameFeatures } = (() => {
             return true;
           } catch (err) { 
             console.error('[CustomID] Failed to load mappings');
-            return false; 
-          }
-        }
-        
-        async function fetchSubnamesData() {
-          try {
-            const r = await fetch("https://raw.githubusercontent.com/OBS-Akuma/KirkaBadges/refs/heads/main/Json/subnames.json");
-            if (!r.ok) throw new Error();
-            subnamesData = await r.json();
-            console.log('[Subnames] Loaded data');
-            return true;
-          } catch { 
-            console.error('[Subnames] Failed to load data');
             return false; 
           }
         }
@@ -848,67 +915,6 @@ const { initGameFeatures } = (() => {
             });
           };
         }
-        
-        async function injectProfileSubname() {
-          const valueElement = document.querySelector(".card-profile .copy-cont .value");
-          if (!valueElement) return;
-          const text = valueElement.textContent.trim();
-          const currentId = text.startsWith("#") ? text.substring(1) : text;
-          if (!currentId) return;
-          const subname = subnamesData?.find(item => item.id === currentId)?.subname;
-          if (!subname) return;
-          const existing = valueElement.parentNode.querySelector(".kirka-subname-profile");
-          if (existing && existing.textContent === \` (\${subname})\`) return;
-          if (existing) existing.remove();
-          const span = document.createElement("span");
-          span.className = "kirka-subname-profile";
-          span.textContent = \` (\${subname})\`;
-          span.style.cssText = "color: #888888 !important; font-size: 0.9rem !important; font-weight: normal !important; display: inline-block !important; margin-left: 4px !important;";
-          valueElement.insertAdjacentElement("afterend", span);
-        }
-        
-        async function injectFriendSubnames() {
-          for (const friend of document.querySelectorAll(".friend")) {
-            const friendIdEl = friend.querySelector(".friend-desc .friend-id");
-            if (!friendIdEl) continue;
-            const shortId = friendIdEl.textContent.trim();
-            if (!shortId) continue;
-            const subname = subnamesData?.find(item => item.id === shortId)?.subname;
-            if (!subname) continue;
-            const parent = friendIdEl.parentNode;
-            const existing = parent.querySelector(".kirka-subname-friend");
-            if (existing && existing.textContent === \` (\${subname})\`) continue;
-            if (existing) existing.remove();
-            const span = document.createElement("span");
-            span.className = "kirka-subname-friend";
-            span.textContent = \` (\${subname})\`;
-            span.style.cssText = "color: #888888 !important; font-size: 0.8rem !important; font-weight: normal !important; display: inline-block !important; margin-left: 4px !important;";
-            friendIdEl.insertAdjacentElement("afterend", span);
-          }
-        }
-        
-        async function injectAllSubnames() {
-          if (!subnamesData) { 
-            await fetchSubnamesData(); 
-            if (!subnamesData) return; 
-          }
-          if (subnameIsProcessing) return;
-          subnameIsProcessing = true;
-          try {
-            if (location.href.includes("/profile/")) await injectProfileSubname();
-            if (location.href.includes("/friends")) await injectFriendSubnames();
-          } catch (e) {}
-          subnameIsProcessing = false;
-        }
-        
-        function startSubnamePersistence() {
-          if (subnameInterval) clearInterval(subnameInterval);
-          subnameInterval = setInterval(() => {
-            if (location.href.includes("/profile/") || location.href.includes("/friends")) {
-              injectAllSubnames();
-            }
-          }, 500);
-        }
 
         // ── Navigation handling ───────────────────────────────────────────────
         let lastUrl = window.location.href;
@@ -920,7 +926,6 @@ const { initGameFeatures } = (() => {
             resetBgPageState();
             setTimeout(() => {
               checkAndRedirectCustomId();
-              injectAllSubnames();
               scanAndApplyBackgrounds();
             }, 100);
           }
@@ -933,7 +938,6 @@ const { initGameFeatures } = (() => {
           resetBgPageState();
           setTimeout(() => {
             checkAndRedirectCustomId();
-            injectAllSubnames();
             scanAndApplyBackgrounds();
           }, 100);
         };
@@ -942,13 +946,12 @@ const { initGameFeatures } = (() => {
           resetBgPageState();
           setTimeout(() => {
             checkAndRedirectCustomId();
-            injectAllSubnames();
             scanAndApplyBackgrounds();
           }, 100);
         });
         
         const domObserver = new MutationObserver(() => {
-          if (isProfilePage() || isFriendsPage() || isUserCardVisible()) {
+          if (isProfilePage() || isFriendsPage() || isUserCardVisible() || isPlayerListVisible()) {
             scanAndApplyBackgrounds();
           }
         });
@@ -958,18 +961,15 @@ const { initGameFeatures } = (() => {
         watchUserNotFoundAlerts();
         patchFetchForCustomIds();
         fetchCustomIdMappings();
-        fetchSubnamesData();
         initBackgrounds();
         
         setTimeout(() => {
           checkAndRedirectCustomId();
-          injectAllSubnames();
-          if (isUserCardVisible()) scanAndApplyBackgrounds();
+          if (isUserCardVisible() || isPlayerListVisible()) scanAndApplyBackgrounds();
         }, 500);
         
-        startSubnamePersistence();
-        
-        console.log('[GameFeatures] All systems initialized (Custom ID, Subname, Backgrounds, Profile Lookup, User Card)');
+        console.log('[GameFeatures] All systems initialized (Custom ID, Backgrounds, Profile Lookup, User Card, Player List)');
+        console.log('[GameFeatures] Player List backgrounds work on ALL teammates (both blue and red)');
       })();
     `;
   };

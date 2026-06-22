@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Smudgy Client</title>
-  <style>
-    @font-face {
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smudgy · Splash Animation</title>
+    <style>
+ @font-face {
       font-family: "Kanit";
       src: url("../Kanit-Regular.ttf") format("truetype");
     }
@@ -45,49 +45,589 @@
       border-radius: 1.5rem;
       box-sizing: border-box;
     }
-  </style>
+
+        /* Container for the animation */
+        #animation-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 600px;
+            height: 300px;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        #animation-container canvas {
+            display: block;
+            width: 600px;
+            height: 300px;
+            background: transparent;
+        }
+
+        /* Splash screen - hidden initially, fades in after animation */
+        .splash {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: flex-start;
+            overflow: hidden;
+            background: url('https://raw.githubusercontent.com/OBS-Akuma/smudgy-client/refs/heads/main/src/assets/img/Smudgy_banner.webp') no-repeat center center / cover;
+            border-radius: 1.5rem;
+            padding: 0.75rem 1rem;
+            box-sizing: border-box;
+            z-index: 2;
+            opacity: 0;
+            transition: opacity 0.6s ease-in-out;
+            pointer-events: none;
+        }
+
+        .splash.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Green outline border */
+        .border {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0.25rem solid #1A8E50;
+            border-radius: 1.5rem;
+            box-sizing: border-box;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        .status {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .ver {
+            align-self: flex-end;
+            font-size: 0.8rem;
+            opacity: 0.6;
+        }
+
+        .dyk-text {
+            font-size: 1rem;
+            max-width: 80%;
+            line-height: 1.3;
+            text-shadow: 0 0 1rem black;
+        }
+
+        /* Icon in top-right corner - rounded square */
+        .icon-container {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            z-index: 4;
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out;
+            pointer-events: none;
+        }
+
+        .icon-container.show {
+            opacity: 1;
+        }
+
+        .icon-container img {
+            display: block;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: 0.2rem solid #1A8E50;
+            object-fit: cover;
+            background: #111;
+        }
+
+        /* Loading overlay */
+        #loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #ffffff00;
+            z-index: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #1A8E50;
+            font-family: "Kanit", sans-serif;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+        }
+
+        #loading-overlay.hidden {
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+        }
+
+        /* Hide animation container after splash shows */
+        #animation-container.hidden {
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+        }
+
+        /* Bottom right container for ver */
+        .bottom-right {
+            position: absolute;
+            bottom: 0.75rem;
+            right: 0.75rem;
+            z-index: 4;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.25rem;
+        }
+        .border {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%; 
+            border-radius: 1.5rem;
+            box-sizing: border-box;
+          }
+    </style>
 </head>
 <body>
-  <div class="splash">
-    <div class="status"></div>
-    <div class="ver"></div>
-  </div>
-  <div class="border"></div>
 
-  <script>
-    const splash = document.querySelector('.splash');
-    const statusDiv = document.querySelector('.status');
-    const verDiv = document.querySelector('.ver');
-    
-    splash.style.display = 'flex';
-    splash.style.flexDirection = 'column';
-    splash.style.justifyContent = 'space-between';
-    splash.style.alignItems = 'flex-start';
-    splash.insertBefore(statusDiv, splash.firstChild);
-    
-    verDiv.style.alignSelf = 'flex-end';
-    
-    fetch('https://raw.githubusercontent.com/OBS-Akuma/smudgy-client/refs/heads/main/Api/dyk.json')
-      .then(res => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then(data => {
-        const facts = Object.values(data[0]);
-        const randomFact = facts[Math.floor(Math.random() * facts.length)];
-        const dykDiv = document.createElement('div');
-        dykDiv.textContent = randomFact;
-        dykDiv.style.fontSize = '1rem';
-        splash.appendChild(dykDiv);
-      })
-      .catch(error => {
-        console.error('API Error:', error);
-        const errorDiv = document.createElement('div');
-        errorDiv.textContent = 'Failed to load fact';
-        errorDiv.style.fontSize = '1rem';
-        errorDiv.style.color = '#ff9999';
-        splash.appendChild(errorDiv);
-      });
-  </script>
+    <!-- Loading overlay -->
+    <div id="loading-overlay">SmudgyClient</div>
+
+    <!-- Animation container -->
+    <div id="animation-container">
+        <canvas id="canvas" width="600" height="300"></canvas>
+    </div>
+
+    <!-- Splash screen -->
+    <div class="splash" id="splash">
+        <div class="status"></div>
+        <!-- ver moved to bottom-right via absolute positioning -->
+    </div>
+    <div class="border"></div>
+
+    <!-- Icon in top-right corner (rounded square) -->
+    <div class="icon-container" id="iconContainer">
+        <img id="iconImage" src="https://www.smudgy.store/uploads/icon.png" alt="Smudgy Icon">
+    </div>
+
+    <!-- Bottom right - ver -->
+    <div class="bottom-right" id="bottomRight">
+        <div class="ver" id="ver"></div>
+    </div>
+
+    <script>
+        (function() {
+            // ----- CANVAS ANIMATION (rounded square with image fade) -----
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600,
+                H = 300;
+
+            // ----- geometry -----
+            const baseSize = 160;
+            const baseRadius = 25;
+            const finalWidth = 600;
+            const finalHeight = 300;
+            const MAIN_COLOR = '#1A8E50';
+
+            // ----- build rounded square path points -----
+            function buildRoundedSquarePoints(width, height, radius) {
+                const halfW = width / 2;
+                const halfH = height / 2;
+                const r = Math.min(radius, halfW, halfH);
+                const top = H / 2 - halfH;
+                const bottom = H / 2 + halfH;
+                const left = W / 2 - halfW;
+                const right = W / 2 + halfW;
+
+                const points = [];
+                const steps = 15;
+
+                points.push({ x: left + r, y: top });
+
+                for (let i = 0; i <= steps; i++) {
+                    const t = i / steps;
+                    const x = left + r + (right - r - (left + r)) * t;
+                    points.push({ x: x, y: top });
+                }
+
+                for (let i = 0; i <= steps; i++) {
+                    const t = i / steps;
+                    const angle = Math.PI * 1.5 + t * (Math.PI * 0.5);
+                    const x = right - r + r * Math.cos(angle);
+                    const y = top + r + r * Math.sin(angle);
+                    points.push({ x: x, y: y });
+                }
+
+                for (let i = 0; i <= steps; i++) {
+                    const t = i / steps;
+                    const y = top + r + (bottom - r - (top + r)) * t;
+                    points.push({ x: right, y: y });
+                }
+
+                for (let i = 0; i <= steps; i++) {
+                    const t = i / steps;
+                    const angle = t * (Math.PI * 0.5);
+                    const x = right - r + r * Math.cos(angle);
+                    const y = bottom - r + r * Math.sin(angle);
+                    points.push({ x: x, y: y });
+                }
+
+                for (let i = 0; i <= steps; i++) {
+                    const t = i / steps;
+                    const x = right - r - (right - r - (left + r)) * t;
+                    points.push({ x: x, y: bottom });
+                }
+
+                for (let i = 0; i <= steps; i++) {
+                    const t = i / steps;
+                    const angle = Math.PI * 0.5 + t * (Math.PI * 0.5);
+                    const x = left + r + r * Math.cos(angle);
+                    const y = bottom - r + r * Math.sin(angle);
+                    points.push({ x: x, y: y });
+                }
+
+                for (let i = 0; i <= steps; i++) {
+                    const t = i / steps;
+                    const y = bottom - r - (bottom - r - (top + r)) * t;
+                    points.push({ x: left, y: y });
+                }
+
+                for (let i = 0; i <= steps; i++) {
+                    const t = i / steps;
+                    const angle = Math.PI + t * (Math.PI * 0.5);
+                    const x = left + r + r * Math.cos(angle);
+                    const y = top + r + r * Math.sin(angle);
+                    points.push({ x: x, y: y });
+                }
+
+                return points;
+            }
+
+            let allPoints = buildRoundedSquarePoints(baseSize, baseSize, baseRadius);
+
+            // ----- get point on path at progress t (0..1) -----
+            function getPointOnPath(t, points) {
+                const idx = Math.floor(t * (points.length - 1));
+                const nextIdx = Math.min(idx + 1, points.length - 1);
+                const frac = (t * (points.length - 1)) - idx;
+
+                if (idx >= points.length - 1) {
+                    return points[points.length - 1];
+                }
+
+                const p1 = points[idx];
+                const p2 = points[nextIdx];
+
+                return {
+                    x: p1.x + (p2.x - p1.x) * frac,
+                    y: p1.y + (p2.y - p1.y) * frac
+                };
+            }
+
+            // ----- draw the path up to progress t (0..1) -----
+            function drawPath(t, points) {
+                const pts = [];
+                const numPoints = Math.floor(t * points.length);
+                for (let i = 0; i <= numPoints; i++) {
+                    const p = i / points.length;
+                    if (p <= t) {
+                        const pt = getPointOnPath(p, points);
+                        pts.push(pt);
+                    }
+                }
+                return pts;
+            }
+
+            // ----- draw image inside the square with clipping -----
+            function drawImageInsideSquare(points, img, alpha) {
+                if (!img) return;
+
+                ctx.save();
+                ctx.beginPath();
+                if (points.length > 0) {
+                    ctx.moveTo(points[0].x, points[0].y);
+                    for (let i = 1; i < points.length; i++) {
+                        ctx.lineTo(points[i].x, points[i].y);
+                    }
+                    ctx.closePath();
+                }
+                ctx.clip();
+
+                ctx.globalAlpha = alpha;
+
+                const minX = Math.min(...points.map(p => p.x));
+                const maxX = Math.max(...points.map(p => p.x));
+                const minY = Math.min(...points.map(p => p.y));
+                const maxY = Math.max(...points.map(p => p.y));
+                const width = maxX - minX;
+                const height = maxY - minY;
+
+                ctx.drawImage(img, minX, minY, width, height);
+
+                ctx.globalAlpha = 1.0;
+                ctx.restore();
+            }
+
+            // ----- draw square with stroke and fill (using MAIN_COLOR) -----
+            function drawSquareStroke(points, fillAlpha) {
+                const r = parseInt(MAIN_COLOR.slice(1, 3), 16);
+                const g = parseInt(MAIN_COLOR.slice(3, 5), 16);
+                const b = parseInt(MAIN_COLOR.slice(5, 7), 16);
+
+                ctx.shadowColor = `rgba(${r}, ${g}, ${b}, 0.2)`;
+                ctx.shadowBlur = 25;
+
+                if (fillAlpha > 0) {
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${fillAlpha * 0.3})`;
+                    ctx.beginPath();
+                    if (points.length > 0) {
+                        ctx.moveTo(points[0].x, points[0].y);
+                        for (let i = 1; i < points.length; i++) {
+                            ctx.lineTo(points[i].x, points[i].y);
+                        }
+                        ctx.closePath();
+                    }
+                    ctx.fill();
+                }
+
+                ctx.shadowColor = `rgba(${r}, ${g}, ${b}, 0.2)`;
+                ctx.shadowBlur = 25;
+                ctx.strokeStyle = MAIN_COLOR;
+                ctx.lineWidth = 3;
+                ctx.lineJoin = 'round';
+                ctx.lineCap = 'round';
+
+                ctx.beginPath();
+                if (points.length > 0) {
+                    ctx.moveTo(points[0].x, points[0].y);
+                    for (let i = 1; i < points.length; i++) {
+                        ctx.lineTo(points[i].x, points[i].y);
+                    }
+                    ctx.closePath();
+                }
+                ctx.stroke();
+            }
+
+            // ----- draw the square being built (step 1) -----
+            function drawSquare(progress) {
+                ctx.clearRect(0, 0, W, H);
+
+                const pts = drawPath(progress, allPoints);
+
+                const r = parseInt(MAIN_COLOR.slice(1, 3), 16);
+                const g = parseInt(MAIN_COLOR.slice(3, 5), 16);
+                const b = parseInt(MAIN_COLOR.slice(5, 7), 16);
+
+                ctx.shadowColor = `rgba(${r}, ${g}, ${b}, 0.2)`;
+                ctx.shadowBlur = 15;
+                ctx.strokeStyle = MAIN_COLOR;
+                ctx.lineWidth = 3;
+                ctx.lineJoin = 'round';
+                ctx.lineCap = 'round';
+
+                if (pts.length > 1) {
+                    ctx.beginPath();
+                    ctx.moveTo(pts[0].x, pts[0].y);
+                    for (let i = 1; i < pts.length; i++) {
+                        ctx.lineTo(pts[i].x, pts[i].y);
+                    }
+                    ctx.stroke();
+                }
+
+                if (progress < 1.0 && pts.length > 0) {
+                    const last = pts[pts.length - 1];
+                    ctx.shadowColor = 'rgba(255, 220, 100, 0.4)';
+                    ctx.shadowBlur = 15;
+                    ctx.fillStyle = '#ffdd77';
+                    ctx.beginPath();
+                    ctx.arc(last.x, last.y, 3, 0, 2 * Math.PI);
+                    ctx.fill();
+                    ctx.shadowBlur = 8;
+                    ctx.fillStyle = '#fff5d0';
+                    ctx.beginPath();
+                    ctx.arc(last.x, last.y, 1.5, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+            }
+
+            // ----- draw fade phase (step 2) -----
+            function drawFadePhase(fillAlpha) {
+                ctx.clearRect(0, 0, W, H);
+                drawSquareStroke(allPoints, fillAlpha);
+            }
+
+            // ----- draw image fade phase (step 3) -----
+            function drawImagePhase(imageAlpha) {
+                ctx.clearRect(0, 0, W, H);
+                drawSquareStroke(allPoints, 0.2);
+                if (loadedImage) {
+                    drawImageInsideSquare(allPoints, loadedImage, imageAlpha);
+                }
+            }
+
+            // ----- draw expansion phase (step 4) -----
+            function drawExpansionPhase(expandProgress) {
+                ctx.clearRect(0, 0, W, H);
+
+                const currentWidth = baseSize + (finalWidth - baseSize) * expandProgress;
+                const currentHeight = baseSize + (finalHeight - baseSize) * expandProgress;
+                const currentRadius = baseRadius + (25 * 0.5) * expandProgress;
+
+                const expandedPoints = buildRoundedSquarePoints(currentWidth, currentHeight, currentRadius);
+
+                drawSquareStroke(expandedPoints, 0.2);
+
+                if (loadedImage) {
+                    drawImageInsideSquare(expandedPoints, loadedImage, 1.0);
+                }
+            }
+
+            // ----- draw final state -----
+            function drawFinalState() {
+                ctx.clearRect(0, 0, W, H);
+                const finalPoints = buildRoundedSquarePoints(finalWidth, finalHeight, 35);
+                drawSquareStroke(finalPoints, 0.2);
+                if (loadedImage) {
+                    drawImageInsideSquare(finalPoints, loadedImage, 1.0);
+                }
+            }
+
+            // ----- Load image from URL -----
+            let loadedImage = null;
+
+            function loadImage() {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = function() {
+                    loadedImage = img;
+                };
+                img.onerror = function() {
+                    console.warn('Failed to load banner image from URL. Using fallback.');
+                    const canvas2 = document.createElement('canvas');
+                    canvas2.width = 600;
+                    canvas2.height = 300;
+                    const ctx2 = canvas2.getContext('2d');
+                    ctx2.fillStyle = MAIN_COLOR;
+                    ctx2.fillRect(0, 0, 600, 300);
+                    loadedImage = canvas2;
+                };
+                img.src = 'https://cdn.discordapp.com/emojis/1471513595970981912.webp';
+            }
+
+            // ----- animation state -----
+            let progress = 0;
+            let fillAlpha = 0;
+            let imageAlpha = 0;
+            let expandProgress = 0;
+            let phase = 'drawing';
+            const DRAW_SPEED = 0.015;
+            const FADE_SPEED = 0.02;
+            const IMAGE_SPEED = 0.025;
+            const EXPAND_SPEED = 0.015;
+
+            // ----- Show splash screen after animation -----
+            function showSplashScreen() {
+                const splash = document.getElementById('splash');
+                const overlay = document.getElementById('loading-overlay');
+                const animContainer = document.getElementById('animation-container');
+                const iconContainer = document.getElementById('iconContainer');
+                const verDiv = document.getElementById('ver');
+
+                overlay.classList.add('hidden');
+                
+                // Hide the animation container
+                animContainer.classList.add('hidden');
+                
+                // Show splash with fade
+                splash.classList.add('show');
+
+                // Show icon with fade after a short delay
+                setTimeout(() => {
+                    iconContainer.classList.add('show');
+                }, 400);
+
+                // Set version text (empty by default, but you can set it here if needed)
+                // verDiv.textContent = ''; // Keep empty as requested
+
+                // Fetch and display "Did You Know" fact
+                fetch('https://raw.githubusercontent.com/OBS-Akuma/smudgy-client/refs/heads/main/Api/dyk.json')
+                    .then(res => {
+                        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                        return res.json();
+                    })
+                    .then(data => {
+                        const facts = Object.values(data[0]);
+                        const randomFact = facts[Math.floor(Math.random() * facts.length)];
+                        const dykDiv = document.createElement('div');
+                        dykDiv.textContent = randomFact;
+                        dykDiv.className = 'dyk-text';
+                        splash.appendChild(dykDiv);
+                    })
+                    .catch(error => {
+                        console.error('API Error:', error);
+                        // No error text displayed
+                    });
+            }
+
+            // ----- animation loop -----
+            function tick() {
+                if (phase === 'drawing') {
+                    drawSquare(progress);
+                    progress += DRAW_SPEED;
+
+                    if (progress >= 1.0) {
+                        progress = 1.0;
+                        phase = 'fading';
+                    }
+                } else if (phase === 'fading') {
+                    fillAlpha += FADE_SPEED;
+                    if (fillAlpha >= 0.2) {
+                        fillAlpha = 0.2;
+                        phase = 'image';
+                    }
+                    drawFadePhase(fillAlpha);
+                } else if (phase === 'image') {
+                    imageAlpha += IMAGE_SPEED;
+                    if (imageAlpha >= 1.0) {
+                        imageAlpha = 1.0;
+                        phase = 'expanding';
+                    }
+                    drawImagePhase(imageAlpha);
+                } else if (phase === 'expanding') {
+                    expandProgress += EXPAND_SPEED;
+                    if (expandProgress >= 1.0) {
+                        expandProgress = 1.0;
+                        drawFinalState();
+                        // Show splash after expansion completes
+                        setTimeout(showSplashScreen, 300);
+                        return;
+                    }
+                    drawExpansionPhase(expandProgress);
+                }
+
+                requestAnimationFrame(tick);
+            }
+
+            // ----- Start loading image and animation -----
+            loadImage();
+            tick();
+
+        })();
+    </script>
 </body>
 </html>

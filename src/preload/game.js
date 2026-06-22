@@ -31,7 +31,6 @@ if (!window.location.href.startsWith(base_url)) {
   });
 }
 
-// Add the missing observeForElement function
 const observeForElement = (selector, functionToRun, target = document.body) => {
   const observer = new MutationObserver((mutations, obs) => {
     for (const mutation of mutations) {
@@ -58,15 +57,30 @@ const originalConsole = {
 };
 
 {
+  // Create a state object that syncs with settings
   const weaponState = {
-    wireframe:  settings.weapon_wireframe  ?? false,
-    rainbow:    settings.weapon_rainbow    ?? false,
-    scale:      parseFloat(settings.weapon_scale     ?? 1.0),
-    offsetX:    parseFloat(settings.weapon_offset_x  ?? 0.0),
-    offsetY:    parseFloat(settings.weapon_offset_y  ?? 0.0),
-    offsetZ:    parseFloat(settings.weapon_offset_z  ?? 0.0),
+    _wireframe: settings.weapon_wireframe ?? false,
+    _rainbow: settings.weapon_rainbow ?? false,
+    _scale: parseFloat(settings.weapon_scale ?? 1.0),
+    _offsetX: parseFloat(settings.weapon_offset_x ?? 0.0),
+    _offsetY: parseFloat(settings.weapon_offset_y ?? 0.0),
+    _offsetZ: parseFloat(settings.weapon_offset_z ?? 0.0),
+    
+    get wireframe() { return this._wireframe; },
+    set wireframe(v) { this._wireframe = v; settings.weapon_wireframe = v; },
+    get rainbow() { return this._rainbow; },
+    set rainbow(v) { this._rainbow = v; settings.weapon_rainbow = v; },
+    get scale() { return this._scale; },
+    set scale(v) { this._scale = v; settings.weapon_scale = v; },
+    get offsetX() { return this._offsetX; },
+    set offsetX(v) { this._offsetX = v; settings.weapon_offset_x = v; },
+    get offsetY() { return this._offsetY; },
+    set offsetY(v) { this._offsetY = v; settings.weapon_offset_y = v; },
+    get offsetZ() { return this._offsetZ; },
+    set offsetZ(v) { this._offsetZ = v; settings.weapon_offset_z = v; }
   };
 
+  // Update the state when the event fires
   document.addEventListener("juice-settings-changed", ({ detail }) => {
     const { setting, value } = detail;
     if (setting === "weapon_wireframe")  weaponState.wireframe = value;

@@ -451,29 +451,52 @@ function hexToRgb(hex) {
 //Stuff is taken from BKC and improved
 //It should work no matter what happens to the file name
 const oldIsArr = Array.isArray;
-
-const muzzleImg =
-  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAXNSR0IArs4c6QAACOlJREFUeJztm19oHMcdxz+jVvhqWjBGEDsdGg4srf0iNudSjrqmJu2pVl/6D3rPaeK89KEXU3Ds11I5eqi5PsetoU+5QOhTLVmXBxdjcynhWPwSr+VyNWwsG2RX0OCeUaPpw87szq72TifpbhWMv3Bod3Zm9vf/N/ObFbzAC+QO5Uu11zQYjO01Ab2g6oWZPN6zVwK4OECfUyOngj0QgKoX5oDrypczql6YU/WC0u1pjV/Jg55cBWAxeUr/zjM7kfUc4EmP9qEidwsQte4F4QQXgPOp9qU+wzqjoidXAYhad0n5ckttqnphRtS6j62mz0ZF095mgcOuD6B8OQd9reCboyIhNwHo4BdeN8oK8HEDAF+3zfUYiqh1l0dFV54WYKJ6Vno7jxusmhtR6y49d+uADC3agc0H3sqLFhu5CEDVC5NW8DuPNnv6RHc7HtjuM2zkZwFOYGeANOMO0FGN8sJ251WN8pJqlPul0L74MuwFHP232KfP9XRM0IwroG3ud/LyvAVgAmAx9dfHk+isAGi3qRcmIeUOMeMV3GBeVFvvAIhqa0dBcygCUI2y0kRtfhb6b1H5cgZPmtWfQ8i8QxwPwJOoRvmOvnuMvQA67P5Wa7mCG4AbIJzgHaP5Xu/fCl/dyaBe0EQ09W1FVFsCuC5q3SU1y5ytYWLTt5FwA1HrPtXzGguoJKzECASa+l3bxq4tIOF7bmCbYtPWil7/gycHnzsZ/SspATb1u5o7NX8YggAMEeZe+VJx7CBozXDYvRZ1HoB5UW0dBRC17hPgQ9UoL4lqayal4aZwAsN0ezf0D9MFQiE8m26z73aJY9NN9t2u4MnmFuN647B7UVRbM+pvE4ojhfg997pt42670T4MKQhaRITMQ4V9t8GT8wDq9o+V7pf2U9+67gCvmxvj36pRtpmf5163zedHzolqS+yWeRhmGjx2sIIn4dk0wDyxz1b49EnSCkrjWTMUAdTyyTuqUX43ao39vokn4fMjJSNIVS8os5PU93PmNyjZQxOAmL4qgHN8+sQIAaBkhJAIlu11c+VYf3+tnzk6t1cAhBMI7nXn8WQbKLHiLUbzzE58D7A3URfMb2C6t8EjsLmkLZwgmsNOSwCseD9hduKpEYiYviqirTA4iageB8gojRJaEkAJQldTvjwBBMAvhBNcAlD1wlngYwBR695M0FsvzPUTyEAC2GqSzDGN8qvAfeB93OBXPJv+M4CYvjoTpce0AErj36G9/nvd0gbOAbDifU3Uul3ly29pmtcBhBM8UPXCAvABgKh1E4VULZiJbQnA+E+/QZbf/TwxmRMcTfUbBzbw5P96zZUYX20JbUXzwEeDjInG+dKsIDtoKxJOcEn58izwB9tSE2PTDb20rZk2/vZv4Jd40qhwU4IX1dasWj65j1BbP6K9fjV6uDblc+Bu6P8Tq7A6kR4eww2a6HigcVHTEdcPPGnvLou2ZRmlKF/eSSsItABS5erzotbNlJZep9svCzSRMmORU6Q0jpi8cVQ1ygeBV4GPcAOfoNABilw77vD0kc/+l97m+P1YQKkVX0oASXjS39QWjzdB1s9iHiwL0EI4lan9eIPSiSZP7t7MGt7RBIUvLo3bET/E2tQir3XgvZfhzAP441fC8Se7DhOrPrJrE28HRIN4/mRbDE/Gm6wVD2YnNrnnJgH0QsS8G3QsRs111oYGxoqwYRmKEZYnYW3qMv98Bk8fSUILeggc4mfBm1w7Dm/ctJm5BXy3B2nJnaRtmaE1FiFeWkf81AtnRa17ydz3FUBGtN5sbllCGCsuagHEW96Q+RsAHLkFf5UPCX35NAC/+QLgNBuduFw2ViwmBJmNzS7pyZOmwQigV3Df7l4g8qnUPVZ7h41OwFhR0l4Pn4cCdDhw12Ft6jLXjj+ER98mFNAN9r8kad8PBeFyC1gBYKOzoue1rSBtiUbjgX6P1O2nRbUl9NnjxV5ZLSsLTOrLoqh1l1JWkGUBNmFogk736Qdu4POnEx3OPAg1HPoswDxrU1c4cDd0uzCGmDjwCW6QSLupwJt2CWeQGkGig6oXVFYGsFZv/ZjqJBgvjb/CRucBnvw+JvrHjCaxNuUDb3Pg7tXUE5MB3gCO6LZICKLaOmrTlvb3QbCtpbAJiJFfxdnBwAGOA/8C/gN8A3hMadyP3AF+SCiQZCYJtWlH/WgDNYxdXy/sqIxkkA4sqlH+gX70D+BDiNbvSjM4CSyn8ryBL5zgaLRpCmt+M1ZVqUlcZutH04ymaaAq8SCTdUStu6xjQ9G6T6wYdd9POOyuo5nHDWCs+AUbndPAGJ68CPwdN0ibOsCicIJZtXzyEO31v0TjDfRu0FiDqhcmh3FmONTNkLaAcANjagGAVRVqAz/FDbJiwSJjxQ/E5I0req7IEgBTWTLlrxIr3uvAfky+H1DjaezKBbKgGuWlBPNgKkOXcYOvA++TvYBaFE4wC6DqhVdErXs/UQaP5zKCiLbIu6F3aAWRzCMqT4In3wTADT5ji4+jrKOx18AquIbzoOepEDLfANq7ORaD4R2MLEFCGxU7R+sKzzGj4e3Aqgg3I1dygwpuUNVddiWEURyNpXdu1cxeAyLKNEa4nmzqn+lS2s38QxVApAmrvLUNH808HLWDr7aGmdScbUIreHfz6K0xrHMBs3Axx1TJk9x64QSArs6EWFjF/kTORrq0ldlnSIujYR2NRUULmzBrUWIXKsMMkMV89gJppNi1BWyhiQ6AqhdeBv4LfGxF88wBypcLOwmWO8Wovw8wi5QHAMIJbvbs6ckOniRP5mHEAkiszhZWTf3QT2h/YTW+dgOUL7f9mcxukOcXItkRLxULhBPMjvKjqDTy/0YoWcI2WNTP8qWFfAVgbD0gWVyJrkW1NQv9D2WGjb35SizWtC2I/HMge/G5fLV1Rl+GzMfCkBAvmp57KF/eMed5ypfvRe3h+X4u3wnvKZQvF+yUp3z5er/+o8KexACt8QAIbO0/t7BN2mhd+fJ3hvm90j7kZwGnTHCzlrqHzEPhBLn8h9iXHnmuAF/gBV4AgP8DBhz+jMICB1EAAAAASUVORK5CYII=";
+const muzzleImg = "data:image/png;base64,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";
 const muzzleImg2 = "shooting-fire";
 
-Array.isArray = (...args) => {
-  if (args[0] && args[0].map && args[0].map.image) {
-    if (
-      args[0].map.image.width === 64 &&
-      args[0].map.image.height === 64 &&
-      args[0].map.image.src !== muzzleImg &&
-      !args[0].map.image.src.includes(muzzleImg2) &&
-      localStorage.csl_enabled == "true"
-    ) {
-      let useurl = "";
-      if (localStorage.csl_url_or_base64 == "false") {
-        useurl = localStorage.csl_url;
-      } else {
-        useurl = localStorage.csl_colorpicker_inputurl;
-      }
-      if (useurl !== "" && useurl != undefined) args[0].map.image.src = useurl;
-    }
+let patchedImages = new WeakSet();
+
+function getCurrentSkinUrl() {
+  if (localStorage.csl_enabled !== "true") {
+    return null;
   }
 
-  return oldIsArr(...args);
+  let useurl = "";
+  if (localStorage.csl_url_or_base64 === "false") {
+    useurl = localStorage.csl_url;
+  } else {
+    useurl = localStorage.csl_colorpicker_inputurl;
+  }
+
+  if (!useurl || useurl === "") {
+    useurl = localStorage.csl_url || default_url;
+  }
+
+  return useurl;
+}
+Array.isArray = function (...args) {
+  const arg = args[0];
+  if (!arg || !arg.map || !arg.map.image) {
+    return oldIsArr.apply(Array, args);
+  }
+  const image = arg.map.image;
+  const width = image.width;
+  const height = image.height;
+  const src = image.src;
+
+  const customSkinLink = getCurrentSkinUrl();
+
+  const isSkinTexture = (width === 64 || width === 42) &&
+    (height === 64 || height === 42 || height === 32);
+  if (customSkinLink &&
+    isSkinTexture &&
+    src !== muzzleImg &&
+    src !== customSkinLink &&
+    !src.includes(muzzleImg2) &&
+    !patchedImages.has(image)) {
+
+    image.src = customSkinLink;
+    patchedImages.add(image);
+  }
+  return oldIsArr.apply(Array, args);
 };

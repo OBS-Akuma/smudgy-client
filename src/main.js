@@ -6,20 +6,11 @@ const os = require("os");
 const { initSplash } = require("./windows/splash");
 const { initResourceSwapper } = require("./addons/swapper");
 
-console.log("==================== MAIN.JS LOADED ====================");
-
-// TEST HANDLER - Put this FIRST to verify IPC works
-ipcMain.handle("test-ping", () => {
-  console.log("✅ TEST HANDLER WORKED!");
-  return "pong";
-});
-
-// Load defaults
 const defaults = require("./util/defaults.json");
 const userDataPath = app.getPath("userData");
 const settingsPath = path.join(userDataPath, "settings.json");
 
-// Load settings
+
 function loadSettings() {
   try {
     if (fs.existsSync(settingsPath)) {
@@ -33,7 +24,7 @@ function loadSettings() {
   return { ...defaults.default_settings };
 }
 
-// Save settings
+
 function saveSettings(settings) {
   try {
     fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), "utf8");
@@ -45,7 +36,7 @@ function saveSettings(settings) {
 let settings = loadSettings();
 let isRestarting = false;
 
-// IPC Handlers for settings
+
 ipcMain.on("get-settings", (event) => {
   event.returnValue = settings;
 });
@@ -78,7 +69,7 @@ ipcMain.on("reset-juice-settings", () => {
   }
 });
 
-// Plugin handlers
+
 ipcMain.handle("install-plugin", async (event, { fileName, content }) => {
   console.log("[Main] Installing plugin:", fileName);
   try {
@@ -131,7 +122,7 @@ ipcMain.on("restart-client", () => {
   }
 });
 
-// External links
+
 ipcMain.on("open-external", (event, url) => {
   require("electron").shell.openExternal(url);
 });

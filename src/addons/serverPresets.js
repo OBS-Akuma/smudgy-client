@@ -35,19 +35,19 @@ const flash = (el) => {
 };
 
 const getMapNameFromSettings = (modal) => {
-  // Try to get the map code from the input
+
   const mapInput = modal.querySelector(".keybind-input .input");
   if (mapInput && mapInput.value) {
     try {
-      // Parse the map code to extract the mapName property
-      // The map code is likely a JSON string like {"mapName":"Acid", ...}
+
+
       const mapCode = mapInput.value;
       const parsedMap = JSON.parse(mapCode);
       if (parsedMap.mapName) {
         return parsedMap.mapName;
       }
     } catch (e) {
-      // If parsing fails, try to extract mapName using regex
+
       const match = mapInput.value.match(/["']mapName["']\s*:\s*["']([^"']+)["']/);
       if (match && match[1]) {
         return match[1];
@@ -55,7 +55,7 @@ const getMapNameFromSettings = (modal) => {
     }
   }
   
-  // Fallback: try to get from the select dropdown
+
   const mapSelect = modal.querySelector(".wrapper-input.select .input");
   if (mapSelect) {
     const selected = mapSelect.querySelector(".selected");
@@ -85,7 +85,7 @@ const snapshotSettings = (modal) => {
   const mapInput = modal.querySelector(".keybind-input .input");
   if (mapInput) data["__customMap"] = mapInput.value;
   
-  // Store the actual map name from the map code
+
   const mapName = getMapNameFromSettings(modal);
   if (mapName) data["__mapName"] = mapName;
   
@@ -116,12 +116,12 @@ const applySettings = (modal, data) => {
 };
 
 const getPresetNameFromData = (settings, index) => {
-  // Try to get the map name from stored __mapName
+
   if (settings.__mapName) {
     return settings.__mapName;
   }
   
-  // Fallback to Preset ${index + 1}
+
   return `Preset ${index + 1}`;
 };
 
@@ -315,7 +315,7 @@ const renderList = (modal) => {
     item.className = "kp-item";
     item.dataset.idx = String(i);
     
-    // Get the preset name based on map name or fallback to Preset ${i + 1}
+
     let displayName;
     if (preset.name && !preset.name.startsWith("Preset ")) {
       displayName = preset.name;
@@ -348,7 +348,7 @@ const renderList = (modal) => {
       const ps = loadPresets();
       const newSettings = snapshotSettings(modal);
       ps[i].settings = newSettings;
-      // Only auto-update name if it was previously a default Preset X name
+
       if (!ps[i].name || ps[i].name.startsWith("Preset ")) {
         const newName = getPresetNameFromData(newSettings, i);
         if (newName !== `Preset ${i + 1}`) {

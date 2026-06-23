@@ -57,7 +57,7 @@ const originalConsole = {
 };
 
 {
-  // Create a state object that syncs with settings
+
   const weaponState = {
     _wireframe: settings.weapon_wireframe ?? false,
     _rainbow: settings.weapon_rainbow ?? false,
@@ -80,7 +80,7 @@ const originalConsole = {
     set offsetZ(v) { this._offsetZ = v; settings.weapon_offset_z = v; }
   };
 
-  // Update the state when the event fires
+
   document.addEventListener("juice-settings-changed", ({ detail }) => {
     const { setting, value } = detail;
     if (setting === "weapon_wireframe")  weaponState.wireframe = value;
@@ -1236,7 +1236,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const handleFriends = () => {
     const settings = ipcRenderer.sendSync("get-settings");
 
-    // ─── Pin System ────────────────────────────────────────────────────────────
+
     let pinnedUsers = new Set();
     let pinnedUsersList = [];
 
@@ -1336,7 +1336,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const addDelete = friendRight.querySelector(".add-delete");
       if (!addDelete) return;
 
-      // Skip friend requests (have an ADD button)
+
       if (addDelete.querySelector(".add")) return;
 
       const pinBtn = document.createElement("div");
@@ -1379,7 +1379,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       sortFriendsList();
     };
 
-    // ─── Spectate Buttons credit: Dawn client (trust)
+
     const addSpectateButton = (div) => {
       if (div.nextElementSibling?.classList.contains("spectate-eye")) return;
 
@@ -1446,7 +1446,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
     };
 
-    // ─── Existing friends logic ────────────────────────────────────────────────
+
     document.addEventListener("click", (e) => {
       if (e.shiftKey && e.target.classList.contains("online")) {
         const online = e.target;
@@ -1461,7 +1461,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     });
 
-    // Load saved pins before the interval starts
+
     loadPinnedUsers();
 
     const interval = setInterval(() => {
@@ -1671,12 +1671,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
       }
 
-      // Process pin buttons and spectate buttons each tick
+
       processFriendsList();
       addSpectateButtons();
     }, 250);
 
-    // Also watch for DOM mutations to catch dynamically added friends
+
     const friendsContainer = document.querySelector(".friends");
     if (friendsContainer) {
       const friendsMutationObserver = new MutationObserver(() => {
@@ -1686,10 +1686,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       friendsMutationObserver.observe(friendsContainer, { childList: true, subtree: true });
     }
 
-    // Save pins before the page unloads
+
     window.addEventListener("beforeunload", savePinnedUsers);
 
-    // Expose pin system utilities globally for debugging
+
     window.pinSystem = {
       refresh: () => processFriendsList(),
       getPinned: () => [...pinnedUsersList],

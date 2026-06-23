@@ -42,10 +42,6 @@
           <i class="fas fa-code"></i>
           Plugins
         </div>
-        <div data-tab="about" class="juice tab">
-          <i class="fas fa-solid fa-circle-info"></i>
-          About/links
-        </div>
         <div data-tab="tools" class="juice tab">
           <i class="fas fa-screwdriver-wrench"></i>
           Tools
@@ -55,15 +51,13 @@
             <i class="fas fa-shirt"></i>
             Skins
           </div>
-          <div class="tools-subtab locked" data-tools-tab="player-lookup">
+          <div class="tools-subtab" data-tools-tab="player-lookup">
             <i class="fas fa-face-meh-blank"></i>
             Player Lookup
-            <i class="fas fa-lock tools-lock-icon"></i>
           </div>
-          <div class="tools-subtab locked" data-tools-tab="inventory-lookup">
+          <div class="tools-subtab" data-tools-tab="inventory-lookup">
             <i class="fas fa-boxes-stacked"></i>
             Inventory Lookup
-            <i class="fas fa-lock tools-lock-icon"></i>
           </div>
         </div>
       </div>
@@ -88,11 +82,14 @@
             <i class="fas fa-gun"></i>
             Guns
           </div>
-          <div class="swapper-subtab locked" data-swapper-tab="sounds">
+          <div class="swapper-subtab" data-swapper-tab="sounds">
             <i class="fas fa-volume-high"></i>
             Sounds
-            <i class="fas fa-lock tools-lock-icon"></i>
           </div>
+        </div>
+        <div data-tab="about" class="juice tab">
+          <i class="fas fa-solid fa-circle-info"></i>
+          About/links
         </div>
     </div>
     
@@ -140,6 +137,55 @@
           </div>
         </div>
       </div>
+
+<div class="option-group">
+  <div class="option">
+    <div class="left experimental">
+      <span>Oneko Cat</span>
+      <span class="description">A pixel cat that follows your cursor around the client</span>
+    </div>
+    <div class="checkbox">
+      <input
+        type="checkbox"
+        id="oneko_enabled"
+        data-setting="oneko_enabled"
+      />
+      <label for="oneko_enabled"></label>
+    </div>
+  </div>
+</div>
+
+
+<div class="option-group" id="oneko-suboptions">
+  <div class="option">
+    <div class="left">
+      <span>Oneko Variant</span>
+      <span class="description">Change the cat's appearance, for it to chnage You have to reload (f4)</span>
+    </div>
+    <select data-setting="oneko_variant" style="width: 140px;">
+      <option value="classic">Classic</option>
+      <option value="dog">Dog</option>
+      <option value="tora">Tora</option>
+      <option value="maia">Maia</option>
+      <option value="vaporwave">Vaporwave</option>
+    </select>
+  </div>
+  <div class="option">
+    <div class="left">
+      <span>Kuro Neko</span>
+      <span class="description">Invert colors (black cat mode)</span>
+    </div>
+    <div class="checkbox">
+      <input
+        type="checkbox"
+        id="oneko_kuroneko"
+        data-setting="oneko_kuroneko"
+      />
+      <label for="oneko_kuroneko"></label>
+    </div>
+  </div>
+</div>
+
       <div class="option-group">  
         <div class="option">
           <div class="left">
@@ -299,20 +345,6 @@
       </div>
 
         <div class="option-group">
-        <div class="option">
-          <div class="left">
-            <span>lobby Ui Size</span>
-            <span class="description">Changes the size of the lobby UI</span>
-          </div>
-          <input
-            type="range"
-            min="0.7"
-            max="1.2"
-            step="0.01"
-            class="range"
-            data-setting="server_zoom"
-          />
-        </div>
 <div class="option">
   <div class="left">
     <span>Menu Size</span>
@@ -468,7 +500,7 @@
   </div>
 </div>
 
-<!-- Kirka Badges Setting -->
+
 <div class="option-group">
   <div class="option">
     <div class="left experimental">
@@ -488,7 +520,7 @@
   </div>
 </div>
 
-<!-- Kirka Badges Sub-options -->
+
 <div class="option-group" id="kirka-badges-suboptions">
   <div class="option">
     <div class="left">
@@ -572,6 +604,20 @@
         data-setting="interface_bounds"
       />
     </div>
+            <div class="option">
+          <div class="left">
+            <span>lobby Ui Size</span>
+            <span class="description">Changes the size of the lobby UI</span>
+          </div>
+          <input
+            type="range"
+            min="0.7"
+            max="1.2"
+            step="0.01"
+            class="range"
+            data-setting="server_zoom"
+          />
+        </div>
   </div>
 
   <div class="option-group">
@@ -872,7 +918,7 @@
       </div>
     </div>
 
-    <!-- INSTALLATION TAB - Plugin installation goes here -->
+
     <div id="installation-options" class="juice options">
       <div class="option-group">
         <div class="option">
@@ -1038,6 +1084,8 @@
           <p>- ulpiano for the SmudgyAssets</p>
           <p>- AwesomeSam for the .rank Profile backgrounds (note: I didn't ask to use this ;3)</p>
           <p>- SniperGecko for grammar</p>
+          <P>- Skywalk for the updated Custom skin lik script ;3 (fixed fanny)</P>
+          <p>- kyrie25 for the oneko script</p>
         </div>
       </div>
       <div class="option-group">
@@ -1258,7 +1306,7 @@
         <div id="news-feed" style="display:none;"></div>
       </div>
     </div>
- <!-- Swapper default panel -->
+
     <div id="swapper-options" class="juice options">
       <div class="option-group">
         <div class="option">
@@ -1279,7 +1327,7 @@
     </div>
     </div>
 
-    <!-- Swapper Guns panel -->
+
     <div id="swapper-guns" class="juice options" style="display:none;">
       <div class="skins-header">
         <div class="skins-search-wrap">
@@ -1297,7 +1345,7 @@
       </div>
       <div id="swapper-grid" class="skins-grid" style="display:none;"></div>
 
-      <!-- Weapon picker modal -->
+
       <div id="swapper-weapon-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:100000; align-items:center; justify-content:center;">
         <div class="swapper-modal-inner" style="background:var(--dark); border-radius:12px; padding:24px; max-width:700px; width:90%; max-height:90vh; overflow-y:auto; position:relative; border:2px solid var(--border);">
           <div class="swapper-modal-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
@@ -1352,7 +1400,7 @@
       </div>
     </div>
 
-    <!-- Swapper Sounds panel -->
+
     <div id="swapper-sounds" class="juice options" style="display:none;">
       <div class="option-group">
         <div class="option">
@@ -1362,25 +1410,9 @@
           </div>
         </div>
       </div>
-      <div class="option-group tools-locked-content">
-        <div class="tools-locked-overlay">
-          <i class="fas fa-lock"></i>
-          <span>Sound swapping is currently in development and not yet available.</span>
-        </div>
-        <div class="option tools-locked-placeholder">
-          <span>Sound Pack</span>
-          <input type="text" placeholder="Browse sound packs..." disabled />
-        </div>
-        <div class="option tools-locked-placeholder">
-          <button class="juice-button" disabled>
-            <span class="text">Apply Sound Pack</span>
-            <div class="custom-border"></div>
-          </button>
-        </div>
-      </div>
     </div>
 
-    <!-- Tools tab content panels -->
+
     <div id="tools-options" class="juice options">
       <div class="option-group">
         <div class="option">
@@ -1401,26 +1433,6 @@
           </div>
         </div>
       </div>
-      <div class="option-group tools-locked-content">
-        <div class="tools-locked-overlay">
-          <i class="fas fa-lock"></i>
-          <span>This feature is currently in development and not yet available.</span>
-        </div>
-        <div class="option tools-locked-placeholder">
-          <span>Username</span>
-          <input type="text" placeholder="Search by username..." disabled />
-        </div>
-        <div class="option tools-locked-placeholder">
-          <span>Player ID</span>
-          <input type="text" placeholder="Search by ID..." disabled />
-        </div>
-        <div class="option tools-locked-placeholder">
-          <button class="juice-button" disabled>
-            <span class="text">Look Up</span>
-            <div class="custom-border"></div>
-          </button>
-        </div>
-      </div>
     </div>
 
     <div id="tools-inventory-lookup" class="juice options" style="display:none;">
@@ -1430,30 +1442,6 @@
             <span>Inventory Lookup</span>
             <span class="description tools-wip-badge"><i class="fas fa-flask"></i> In Development, coming soon</span>
           </div>
-        </div>
-      </div>
-      <div class="option-group tools-locked-content">
-        <div class="tools-locked-overlay">
-          <i class="fas fa-lock"></i>
-          <span>This feature is currently in development and not yet available.</span>
-        </div>
-        <div class="option tools-locked-placeholder">
-          <span>Player</span>
-          <input type="text" placeholder="Enter username or ID..." disabled />
-        </div>
-        <div class="option tools-locked-placeholder">
-          <span>Filter by Type</span>
-          <select disabled>
-            <option>All Items</option>
-            <option>Weapons</option>
-            <option>Skins</option>
-          </select>
-        </div>
-        <div class="option tools-locked-placeholder">
-          <button class="juice-button" disabled>
-            <span class="text">View Inventory</span>
-            <div class="custom-border"></div>
-          </button>
         </div>
       </div>
     </div>

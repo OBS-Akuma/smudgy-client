@@ -22,7 +22,7 @@
     "discord_rpc": true,
     "css_link": "",
     "css_enabled": false,
-    "advanced_css": ".button.guest-login-btn,.daily-rewards-btn,.special-message-home {    display: none !important;} /* might want to keep this css, if you want to add css add it to the line below */",
+    "advanced_css": ".button.guest-login-btn,.daily-rewards-btn,.special-message-home{display:none !important}",
     "in_process_gpu": false,
     "menu_keybind": "ShiftRight",
     "menu_theme": "smudgy",
@@ -63,7 +63,11 @@
     "subnames_enabled": false,
     "kirka_badges_enabled": false,
     "kirka_badges_size": 16,
-    "kirka_badges_brackets": true
+    "kirka_badges_brackets": true,
+    "oneko_enabled": false,
+    "oneko_variant": "classic", 
+    "oneko_kuroneko": false,
+    "oneko_force_sleep": false
   },
   "allowed_urls": [
     "https://kirka.io/",

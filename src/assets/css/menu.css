@@ -19,13 +19,13 @@
     --opacity-quarter: 255, 255, 255, 0.25;
 }
 .menu[data-theme="trans"] {
-    --dark: 245, 169, 184;       /* pink */
-    --light: 0, 0, 0;       /* blue */
-    --orange: 91, 206, 250;      /* blue */
-    --green: 245, 169, 184;      /* pink */
-    --blue: 91, 206, 250;        /* blue */
-    --red: 245, 169, 184;        /* pink */
-    --purple: 138, 43, 226;      /* kept purple as accent */
+    --dark: 245, 169, 184;       
+    --light: 0, 0, 0;       
+    --orange: 91, 206, 250;      
+    --green: 245, 169, 184;      
+    --blue: 91, 206, 250;        
+    --red: 245, 169, 184;        
+    --purple: 138, 43, 226;      
     --hover-dark: 245, 169, 184, 0.3;
     --hover-light: 91, 206, 250, 0.3;
     --border: 0, 0, 0, 0.15;
@@ -1036,7 +1036,7 @@
     font-style: normal;
     font-display: swap;
 }
-/* ===== Assets Tab ===== */
+
 .assets-tabs {
     display: flex;
     gap: 6px;
@@ -1233,7 +1233,7 @@
     font-size: 0.7rem !important;
     height: 2rem !important;
 }
-/* ===== Assets Reload Toast ===== */
+
 #assets-reload-toast {
     display: flex;
     align-items: center;
@@ -1514,7 +1514,7 @@
   transform: translateY(-2px);
 }
 
-/* Rarity-tinted left border accent */
+
 .skin-card.skin-rarity-common     { border-left: 3px solid rgba(140, 140, 140, 0.8); }
 .skin-card.skin-rarity-uncommon   { border-left: 3px solid rgba(76,  175, 80,  0.8); }
 .skin-card.skin-rarity-rare       { border-left: 3px solid rgba(33,  150, 243, 0.8); }
@@ -1522,7 +1522,7 @@
 .skin-card.skin-rarity-legendary  { border-left: 3px solid rgba(255, 152, 0,   0.8); }
 .skin-card.skin-rarity-mythical   { border-left: 3px solid rgba(244, 67,  54,  0.8); }
 
-/* Hover glow matching rarity */
+
 .skin-card.skin-rarity-common:hover     { border-color: rgba(140, 140, 140, 0.5); box-shadow: 0 0 0 1px rgba(140, 140, 140, 0.15); }
 .skin-card.skin-rarity-uncommon:hover   { border-color: rgba(76,  175, 80,  0.5); box-shadow: 0 0 0 1px rgba(76,  175, 80,  0.15); }
 .skin-card.skin-rarity-rare:hover       { border-color: rgba(33,  150, 243, 0.5); box-shadow: 0 0 0 1px rgba(33,  150, 243, 0.15); }
@@ -1530,7 +1530,7 @@
 .skin-card.skin-rarity-legendary:hover  { border-color: rgba(255, 152, 0,   0.5); box-shadow: 0 0 0 1px rgba(255, 152, 0,   0.15); }
 .skin-card.skin-rarity-mythical:hover   { border-color: rgba(244, 67,  54,  0.5); box-shadow: 0 0 0 1px rgba(244, 67,  54,  0.15); }
 
-/* ── Image area ── */
+
 
 .skin-img-wrap {
   position: relative;
@@ -1568,7 +1568,7 @@
   font-size: 2rem;
 }
 
-/* ── Rarity badge (top-right corner) ── */
+
 
 .skin-rarity-badge {
   position: absolute;
@@ -1590,7 +1590,7 @@
 .skin-rarity-badge.skin-rarity-legendary { background: rgba(255, 152, 0,   0.2); color: rgba(255, 152, 0,   0.9); }
 .skin-rarity-badge.skin-rarity-mythical  { background: rgba(244, 67,  54,  0.2); color: rgba(244, 67,  54,  0.9); }
 
-/* ── Info block ── */
+
 
 .skin-info {
   padding: 8px 10px 10px;
@@ -1792,7 +1792,7 @@
   cursor: not-allowed;
 }
 
-/* Uninstall button specific styling */
+
 .plugin-uninstall-btn {
   background: rgba(var(--red), 0.1) !important;
   border-color: rgba(var(--red), 0.3) !important;
@@ -1906,7 +1906,7 @@
   min-width: 150px;
 }
 
-/* Responsive */
+
 @media (max-width: 768px) {
   .plugins-grid {
     grid-template-columns: 1fr;
@@ -1964,9 +1964,9 @@
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8) !important;
 }
 
-#s/* Fix for swapper card - ensure buttons are visible */
+#s
 .skin-card {
-  min-height: 280px !important; /* Increased height to fit both buttons */
+  min-height: 280px !important; 
   padding-bottom: 8px !important;
 }
 
@@ -1986,12 +1986,12 @@
   font-size: 0.75rem !important;
 }
 
-/* Make sure the remove button is visible */
+
 .skin-card.installed .swapper-remove-btn {
   display: flex !important;
 }
 
-/* Ensure the card expands to fit content */
+
 .skin-card {
   display: flex !important;
   flex-direction: column !important;

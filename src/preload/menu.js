@@ -77,17 +77,20 @@ init() {
     this.initSubnames();
   }
   
-    if (this.settings["kirka_badges_enabled"]) {
+  if (this.settings["kirka_badges_enabled"]) {
     this.initKirkaBadges();
   }
   
-
   if (this.settings["oneko_enabled"]) {
     setTimeout(() => {
       this.initOneko();
     }, 500);
   }
   
+  // Initialize Key Watcher if enabled
+  if (this.settings["key_watcher_enabled"]) {
+    this.initKeyWatcher();
+  }
 
   window.addEventListener('beforeunload', () => {
     this.stopFriendProfileChecking();
@@ -95,6 +98,7 @@ init() {
     this.stopSubnames();
     this.stopKirkaBadges();
     this.removeOneko();
+    this.removeKeyWatcher();
   });
   
   this.localStorage.getItem("juice-menu-tab")
@@ -106,36 +110,35 @@ init() {
     : this.handleTabChange(this.menu.querySelector(".juice.tab"));
 }
 
-  setVersion() {
-    this.menu.querySelectorAll(".ver").forEach((element) => {
-      element.innerText = `Version ${version}`;
-    });
-  }
+setVersion() {
+  this.menu.querySelectorAll(".ver").forEach((element) => {
+    element.innerText = `Version ${version}`;
+  });
+}
 
-  setUser() {
-    const user = JSON.parse(this.localStorage.getItem("current-user"));
-    if (user) {
-      this.menu.querySelector(".user").innerText = `${user.wNmnw}#${user.wMWWm}`;
-    }
+setUser() {
+  const user = JSON.parse(this.localStorage.getItem("current-user"));
+  if (user) {
+    this.menu.querySelector(".user").innerText = `${user.wNmnw}#${user.wMWWm}`;
   }
+}
 
-  setKeybind() {
-    this.menu.querySelector(
-      ".keybind"
-    ).innerText = `${this.settings.menu_keybind} to toggle the client menu `;
-    if (!this.localStorage.getItem("juice-menu")) {
-      this.localStorage.setItem(
-        "juice-menu",
-        this.menuToggle.getAttribute("data-active")
-      );
-    } else {
-      this.menuToggle.setAttribute(
-        "data-active",
-        this.localStorage.getItem("juice-menu")
-      );
-    }
+setKeybind() {
+  this.menu.querySelector(
+    ".keybind"
+  ).innerText = `${this.settings.menu_keybind} to toggle the client menu `;
+  if (!this.localStorage.getItem("juice-menu")) {
+    this.localStorage.setItem(
+      "juice-menu",
+      this.menuToggle.getAttribute("data-active")
+    );
+  } else {
+    this.menuToggle.setAttribute(
+      "data-active",
+      this.localStorage.getItem("juice-menu")
+    );
   }
-
+}
   setTheme() {
     const menuEl = this.menu.querySelector(".menu");
     menuEl.setAttribute("data-theme", this.settings.menu_theme);
@@ -438,7 +441,7 @@ init() {
     });
   }
 
-  initMenu() {
+initMenu() {
   const inputs = this.menu.querySelectorAll("input[data-setting]");
   const textareas = this.menu.querySelectorAll("textarea[data-setting]");
   const selects = this.menu.querySelectorAll("select[data-setting]");
@@ -455,80 +458,133 @@ init() {
     kirka_badges_brackets: true,
     oneko_enabled: false,
     oneko_variant: "classic",
-    oneko_kuroneko: false
+    oneko_kuroneko: false,
+    key_watcher_enabled: false,
+    key_watcher_pos_x: 14,  // Default left position (14px)
+    key_watcher_pos_y: 14,  // Default top position (14px)
+    key_watcher_active_bg: "#ffffff",
+    key_watcher_active_text: "#ffffff",
+    key_watcher_inactive_bg: "#262626",
+    key_watcher_inactive_text: "#aaaaaa",
   };
 
-    inputs.forEach((input) => {
-      const setting = input.dataset.setting;
-      const type = input.type;
-      const value = this.settings[setting] ?? settingDefaults[setting];
-      if (type === "checkbox") {
-        input.checked = value ?? false;
-      } else {
-        input.value = value ?? "";
-      }
-    });
-
-    selects.forEach((select) => {
-      const setting = select.dataset.setting;
-      const value = this.settings[setting] ?? settingDefaults[setting];
-      select.value = value;
-    });
-
-    textareas.forEach((textarea) => {
-      const setting = textarea.dataset.setting;
-      const value = this.settings[setting] ?? settingDefaults[setting];
-      textarea.value = value;
-    });
-
-    const serverZoom = this.settings["server_zoom"] ?? 1;
-    this.applyServerZoom(serverZoom);
-
-    const clientMenuSize = this.settings["client_menu_size"] ?? 1;
-    this.applyClientZoom(clientMenuSize);
-
-    if (this.settings["endgame_message_enabled"]) {
-      this.injectEndGameMessageScript();
+  inputs.forEach((input) => {
+    const setting = input.dataset.setting;
+    const type = input.type;
+    const value = this.settings[setting] ?? settingDefaults[setting];
+    if (type === "checkbox") {
+      input.checked = value ?? false;
+    } else if (type === "color") {
+      // For color inputs, set the value and store default
+      const colorValue = value || settingDefaults[setting] || "#ffffff";
+      input.value = colorValue;
+      input.dataset.defaultValue = colorValue;
+    } else {
+      input.value = value ?? "";
     }
+  });
 
-    if (this.settings["always_show_ingame_menu"]) {
-      this.injectAlwaysShowIngameMenu();
-    }
+  selects.forEach((select) => {
+    const setting = select.dataset.setting;
+    const value = this.settings[setting] ?? settingDefaults[setting];
+    select.value = value;
+  });
+
+  textareas.forEach((textarea) => {
+    const setting = textarea.dataset.setting;
+    const value = this.settings[setting] ?? settingDefaults[setting];
+    textarea.value = value;
+  });
+
+  const serverZoom = this.settings["server_zoom"] ?? 1;
+  this.applyServerZoom(serverZoom);
+
+  const clientMenuSize = this.settings["client_menu_size"] ?? 1;
+  this.applyClientZoom(clientMenuSize);
+
+  if (this.settings["endgame_message_enabled"]) {
+    this.injectEndGameMessageScript();
   }
 
-  applyServerZoom(value) {
-    let styleEl = document.getElementById("juice-server-zoom");
-    if (!styleEl) {
-      styleEl = document.createElement("style");
-      styleEl.id = "juice-server-zoom";
-      document.head.appendChild(styleEl);
-    }
-    styleEl.innerHTML = `
-      .right-interface, 
-      .play-content, 
-      .players-lobby, 
-      .heads[data-v-00ce7b25], 
-      .logo, 
-      .playerholderelement { 
-        zoom: ${value}; 
-      }
-    `;
+  if (this.settings["always_show_ingame_menu"]) {
+    this.injectAlwaysShowIngameMenu();
   }
 
-  applyClientZoom(value) {
-    let styleEl = document.getElementById("juice-client-zoom");
-    if (!styleEl) {
-      styleEl = document.createElement("style");
-      styleEl.id = "juice-client-zoom";
-      document.head.appendChild(styleEl);
-    }
-    styleEl.innerHTML = `
-      .menu {
-        transform: scale(${value}) !important;
-        transform-origin: top left !important;
-      }
-    `;
+  // Show/hide oneko suboptions based on setting
+  const onekoSuboptions = this.menu.querySelector("#oneko-suboptions");
+  if (onekoSuboptions) {
+    onekoSuboptions.style.display = this.settings["oneko_enabled"] ? '' : 'none';
   }
+
+  // Show/hide kirka badges suboptions based on setting
+  const kirkaBadgesSuboptions = this.menu.querySelector("#kirka-badges-suboptions");
+  if (kirkaBadgesSuboptions) {
+    kirkaBadgesSuboptions.style.display = this.settings["kirka_badges_enabled"] ? '' : 'none';
+  }
+
+  // Sync all color inputs to ensure they show the current saved values
+  this.syncColorInputs();
+
+  // Initialize key watcher if enabled
+  if (this.settings["key_watcher_enabled"]) {
+    this.initKeyWatcher();
+  }
+}
+
+// Add this helper method to sync color inputs
+syncColorInputs() {
+  const colorInputs = this.menu.querySelectorAll('input[type="color"][data-setting]');
+  colorInputs.forEach((input) => {
+    const setting = input.dataset.setting;
+    const value = this.settings[setting];
+    if (value) {
+      input.value = value;
+    } else {
+      // If no value in settings, use the default from data attribute or set a default
+      const defaultValue = input.dataset.defaultValue || "#ffffff";
+      input.value = defaultValue;
+      // Also save it to settings if it doesn't exist
+      if (!this.settings[setting]) {
+        this.settings[setting] = defaultValue;
+        ipcRenderer.send("update-setting", setting, defaultValue);
+      }
+    }
+  });
+}
+
+applyServerZoom(value) {
+  let styleEl = document.getElementById("juice-server-zoom");
+  if (!styleEl) {
+    styleEl = document.createElement("style");
+    styleEl.id = "juice-server-zoom";
+    document.head.appendChild(styleEl);
+  }
+  styleEl.innerHTML = `
+    .right-interface, 
+    .play-content, 
+    .players-lobby, 
+    .heads[data-v-00ce7b25], 
+    .logo, 
+    .playerholderelement { 
+      zoom: ${value}; 
+    }
+  `;
+}
+
+applyClientZoom(value) {
+  let styleEl = document.getElementById("juice-client-zoom");
+  if (!styleEl) {
+    styleEl = document.createElement("style");
+    styleEl.id = "juice-client-zoom";
+    document.head.appendChild(styleEl);
+  }
+  styleEl.innerHTML = `
+    .menu {
+      transform: scale(${value}) !important;
+      transform-origin: top left !important;
+    }
+  `;
+}
 
 
 
@@ -889,9 +945,24 @@ escapeHtml(str) {
 handleMenuInputChange(input) {
   const setting = input.dataset.setting;
   const type = input.type;
-  const value = type === "checkbox" ? input.checked : input.value;
-  this.settings[setting] = value;
-  ipcRenderer.send("update-setting", setting, value);
+  let value = type === "checkbox" ? input.checked : input.value;
+  
+  // For color inputs, ensure hex value is properly formatted
+  if (type === "color") {
+    // Color inputs already return hex with #, but just in case
+    if (value && !value.startsWith('#')) {
+      value = '#' + value;
+    }
+    // Ensure we save the value
+    this.settings[setting] = value;
+    ipcRenderer.send("update-setting", setting, value);
+    
+    // Update the input's dataset default value to match
+    input.dataset.defaultValue = value;
+  } else {
+    this.settings[setting] = value;
+    ipcRenderer.send("update-setting", setting, value);
+  }
 
   const event = new CustomEvent("juice-settings-changed", {
     detail: { setting: setting, value: value },
@@ -940,6 +1011,10 @@ handleMenuInputChange(input) {
   }
 
   if (setting === "kirka_badges_enabled") {
+    const kirkaBadgesSuboptions = this.menu.querySelector("#kirka-badges-suboptions");
+    if (kirkaBadgesSuboptions) {
+      kirkaBadgesSuboptions.style.display = value ? '' : 'none';
+    }
     if (value) {
       this.initKirkaBadges();
     } else {
@@ -954,44 +1029,70 @@ handleMenuInputChange(input) {
     }
   }
 
-
-if (setting === "oneko_enabled") {
-
-  const onekoSuboptions = this.menu.querySelector("#oneko-suboptions");
-  if (onekoSuboptions) {
-    onekoSuboptions.style.display = value ? '' : 'none';
-  }
-  
-  if (value) {
-    this.initOneko();
-  } else {
-    this.removeOneko();
-  }
-}
-
-if (setting === "oneko_variant" || setting === "oneko_kuroneko") {
-
-  if (window.__onekoSettings) {
-    window.__onekoSettings.variant = this.settings["oneko_variant"] || "classic";
-    window.__onekoSettings.kuroNeko = this.settings["oneko_kuroneko"] || false;
-  }
-  
-
-  if (window.__onekoUpdateSettings) {
-    window.__onekoUpdateSettings({
-      variant: this.settings["oneko_variant"] || "classic",
-      kuroNeko: this.settings["oneko_kuroneko"] || false
-    });
-  } else {
-
-    this.removeOneko();
-    if (this.settings["oneko_enabled"]) {
-      setTimeout(() => {
-        this.initOneko();
-      }, 100);
+  if (setting === "oneko_enabled") {
+    const onekoSuboptions = this.menu.querySelector("#oneko-suboptions");
+    if (onekoSuboptions) {
+      onekoSuboptions.style.display = value ? '' : 'none';
+    }
+    
+    if (value) {
+      this.initOneko();
+    } else {
+      this.removeOneko();
     }
   }
+
+  if (setting === "oneko_variant" || setting === "oneko_kuroneko") {
+    if (window.__onekoSettings) {
+      window.__onekoSettings.variant = this.settings["oneko_variant"] || "classic";
+      window.__onekoSettings.kuroNeko = this.settings["oneko_kuroneko"] || false;
+    }
+
+    if (window.__onekoUpdateSettings) {
+      window.__onekoUpdateSettings({
+        variant: this.settings["oneko_variant"] || "classic",
+        kuroNeko: this.settings["oneko_kuroneko"] || false
+      });
+    } else {
+      this.removeOneko();
+      if (this.settings["oneko_enabled"]) {
+        setTimeout(() => {
+          this.initOneko();
+        }, 100);
+      }
+    }
+  }
+
+// Key Watcher settings
+if (setting === "key_watcher_enabled") {
+  if (value) {
+    this.initKeyWatcher();
+  } else {
+    this.removeKeyWatcher();
+  }
 }
+
+if (setting === "key_watcher_pos_x" || setting === "key_watcher_pos_y") {
+  if (this.settings["key_watcher_enabled"] && window.__updateKeyPosition) {
+    const x = this.settings["key_watcher_pos_x"] ?? 14;
+    const y = this.settings["key_watcher_pos_y"] ?? 14;
+    window.__updateKeyPosition(x, y);
+  }
+}
+
+if (setting === "key_watcher_active_bg" || 
+    setting === "key_watcher_active_text" || 
+    setting === "key_watcher_inactive_bg" || 
+    setting === "key_watcher_inactive_text") {
+  if (this.settings["key_watcher_enabled"] && window.__updateKeyColors) {
+    const activeBg = this.settings["key_watcher_active_bg"] || "#ffffff";
+    const activeText = this.settings["key_watcher_active_text"] || "#ffffff";
+    const inactiveBg = this.settings["key_watcher_inactive_bg"] || "#262626";
+    const inactiveText = this.settings["key_watcher_inactive_text"] || "#aaaaaa";
+    window.__updateKeyColors(activeBg, activeText, inactiveBg, inactiveText);
+  }
+}
+
   if (
     setting === "hide_smudgy_watermark" ||
     setting === "watermark_text" ||
@@ -3429,8 +3530,268 @@ stopKirkaBadges() {
   });
 }
 
+initKeyWatcher() {
+  const enabled = this.settings["key_watcher_enabled"] ?? false;
+  if (!enabled) {
+    this.removeKeyWatcher();
+    return;
+  }
 
+  // Remove existing watcher if present
+  this.removeKeyWatcher();
 
+  // Get settings
+  const posX = this.settings["key_watcher_pos_x"] ?? 14;
+  const posY = this.settings["key_watcher_pos_y"] ?? 14;
+  const activeBgColor = this.settings["key_watcher_active_bg"] || "#ffffff";
+  const activeTextColor = this.settings["key_watcher_active_text"] || "#ffffff";
+  const inactiveBgColor = this.settings["key_watcher_inactive_bg"] || "#262626";
+  const inactiveTextColor = this.settings["key_watcher_inactive_text"] || "#aaaaaa";
+
+  // Inject script
+  const script = document.createElement("script");
+  script.id = "juice-key-watcher-script";
+  script.textContent = `
+    (function() {
+      if (window.__keyWatcherRunning) return;
+      window.__keyWatcherRunning = true;
+
+      // Store current settings
+      let currentPosX = ${posX};
+      let currentPosY = ${posY};
+      let currentActiveBg = "${activeBgColor}";
+      let currentActiveText = "${activeTextColor}";
+      let currentInactiveBg = "${inactiveBgColor}";
+      let currentInactiveText = "${inactiveTextColor}";
+
+      function shouldShow() {
+        return window.location.pathname.includes('/games/');
+      }
+
+      function updatePosition() {
+        const ko = document.getElementById('__ko');
+        if (!ko) return;
+        ko.style.left = currentPosX + 'px';
+        ko.style.top = currentPosY + 'px';
+      }
+
+      function updateAllKeys() {
+        document.querySelectorAll('#__ko .k').forEach(k => {
+          if (k.classList.contains('on')) {
+            k.style.background = currentActiveBg;
+            k.style.color = currentActiveText;
+          } else {
+            k.style.background = currentInactiveBg;
+            k.style.color = currentInactiveText;
+          }
+        });
+      }
+
+      function buildOverlay() {
+        if (document.getElementById('__ko')) return;
+
+        const el = document.createElement('div');
+        el.id = '__ko';
+
+        function makeKey(label, classes) {
+          const k = document.createElement('div');
+          k.className = 'k' + (classes ? ' ' + classes : '');
+          k.textContent = label;
+          k.style.background = currentInactiveBg;
+          k.style.color = currentInactiveText;
+          return k;
+        }
+
+        function makeRow(...keys) {
+          const r = document.createElement('div');
+          r.className = 'r';
+          keys.forEach(k => r.appendChild(k));
+          return r;
+        }
+
+        el.appendChild(makeRow(makeKey('W')));
+        el.appendChild(makeRow(makeKey('A'), makeKey('S'), makeKey('D')));
+        el.appendChild(makeRow(makeKey('SPACE', 'wide'), makeKey('SHIFT', 'medium')));
+        el.appendChild(makeRow(makeKey('RMB', 'medium'), makeKey('LMB', 'medium')));
+
+        const labels = ['w','a','s','d','space','shift','rmb','lmb'];
+        el.querySelectorAll('.k').forEach((k, i) => {
+          k.id = 'ko-' + labels[i];
+        });
+
+        // Set position
+        el.style.left = currentPosX + 'px';
+        el.style.top = currentPosY + 'px';
+
+        // Hide initially if on games page
+        if (shouldShow()) {
+          el.style.display = '';
+        } else {
+          el.style.display = 'none';
+        }
+
+        document.body.appendChild(el);
+
+        // Update colors when settings change
+        window.__updateKeyColors = function(activeBg, activeText, inactiveBg, inactiveText) {
+          currentActiveBg = activeBg;
+          currentActiveText = activeText;
+          currentInactiveBg = inactiveBg;
+          currentInactiveText = inactiveText;
+          updateAllKeys();
+        };
+
+        // Update position when settings change
+        window.__updateKeyPosition = function(x, y) {
+          currentPosX = x;
+          currentPosY = y;
+          updatePosition();
+        };
+      }
+
+      function destroyOverlay() {
+        document.getElementById('__ko')?.remove();
+        window.__updateKeyColors = null;
+        window.__updateKeyPosition = null;
+      }
+
+      const map = {
+        KeyW: 'ko-w', KeyA: 'ko-a', KeyS: 'ko-s', KeyD: 'ko-d',
+        Space: 'ko-space', ShiftLeft: 'ko-shift', ShiftRight: 'ko-shift'
+      };
+
+      const on  = id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.classList.add('on');
+          el.style.background = currentActiveBg;
+          el.style.color = currentActiveText;
+        }
+      };
+      const off = id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.classList.remove('on');
+          el.style.background = currentInactiveBg;
+          el.style.color = currentInactiveText;
+        }
+      };
+
+      document.addEventListener('keydown', e => {
+        if (map[e.code]) on(map[e.code]);
+      });
+      document.addEventListener('keyup', e => {
+        if (map[e.code]) off(map[e.code]);
+      });
+      document.addEventListener('mousedown', e => {
+        if (e.button === 0) on('ko-lmb');
+        if (e.button === 2) on('ko-rmb');
+      });
+      document.addEventListener('mouseup', e => {
+        if (e.button === 0) off('ko-lmb');
+        if (e.button === 2) off('ko-rmb');
+      });
+
+      function checkUrl() {
+        const ko = document.getElementById('__ko');
+        if (!ko) return;
+        if (shouldShow()) {
+          ko.style.display = '';
+        } else {
+          ko.style.display = 'none';
+          // Reset all keys when hiding
+          document.querySelectorAll('#__ko .k').forEach(k => {
+            k.classList.remove('on');
+            k.style.background = currentInactiveBg;
+            k.style.color = currentInactiveText;
+          });
+        }
+      }
+
+      // Intercept pushState for SPA navigation
+      const _push = history.pushState.bind(history);
+      history.pushState = function (...args) {
+        _push(...args);
+        checkUrl();
+      };
+
+      const _replace = history.replaceState.bind(history);
+      history.replaceState = function (...args) {
+        _replace(...args);
+        checkUrl();
+      };
+
+      window.addEventListener('popstate', checkUrl);
+
+      // Build overlay initially
+      buildOverlay();
+
+      // Cleanup function
+      window.__keyWatcherCleanup = function() {
+        destroyOverlay();
+        window.__keyWatcherRunning = false;
+        window.__keyWatcherCleanup = null;
+        window.__updateKeyColors = null;
+        window.__updateKeyPosition = null;
+      };
+
+      console.log('[KeyWatcher] Initialized with position:', currentPosX, currentPosY);
+    })();
+  `;
+
+  document.head.appendChild(script);
+}
+
+removeKeyWatcher() {
+  // Remove script
+  const script = document.getElementById('juice-key-watcher-script');
+  if (script) script.remove();
+
+  // Cleanup if available
+  if (window.__keyWatcherCleanup) {
+    window.__keyWatcherCleanup();
+  }
+
+  // Remove overlay
+  const overlay = document.getElementById('__ko');
+  if (overlay) overlay.remove();
+
+  window.__keyWatcherRunning = false;
+}
+
+removeKeyWatcher() {
+  // Remove script
+  const script = document.getElementById('juice-key-watcher-script');
+  if (script) script.remove();
+
+  // Cleanup if available
+  if (window.__keyWatcherCleanup) {
+    window.__keyWatcherCleanup();
+  }
+
+  // Remove overlay
+  const overlay = document.getElementById('__ko');
+  if (overlay) overlay.remove();
+
+  window.__keyWatcherRunning = false;
+}
+
+removeKeyWatcher() {
+  // Remove script
+  const script = document.getElementById('juice-key-watcher-script');
+  if (script) script.remove();
+
+  // Cleanup if available
+  if (window.__keyWatcherCleanup) {
+    window.__keyWatcherCleanup();
+  }
+
+  // Remove overlay
+  const overlay = document.getElementById('__ko');
+  if (overlay) overlay.remove();
+
+  window.__keyWatcherRunning = false;
+}
   initSkins() {
     const SKINS_API   = "https://opensheet.elk.sh/1pxMSoaSo8FYv-OIJ26HpSj8EDy7EDRmatHyQW24o6E4/1";
     const RENDERS_API = "https://raw.githubusercontent.com/OBS-Akuma/KirkaSkins/refs/heads/main/itemrenders.json";

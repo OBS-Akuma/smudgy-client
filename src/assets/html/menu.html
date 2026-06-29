@@ -733,7 +733,80 @@
       </button>
     </div>
   </div>
+  <!-- Key Watcher Settings -->
+<div class="option-group">
+  <div class="option">
+    <div class="left experimental">
+      <span>Key Watcher</span>
+      <span class="description">Shows WASD, Space, Shift, and mouse buttons when in-game</span>
+    </div>
+    <div class="checkbox">
+      <input
+        type="checkbox"
+        id="key_watcher_enabled"
+        data-setting="key_watcher_enabled"
+      />
+      <label for="key_watcher_enabled"></label>
+    </div>
+  </div>
+  <div class="option">
+    <div class="left">
+      <span>Position X</span>
+      <span class="description">Horizontal position (0-100%)</span>
+    </div>
+    <input
+      type="range"
+      min="0"
+      max="1750"
+      step="0.5"
+      class="range"
+      data-setting="key_watcher_pos_x"
+    />
+  </div>
+  <div class="option">
+    <div class="left">
+      <span>Position Y</span>
+      <span class="description">Vertical position (0-100%)</span>
+    </div>
+    <input
+      type="range"
+      min="0"
+      max="860"
+      step="0.5"
+      class="range"
+      data-setting="key_watcher_pos_y"
+    />
+  </div>
+  <div class="option">
+    <div class="left">
+      <span>Active Background</span>
+      <span class="description">Background color when a key is pressed</span>
+    </div>
+    <input type="color" data-setting="key_watcher_active_bg" value="#ffffff" />
+  </div>
+  <div class="option">
+    <div class="left">
+      <span>Active Text</span>
+      <span class="description">Text color when a key is pressed</span>
+    </div>
+    <input type="color" data-setting="key_watcher_active_text" value="#ffffff" />
+  </div>
+  <div class="option">
+    <div class="left">
+      <span>Inactive Background</span>
+      <span class="description">Background color when a key is not pressed</span>
+    </div>
+    <input type="color" data-setting="key_watcher_inactive_bg" value="#262626" />
+  </div>
+  <div class="option">
+    <div class="left">
+      <span>Inactive Text</span>
+      <span class="description">Text color when a key is not pressed</span>
+    </div>
+    <input type="color" data-setting="key_watcher_inactive_text" value="#aaaaaa" />
+  </div>
 </div>  
+</div>
     <div id="performance-options" class="juice options">
       <div class="option-group">
         <div class="option requires-restart">

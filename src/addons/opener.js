@@ -173,7 +173,7 @@ async function executeCardScript(customcardlist) {
     elem.classList = "vue-notification-wrapper";
     elem.style =
       "transition-timing-function: ease; transition-delay: 0s; transition-property: all;";
-    elem.innerHTML = `<div data-v-3462d80a="" data-v-460e7e47="" class="alert-default"><span data-v-3462d80a="" class="text">${message}</span></div>`;
+    elem.innerHTML = `<div data-v-042f7c6a="" data-v-1ca2d013="" class="alert-default wMWnmwWN" style="background: #1a2332; border: 2px solid #d4a017; padding: 10px 15px; border-radius: 3px;"><span data-v-042f7c6a="" class="text" style="color: #ffffff; font-size: 14px;">${message}</span></div>`;
     elem.onclick = function () {
       try {
         elem.remove();
@@ -194,7 +194,7 @@ async function executeCardScript(customcardlist) {
     end_elem.classList = "vue-notification-wrapper";
     end_elem.style =
       "transition-timing-function: ease; transition-delay: 0s; transition-property: all;";
-    end_elem.innerHTML = `<div data-v-3462d80a="" data-v-460e7e47="" class="alert-default"><span data-v-3462d80a="" class="text">Finished running, check console for more details</span></div>`;
+    end_elem.innerHTML = `<div data-v-042f7c6a="" data-v-1ca2d013="" class="alert-default wMWnmwWN" style="background: #1a2332; border: 2px solid #d4a017; padding: 10px 15px; border-radius: 3px;"><span data-v-042f7c6a="" class="text" style="color: #ffffff; font-size: 14px;">Finished running, check console for more details</span></div>`;
     end_elem.onclick = function () {
       try {
         end_elem.remove();
@@ -226,8 +226,9 @@ async function executeCardScript(customcardlist) {
     elem.classList.add("vue-notification-wrapper");
     elem.style =
       "transition-timing-function: ease; transition-delay: 0s; transition-property: all;";
-    elem.innerHTML = `<div data-v-3462d80a="" data-v-460e7e47="" class="alert-default"><span data-v-3462d80a="" class="text" style="color:#${coloroutput[rarity.toUpperCase()] || coloroutput.DEFAULT
-      }">${text}</span></div>`;
+    elem.innerHTML = `<div data-v-042f7c6a="" data-v-1ca2d013="" class="alert-default wMWnmwWN" style="background: #1a2332; border: 2px solid #d4a017; padding: 10px 15px; border-radius: 3px;"><span data-v-042f7c6a="" class="text" style="color:#${
+      coloroutput[rarity.toUpperCase()] || coloroutput.DEFAULT
+    }; font-size: 14px;">${text}</span></div>`;
     elem.onclick = function () {
       try {
         elem.remove();
@@ -606,7 +607,7 @@ async function executeChestScript(customchestlist) {
     elem.classList = "vue-notification-wrapper";
     elem.style =
       "transition-timing-function: ease; transition-delay: 0s; transition-property: all;";
-    elem.innerHTML = `<div data-v-3462d80a="" data-v-460e7e47="" class="alert-default"><span data-v-3462d80a="" class="text">${message}</span></div>`;
+    elem.innerHTML = `<div data-v-042f7c6a="" data-v-73619dbc="" class="alert-default wMWWnmN"><svg data-v-2b44d870="" data-v-042f7c6a="" xmlns="http://www.w3.org/2000/svg" class="icon svg-icon svg-icon--__check__"><!----><use data-v-2b44d870="" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/img/icons.8d8d28b5.svg#__check__"></use></svg><span data-v-042f7c6a="" class="text">${message}</span></div>`;
     elem.onclick = function () {
       try {
         elem.remove();
@@ -627,7 +628,7 @@ async function executeChestScript(customchestlist) {
     end_elem.classList = "vue-notification-wrapper";
     end_elem.style =
       "transition-timing-function: ease; transition-delay: 0s; transition-property: all;";
-    end_elem.innerHTML = `<div data-v-3462d80a="" data-v-460e7e47="" class="alert-default"><span data-v-3462d80a="" class="text">Finished running, check console for more details</span></div>`;
+    end_elem.innerHTML = `<div data-v-042f7c6a="" data-v-73619dbc="" class="alert-default wMWWnmN"><svg data-v-2b44d870="" data-v-042f7c6a="" xmlns="http://www.w3.org/2000/svg" class="icon svg-icon svg-icon--__check__"><!----><use data-v-2b44d870="" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/img/icons.8d8d28b5.svg#__check__"></use></svg><span data-v-042f7c6a="" class="text">Done.</span></div>`;
     end_elem.onclick = function () {
       try {
         end_elem.remove();
@@ -658,8 +659,8 @@ async function executeChestScript(customchestlist) {
     elem.classList.add("vue-notification-wrapper");
     elem.style =
       "transition-timing-function: ease; transition-delay: 0s; transition-property: all;";
-    elem.innerHTML = `<div data-v-042f7c6a="" data-v-73619dbc="" class="alert-default wMWWnmN" style="color: #${coloroutput[rarity.toUpperCase()] || coloroutput.DEFAULT}"><span data-v-042f7c6a="" class="text">${text}</span></div>`;
-    elem.onclick = function () {
+    elem.innerHTML = `<div data-v-042f7c6a="" data-v-73619dbc="" class="alert-default wMWWnmN" style="color: #${coloroutput[rarity.toUpperCase()] || coloroutput.DEFAULT}"><svg data-v-2b44d870="" data-v-042f7c6a="" xmlns="http://www.w3.org/2000/svg" class="icon svg-icon svg-icon--__check__"><!----><use data-v-2b44d870="" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/img/icons.8d8d28b5.svg#__check__"></use></svg><span data-v-042f7c6a="" class="text">${text}</span></div>`;
+    elem.onclick = function () { 
       try {
         elem.remove();
       } catch { }

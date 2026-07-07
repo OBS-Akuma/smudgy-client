@@ -68,6 +68,7 @@ init() {
   this.initInstallation();
   this.initTools();
   this.initSkins();
+  this.initQuickCssPopout();
   
   if (this.settings["friends_profiles"]) {
     this.initFriendsProfiles();
@@ -2540,7 +2541,74 @@ removeOneko() {
   delete window.__onekoSettings;
 }
 
+// Add this method to your Menu class
+initQuickCssPopout() {
+  const popoutBtn = this.menu.querySelector('.quick-css-popout-btn');
+  
+  if (!popoutBtn) return;
 
+  popoutBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    ipcRenderer.send('open-quick-css-window');
+  });
+
+  // Listen for updates from the popout window (applies CSS)
+  ipcRenderer.on('update-quick-css', (event, cssContent) => {
+    const mainTextarea = this.menu.querySelector('[data-setting="advanced_css"]');
+    if (mainTextarea) {
+      mainTextarea.value = cssContent;
+      this.settings.advanced_css = cssContent;
+      ipcRenderer.send('update-setting', 'advanced_css', cssContent);
+      
+      const event = new CustomEvent('juice-settings-changed', {
+        detail: { setting: 'advanced_css', value: cssContent }
+      });
+      document.dispatchEvent(event);
+    }
+  });
+
+  // Listen for sync request from the main process
+  ipcRenderer.on('request-quick-css-sync', (event, responseChannel) => {
+    const mainTextarea = this.menu.querySelector('[data-setting="advanced_css"]');
+    if (mainTextarea) {
+      const currentCss = mainTextarea.value || '';
+      // Send response back using the provided channel
+      event.sender.send(responseChannel || 'quick-css-sync-response', currentCss);
+    } else {
+      // If no textarea found, send empty string
+      event.sender.send(responseChannel || 'quick-css-sync-response', '');
+    }
+  });
+
+  // NEW: Listen for changes in the main textarea and sync to popout
+  const mainTextarea = this.menu.querySelector('[data-setting="advanced_css"]');
+  if (mainTextarea) {
+    // Save the original input handler if it exists
+    const originalInputHandler = mainTextarea._inputHandler || null;
+    
+    // Add our input listener
+    mainTextarea.addEventListener('input', () => {
+      const currentCss = mainTextarea.value || '';
+      // Send update to main process to sync with popout
+      ipcRenderer.send('main-quick-css-updated', currentCss);
+      // Also save settings
+      this.settings.advanced_css = currentCss;
+      ipcRenderer.send('update-setting', 'advanced_css', currentCss);
+    });
+    
+    // Store reference to prevent duplicate listeners
+    mainTextarea._inputHandler = true;
+  }
+
+  // Also listen for settings reset to update the popout
+  ipcRenderer.on('settings-reset', (event, newSettings) => {
+    const mainTextarea = this.menu.querySelector('[data-setting="advanced_css"]');
+    if (mainTextarea && newSettings.advanced_css !== undefined) {
+      mainTextarea.value = newSettings.advanced_css;
+      ipcRenderer.send('main-quick-css-updated', newSettings.advanced_css);
+    }
+  });
+}
 
 
 initSubnames() {

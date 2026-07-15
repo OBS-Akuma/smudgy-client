@@ -8,7 +8,7 @@
     <img src="https://contrib.rocks/image?repo=OBS-Akuma/Smudgy-client" />
    <img src="https://contrib.rocks/image?repo=irrvlo/juice-client" />
    <img src="https://contrib.rocks/image?repo=zVipexx/dawn-client" />
-   <img src="https://contrib.rocks/image?repo=imnotkoolkid/OBSIDIAN-CLIENT-preview" />
+   <img src="https://contrib.rocks/image?repo=imnotkoolkid/KCH" />
    <img src="https://contrib.rocks/image?repo=AwesomeSam9523/awesomesam" />
    <img src="https://pbs.twimg.com/profile_images/1486761336478568451/VxKLgEMh_400x400.jpg" width="65" height="65"></a>
   </a>

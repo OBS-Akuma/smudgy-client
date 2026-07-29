@@ -1285,23 +1285,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const getPinSvg = (isPinnedFlag) => {
       if (isPinnedFlag) {
-        return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: block;">
-          <defs>
-            <linearGradient id="pinGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#ff4d4d"/>
-              <stop offset="100%" stop-color="#ff0000"/>
-            </linearGradient>
-          </defs>
-          <path d="M12 22C12 22 19 15.5 19 10.5C19 6.35786 15.6421 3 11.5 3C7.35786 3 4 6.35786 4 10.5C4 15.5 12 22 12 22Z"
-                fill="url(#pinGradient)" stroke="#b30000" stroke-width="1.2" stroke-linejoin="round"/>
-          <circle cx="11.5" cy="10.5" r="3" fill="#ffffff" stroke="#ff4d4d" stroke-width="1"/>
-        </svg>`;
+        return ``;
       } else {
-        return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: block;">
-          <path d="M12 22C12 22 19 15.5 19 10.5C19 6.35786 15.6421 3 11.5 3C7.35786 3 4 6.35786 4 10.5C4 15.5 12 22 12 22Z"
-                fill="none" stroke="#888888" stroke-width="1.5" stroke-linejoin="round"/>
-          <circle cx="11.5" cy="10.5" r="3" fill="none" stroke="#888888" stroke-width="1.2"/>
-        </svg>`;
+        return ``;
       }
     };
 
@@ -1363,17 +1349,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       pinBtn.className = "friend-pin-btn";
       pinBtn.setAttribute("data-friend-id", friendId);
       pinBtn.style.cssText = `
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 32px;
-        height: 32px;
-        border-radius: 4px;
-        transition: all 0.2s ease;
-        background-color: transparent;
-        margin-right: 8px;
-        vertical-align: middle;
       `;
       pinBtn.innerHTML = getPinSvg(isPinned(friendId));
 
@@ -1401,26 +1376,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // ─── Spectate Buttons credit: Dawn client (trust)
     const addSpectateButton = (div) => {
-      if (div.nextElementSibling?.classList.contains("spectate-eye")) return;
+      if (div.nextElementSibling?.classList.contains("")) return;
 
       const match = div.textContent.match(/\[(.*?)\]/);
       const code = match ? match[1] : null;
       if (!code) return;
 
       const eyeDiv = document.createElement("div");
-      eyeDiv.className = "spectate-eye";
-      eyeDiv.innerHTML = '<i class="fa-solid fa-eye"></i>';
+      eyeDiv.className = "";
+      eyeDiv.innerHTML = '';
       eyeDiv.style.cssText = `
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        margin-left: 8px;
-        padding: 4px;
-        background: #2f3957;
-        border-radius: 4px;
-        color: #ffb914;
-        transition: all 0.2s ease;
       `;
 
       eyeDiv.addEventListener("mouseenter", () => {

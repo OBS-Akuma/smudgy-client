@@ -2021,3 +2021,27 @@
   cursor: not-allowed;
   pointer-events: none;
 }
+/* 2x2 Grid */
+.state-cont .kill-death {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, auto);
+    gap: 8px;
+}
+
+/* Remove inline margin from the headshot box */
+.state-cont .kill-death > .headshot {
+    margin-left: 0 !important;
+    justify-content: center;
+}
+
+/* Make every box fill its grid cell */
+.state-cont .kill-death > div {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Optional: Hide the 5th item (KD) */
+.state-cont .kill-death > :nth-child(5) {
+    display: none;
+}

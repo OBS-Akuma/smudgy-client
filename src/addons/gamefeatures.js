@@ -20,7 +20,7 @@ const { initGameFeatures } = (() => {
         const BANNERS_API = "https://opensheet.elk.sh/1FNq0RTv0SOSSRVmGJFtli3Fld86uoAlAjDzHByRiZFI/1";
         const BADGE_JSON_URL = "https://raw.githubusercontent.com/OBS-Akuma/KirkaBadges/refs/heads/main/Json/badge.json";
 
-
+        // ── Score Counter (Star icon - shows current score from leaderboard) ──
         function findKillDeathContainer() {
             let container = document.querySelector('.kill-death');
             if (container) return container;
@@ -97,19 +97,19 @@ const { initGameFeatures } = (() => {
             
             console.log('[Score] Found kill-death container:', killDeath);
             
-
+            // CRITICAL: Explicitly protect the kills counter - we NEVER modify it
             const killCounter = killDeath.querySelector('.kill');
             if (killCounter) {
                 console.log('[Score] Kills counter found and protected - will not be modified');
             }
             
-
+            // Check if score already exists
             if (killDeath.querySelector('.score')) {
                 console.log('[Score] Score element already exists');
                 return;
             }
             
-
+            // Get the death element for positioning (we insert AFTER it)
             const existingDeath = killDeath.querySelector('.WnwNmWwM');
             if (!existingDeath) {
                 console.warn('[Score] Death counter not found, will append at end');
@@ -133,7 +133,7 @@ const { initGameFeatures } = (() => {
             console.log('[Score] Looking for user with short ID:', userShortId);
             
             function getCurrentUserScore() {
-
+                // Try multiple selectors for different scoreboard types
                 let playerList = document.querySelector('.player-list') || 
                                 document.querySelector('.player-left-cont') || 
                                 document.querySelector('.player-right-cont') ||
@@ -175,10 +175,10 @@ const { initGameFeatures } = (() => {
                 return 0;
             }
             
-
+            // Create the score element - this is a NEW element, we never modify existing ones
             const scoreDiv = document.createElement('div');
             
-
+            // Copy data attributes from existing elements for consistency
             const existingKill = killDeath.querySelector('.kill');
             if (existingKill) {
                 Array.from(existingKill.attributes).forEach(attr => {
@@ -190,10 +190,10 @@ const { initGameFeatures } = (() => {
             
             scoreDiv.className = 'score bg text-1';
             
-
+            // Create the text node for the score value
             const scoreText = document.createTextNode(' 0 ');
             
-
+            // Create the SVG with star
             const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
             svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
             svg.setAttribute('viewBox', '0 0 16 16');
@@ -202,7 +202,7 @@ const { initGameFeatures } = (() => {
             svg.setAttribute('class', 'icon svg-icon');
             svg.style.cssText = 'display: inline-block; vertical-align: middle;';
             
-
+            // Copy data attributes from existing SVG if available
             const killSvg = existingKill ? existingKill.querySelector('svg') : null;
             if (killSvg) {
                 Array.from(killSvg.attributes).forEach(attr => {
@@ -212,17 +212,17 @@ const { initGameFeatures } = (() => {
                 });
             }
             
-
+            // Add star path
             const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             path.setAttribute('d', 'M12.44 9.74a.825.825 0 0 0-.24.727l.667 3.69a.81.81 0 0 1-.338.81.826.826 0 0 1-.877.06L8.33 13.296a.847.847 0 0 0-.375-.098h-.203a.609.609 0 0 0-.203.067l-3.322 1.741c-.165.082-.35.112-.533.082a.834.834 0 0 1-.667-.953l.667-3.69a.84.84 0 0 0-.24-.734L.748 7.085a.81.81 0 0 1-.202-.848.842.842 0 0 1 .667-.562l3.727-.54a.834.834 0 0 0 .66-.457L7.242 1.31a.78.78 0 0 1 .15-.203l.067-.052a.503.503 0 0 1 .12-.097l.083-.03.127-.053h.316c.282.03.53.198.66.45l1.664 3.353c.12.245.353.415.623.456l3.727.541a.85.85 0 0 1 .683.563c.098.3.013.63-.218.847L12.44 9.74z');
             path.setAttribute('fill', '#FFB914');
             svg.appendChild(path);
             
-
+            // Assemble
             scoreDiv.appendChild(scoreText);
             scoreDiv.appendChild(svg);
             
-
+            // CRITICAL: Insert AFTER death counter to ensure kills counter is NEVER affected
             if (existingDeath) {
                 killDeath.insertBefore(scoreDiv, existingDeath.nextSibling);
                 console.log('[Score] Score inserted after death counter');
@@ -278,7 +278,7 @@ const { initGameFeatures } = (() => {
             };
         }
 
-
+        // ── Flag Counter (Points from achievements) ────────────────────────────
         let objectivesCount = 0;
         let lastProcessedAchievements = new Set();
 
@@ -303,7 +303,7 @@ const { initGameFeatures } = (() => {
             objectives.style.alignItems = 'center';
             objectives.style.gap = '0.25rem';
             
-
+            // Use the flag image
             const svgEl = objectives.querySelector('svg');
             if (svgEl) {
                 const img = document.createElement('img');
@@ -319,7 +319,7 @@ const { initGameFeatures } = (() => {
             
             const killDeath = document.querySelector('.kill-death');
             if (killDeath) {
-
+                // Insert after death counter (position 3)
                 const deathElement = killDeath.querySelector('.WnwNmWwM');
                 if (deathElement) {
                     killDeath.insertBefore(objectives, deathElement.nextSibling);
@@ -339,7 +339,7 @@ const { initGameFeatures } = (() => {
                 return;
             }
             
-            let lastTriggered = ;
+            let lastTriggered = 0;
             
             const observer = new MutationObserver((mutations) => {
                 for (const mutation of mutations) {
@@ -395,7 +395,7 @@ const { initGameFeatures } = (() => {
             console.log('[Flag] Flag counter initialized!');
         }
 
-
+        // ── Headshot Counter ──────────────────────────────────────────────────
         let headshotsCount = 0;
         let lastProcessedHeadshots = new Set();
         let headshotObserver = null;
@@ -422,7 +422,7 @@ const { initGameFeatures } = (() => {
             headshots.style.alignItems = 'center';
             headshots.style.gap = '0.25rem';
             
-
+            // Use the juice icon
             const svgEl = headshots.querySelector('svg');
             if (svgEl) {
                 const img = document.createElement('img');
@@ -438,7 +438,7 @@ const { initGameFeatures } = (() => {
             
             const killDeath = document.querySelector('.kill-death');
             if (killDeath) {
-
+                // Insert after the flag counter (objectives)
                 const objectivesEl = killDeath.querySelector('.objectives');
                 if (objectivesEl) {
                     killDeath.insertBefore(headshots, objectivesEl.nextSibling);
@@ -454,11 +454,11 @@ const { initGameFeatures } = (() => {
             headshotsCount = 0;
             lastProcessedHeadshots = new Set();
             renderHeadshots();
-            console.log('[Headshot]  Counter reset (URL changed to /)');
+            console.log('[Headshot] 🔄 Counter reset (URL changed to /)');
         }
 
         function watchHeadshots() {
-
+            // Clean up old observer if exists
             if (headshotObserver) {
                 headshotObserver.disconnect();
                 headshotObserver = null;
@@ -499,7 +499,7 @@ const { initGameFeatures } = (() => {
                             lastTriggered = now;
                             headshotsCount++;
                             renderHeadshots();
-                            console.log('[Headshot]  +1 Headshot! Total:', headshotsCount);
+                            console.log('[Headshot] 🎯 +1 Headshot! Total:', headshotsCount);
                         }
                     }
                 }
@@ -518,7 +518,7 @@ const { initGameFeatures } = (() => {
             const currentPath = window.location.pathname;
             
             if (currentPath === '/' && lastUrl !== '/') {
-                console.log('[Headshot]  Navigated to root (/), resetting counter...');
+                console.log('[Headshot] 📍 Navigated to root (/), resetting counter...');
                 resetHeadshotCounter();
                 
                 if (headshotObserver) {
@@ -547,7 +547,7 @@ const { initGameFeatures } = (() => {
             console.log('[Headshot] Headshot counter initialized!');
         }
 
-
+        // ── Public API ──────────────────────────────────────────────────────────
         window.pointsCounter = {
             getStats: function() {
                 return {
@@ -614,7 +614,7 @@ const { initGameFeatures } = (() => {
             }
         };
 
-
+        // ── Clean Short ID ──────────────────────────────────────────────────────
         function cleanShortId(shortId) {
           if (!shortId) return null;
           return shortId.replace(/^#/, '').trim().toUpperCase();
@@ -1013,7 +1013,7 @@ const { initGameFeatures } = (() => {
           await Promise.allSettled(promises);
         }
 
-
+        // ── User Card (Kill Card) Background ──────────────────────────────────
         async function handleUserCard() {
           const userCard = document.querySelector('#user-card');
           if (!userCard) return;
@@ -1224,7 +1224,7 @@ const { initGameFeatures } = (() => {
           } finally { bgIsProcessing = false; }
         }
 
-
+        // ── Player List Background ────────────────────────────────────────────
         async function handlePlayerList() {
           const playerList = document.querySelector('.player-list') || 
                             document.querySelector('.team-players-state') ||
@@ -1254,7 +1254,7 @@ const { initGameFeatures } = (() => {
             const cleanId = cleanShortId(shortId);
             let imageUrl = null;
             
-
+            // Try to get banner
             const banner = findBannerByIds(banners, cleanId, null);
             if (banner && banner.imageUrl) {
               imageUrl = banner.imageUrl;
@@ -1361,7 +1361,7 @@ const { initGameFeatures } = (() => {
           currentFetchPromise = null;
         }
 
-
+        // ── Hide Full Servers Dropdown ──────────────────────────────────────
         function addHideFullServersDropdown() {
           const filtersContainer = document.querySelector('.filters[data-v-6b4c78b6]');
           if (!filtersContainer) {
@@ -1501,7 +1501,7 @@ const { initGameFeatures } = (() => {
           });
         }
 
-
+        // ── Init Backgrounds ──────────────────────────────────────────────────
         async function initBackgrounds() {
           console.log('[Background] Initializing - Preloading images to prevent flashing');
           await loadBadgeMappings();
@@ -1520,7 +1520,7 @@ const { initGameFeatures } = (() => {
           setInterval(() => { maintainBackgroundEffects(); }, 2000);
         }
 
-
+        // ── Custom ID ──────────────────────────────────────────────────────────
         async function fetchCustomIdMappings() {
           try {
             const r = await fetch("https://raw.githubusercontent.com/OBS-Akuma/KirkaBadges/refs/heads/main/Json/customids.json");
@@ -1615,23 +1615,23 @@ const { initGameFeatures } = (() => {
           };
         }
 
-
-
+        // ── URL Change Monitor for Headshot Counter ──────────────────────────
+        // Check URL every 500ms
         setInterval(checkUrlChange, 500);
 
-
+        // Also listen for popstate (back/forward navigation)
         window.addEventListener('popstate', () => {
           setTimeout(checkUrlChange, 100);
         });
 
-
+        // Monkey patch pushState to detect SPA navigation
         const originalPushState = history.pushState;
         history.pushState = function() {
           originalPushState.apply(this, arguments);
           setTimeout(checkUrlChange, 100);
         };
 
-
+        // ── Navigation handling ───────────────────────────────────────────────
         let lastUrlNav = window.location.href;
         setInterval(() => {
           const currentUrl = window.location.href;
@@ -1698,7 +1698,7 @@ const { initGameFeatures } = (() => {
         });
         domObserver.observe(document.body, { childList: true, subtree: true });
 
-
+        // ── Initialize everything ─────────────────────────────────────────────
         watchUserNotFoundAlerts();
         patchFetchForCustomIds();
         fetchCustomIdMappings();
@@ -1717,7 +1717,7 @@ const { initGameFeatures } = (() => {
     `;
   };
 
-
+  // ── Lobby Badges Script ──────────────────────────────────────────────────────
   const lobbyBadgesScript = () => {
     return `
       (function() {
